@@ -23,8 +23,7 @@ Copy all the `*.dll` files into the server's BepInEx plugins folder located at `
 ## Dry run and configuration
 
 Start the dedicated server instance.  
-OdinEye will generate a configuration file at `Valheim/BepInEx/config` named `org.bepinex.plugins.odineye.cfg`.  
-Open the configuration file: 
+OdinEye will generate a configuration file at `Valheim/BepInEx/config` named `org.bepinex.plugins.odineye.cfg`, with a default `HttpServerAddress` that works out of the box for a server and its API consumers running on the same machine — no editing required to get started:
 
 ```cfg title="/Valheim/BepInEx/config/org.bepinex.plugins.odineye.cfg"
 ## Settings file was created by plugin odineye v0.0.1.0
@@ -34,25 +33,29 @@ Open the configuration file:
 
 ## The network address where the Http Server will be hosted
 # Setting type: String
-# Default value: 
-HttpServerAddress =
+# Default value: http://localhost:2469/
+HttpServerAddress = http://localhost:2469/
 ```
 
-Provide a value for the `HttpServerAddress` field. Example: `http://yourserver.com:21618`
+Only change `HttpServerAddress` if you need the API reachable from somewhere other than the game server's own machine — e.g. `http://yourserver.com:21618`.
 
 
 :::info[Remarks]
 <Tabs>
   <TabItem value="address" label="Server Address">
-    The `HttpServerAddress` accepts addresses from different hosting models:
+    The default (`http://localhost:2469/`) only accepts connections from the same machine, which is intentional: OdinEye's REST API and WebSocket stream have **no authentication**, so binding to `localhost` keeps them off the network unless you deliberately open them up.
+
+    The `HttpServerAddress` also accepts addresses from other hosting models:
     - Server hosted on a external provider (online hosting service)
-    - Server hosted on local/own infrastructure
+    - Server hosted on local/own infrastructure, reachable from other machines on the network
+
+    If you point it at anything other than `localhost`, make sure you actually want the API exposed there — restrict access at the firewall level since the API itself doesn't authenticate requests.
 
     :warning: This property is experimental and is likely to be deprecated in future releases.
   </TabItem>
   <TabItem value="port" label="Port">
     When using an external hosting provider, confirm that the designated port is open and available.  
-    Note: the port should be different than the game server port (default `2456`) and Steam query port (default `2457`).
+    Note: the port should be different than the game server port (default `2456`) and Steam query port (default `2457`) — the default `2469` already avoids both.
   </TabItem>
 </Tabs>
 :::

@@ -27,14 +27,27 @@
             Logger.LogInfo("OdinEye starting!");
 
             LoadConfiguration();
-            SetupDependencies();
+
+            try
+            {
+                SetupDependencies();
+            }
+            catch (System.Exception ex)
+            {
+                Logger.LogError(
+                    $"Failed to start OdinEye's Http/WebSocket server at '{httpServerAddress.Value}': {ex.Message}. " +
+                    "Check the [Hosting] HttpServerAddress setting in the org.bepinex.plugins.odineye.cfg config file. " +
+                    "OdinEye's REST API and WebSocket event stream will be unavailable until this is fixed.");
+                return;
+            }
+
             SetupHarmonyPatches();
-            
+
             Logger.LogInfo("OdinEye running!");
         }
 
         private void LoadConfiguration() =>
-            httpServerAddress = Config.Bind("Hosting", "HttpServerAddress", string.Empty, "The network address where the Http Server will be hosted");
+            httpServerAddress = Config.Bind("Hosting", "HttpServerAddress", "http://localhost:2469/", "The network address where the Http Server will be hosted");
         
         private void SetupHarmonyPatches()
         {
