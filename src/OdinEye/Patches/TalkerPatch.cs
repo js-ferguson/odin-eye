@@ -8,7 +8,7 @@
     {
         [HarmonyPatch(nameof(Talker.RPC_Say))]
         [HarmonyPrefix]
-        protected static void Say(long sender, int ctype, UserInfo user, string text, string senderNetworkUserId)
+        protected static void Say(long sender, int ctype, UserInfo user, string text)
         {
             // work the same as ChatOnNewMessage
             OdinEyePlugin.Instance.EventHandler.Handle(GameEvent.New(EventType.PlayerChat, $"Talker.Say: {user.Name} - {text}"));
