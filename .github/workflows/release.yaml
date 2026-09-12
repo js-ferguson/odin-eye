@@ -1,8 +1,17 @@
-﻿name: Release
+name: Release
 
 on:
   release:
     types: [ published ]
+
+permissions:
+  contents: write
+
+env:
+  # Empty on any fork that hasn't configured this secret (it's not copied
+  # from upstream automatically) -- gates the nuget-publish steps below,
+  # which are upstream-specific and unrelated to producing the plugin zip.
+  NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
 
 jobs:
   build:
@@ -15,13 +24,41 @@ jobs:
         uses: NuGet/setup-nuget@v1.0.5
       - name: Restore Packages
         run: nuget restore OdinEye.sln
-      - name: Build solution
-        run: msbuild OdinEye.sln -t:rebuild -property:Configuration=Release
+      - name: Build plugin package
+        # PluginFolder overrides OdinEye.csproj's own PrepPlugin post-build
+        # target (normally a hardcoded local Steam path) so it stages the
+        # plugin's actual runtime file set -- OdinEye.dll plus its
+        # third-party dependencies, not the Unity/Valheim/BepInEx reference
+        # assemblies those are compiled against -- into a workspace-local
+        # folder we can zip up below. That target is the single source of
+        # truth for which files ship; this workflow never duplicates the list.
+        run: msbuild OdinEye.sln -t:rebuild -property:Configuration=Release -property:PluginFolder=${{ github.workspace }}\dist\OdinEye
 
+      - name: Zip plugin package
+        # Contents at the zip's root (no wrapping folder) -- matches what
+        # valheim_server's mods-install-manual.sh expects when it extracts
+        # a manually-uploaded/GitHub-sourced zip straight into the mod's
+        # plugins/ subfolder.
+        shell: pwsh
+        run: Compress-Archive -Path "dist/OdinEye/*" -DestinationPath "dist/OdinEye-${{ github.event.release.tag_name }}.zip"
+
+      - name: Upload release asset
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # Attaches to the SAME release that triggered this workflow, so
+        # admin panels/tools that pick "the one .zip on the latest release"
+        # (e.g. valheim_server's GitHub-mod-install) find it immediately.
+        run: gh release upload "${{ github.event.release.tag_name }}" "dist/OdinEye-${{ github.event.release.tag_name }}.zip" --clobber
+
+      # Publishes OdinEye.Models to nuget.org -- upstream-specific, and
+      # only runs if NUGET_API_KEY is actually configured on this repo.
       - uses: actions/setup-dotnet@v3
+        if: ${{ env.NUGET_API_KEY != '' }}
         with:
           dotnet-version: '6.0.x'
       - name: Generate nuget package
+        if: ${{ env.NUGET_API_KEY != '' }}
         run: dotnet pack src/OdinEye.Models/OdinEye.Models.csproj -p:Version='${{ github.event.release.tag_name }}' --configuration Release -o nupkg
       - name: Upload nuget package
-        run: dotnet nuget push .\nupkg\*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+        if: ${{ env.NUGET_API_KEY != '' }}
+        run: dotnet nuget push .\nupkg\*.nupkg -k $env:NUGET_API_KEY -s https://api.nuget.org/v3/index.json
