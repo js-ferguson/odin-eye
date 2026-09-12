@@ -35,7 +35,7 @@
             catch (System.Exception ex)
             {
                 Logger.LogError(
-                    $"Failed to start OdinEye's Http/WebSocket server at '{httpServerAddress.Value}': {ex.Message}. " +
+                    $"Failed to start OdinEye's Http/WebSocket server at '{httpServerAddress.Value}': {ex}. " +
                     "Check the [Hosting] HttpServerAddress setting in the org.bepinex.plugins.odineye.cfg config file. " +
                     "OdinEye's REST API and WebSocket event stream will be unavailable until this is fixed.");
                 return;
@@ -48,7 +48,7 @@
             catch (System.Exception ex)
             {
                 Logger.LogError(
-                    $"Failed to initialize OdinEye's event pipeline: {ex.Message}. " +
+                    $"Failed to initialize OdinEye's event pipeline: {ex}. " +
                     "OdinEye's WebSocket event stream will be unavailable until this is fixed.");
                 return;
             }
@@ -60,7 +60,7 @@
             catch (System.Exception ex)
             {
                 Logger.LogError(
-                    $"Failed to apply OdinEye's Harmony patches: {ex.Message}. " +
+                    $"Failed to apply OdinEye's Harmony patches: {ex}. " +
                     "In-game event hooks (chat, world/player events, etc.) will not fire, but the REST API and WebSocket server remain available.");
                 return;
             }
