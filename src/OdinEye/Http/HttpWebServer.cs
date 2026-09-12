@@ -1,8 +1,10 @@
 ﻿namespace OdinEye.Http
 {
     using Api.Controllers;
+    using Extensions;
     using Logging;
     using ProtoBuf;
+    using System;
     using System.Collections.Generic;
     using System.IO;
     using WebSockets;
@@ -12,8 +14,9 @@
     {
         private const string DefaultWebSocketPath = "/activity";
         private readonly HttpServer httpServer;
+        private readonly ILogger logger;
         private WebSocketSessionManager defaultWebSocketSessionManager;
-        
+
         private IEnumerable<IController> controllers = new IController[]
         {
             new PlayersController(),
@@ -21,9 +24,10 @@
             new WorldDetailsController(),
             new BossDetailsController()
         };
-        
+
         public HttpWebServer(string address, ILogger logger)
         {
+            this.logger = logger;
             logger.LogInfo($"Starting Http Server at {address}");
 
             httpServer = new HttpServer(address);
@@ -40,7 +44,16 @@
                 {
                     if (string.Equals(controller.Route, args.Request.RawUrl))
                     {
-                        controller.OnGet(args);
+                        try
+                        {
+                            controller.OnGet(args);
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.LogError($"Unhandled exception in {controller.GetType().Name} for {args.Request.RawUrl}: {ex}");
+                            args.Response.Error();
+                        }
+
                         break;
                     }
                 }

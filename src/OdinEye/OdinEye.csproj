@@ -393,6 +393,7 @@
         <Compile Include="Coroutines\GameStatsSnapshotCoroutine.cs" />
         <Compile Include="Events\EventHandler.cs" />
         <Compile Include="Events\EventHandlerConfigurationOptions.cs" />
+        <Compile Include="Extensions\EnvManExtensions.cs" />
         <Compile Include="Extensions\GuidExtensions.cs" />
         <Compile Include="Extensions\HttpListenerResponseExtensions.cs" />
         <Compile Include="Extensions\PeerExtensions.cs" />

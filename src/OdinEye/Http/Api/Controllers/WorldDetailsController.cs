@@ -28,14 +28,14 @@
 
         private string GetDayCycle()
         {
-            if (EnvMan.instance.IsNight())
+            if (EnvMan.instance.IsNightSafe())
             {
                 return "night";
             }
 
-            if (EnvMan.instance.IsDay())
+            if (EnvMan.instance.IsDaySafe())
             {
-                return EnvMan.instance.IsAfternoon() ? "afternoon" : "morning";
+                return EnvMan.instance.IsAfternoonSafe() ? "afternoon" : "morning";
             }
 
             return "unknown";

@@ -30,7 +30,7 @@
             var worldStats = new WorldStats
             {
                 DayNumber = EnvMan.instance.GetCurrentDay(),
-                DayCycle = EnvMan.instance.IsDay() ? "day" : "night"
+                DayCycle = EnvMan.instance.IsDaySafe() ? "day" : "night"
             };
 
             var peers = ZNet.instance.GetAllPeers();
