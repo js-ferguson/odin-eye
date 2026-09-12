@@ -11,15 +11,14 @@
         [HarmonyPatch(nameof(Chat.OnNewChatMessage))]
         [HarmonyPrefix]
         protected static void OnNewChatMessage(
-            GameObject go, 
-            long senderID, 
-            Vector3 pos, 
-            Talker.Type type, 
-            UserInfo user, 
-            string text, 
-            string senderNetworkUserId)
+            GameObject go,
+            long senderID,
+            Vector3 pos,
+            Talker.Type type,
+            UserInfo sender,
+            string text)
         {
-            var logText = $"user {user.Name} said: {text}";
+            var logText = $"user {sender.Name} said: {text}";
             
             switch (type)
             {
