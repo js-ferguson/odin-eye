@@ -4,6 +4,12 @@ on:
   pull_request:
     branches: [ "main" ]
 
+env:
+  # Empty on any fork that hasn't configured this secret (it's not copied
+  # from upstream automatically) -- gates the nuget-publish steps below,
+  # which are upstream-specific and unrelated to validating the build.
+  NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+
 jobs:
   build:
     runs-on: windows-latest
@@ -31,10 +37,16 @@ jobs:
         with:
           version_format: "${major}.${minor}.${patch}-beta.${{ env.COMMIT_SHORT_SHA }}"
 
+      # Publishes a beta OdinEye.Models package to nuget.org -- upstream-
+      # specific, and only runs if NUGET_API_KEY is actually configured on
+      # this repo (it isn't on every fork).
       - uses: actions/setup-dotnet@v3
+        if: ${{ env.NUGET_API_KEY != '' }}
         with:
           dotnet-version: '6.0.x'
       - name: Generate nuget package
+        if: ${{ env.NUGET_API_KEY != '' }}
         run: dotnet pack src/OdinEye.Models/OdinEye.Models.csproj -p:Version='${{ steps.version.outputs.version }}' --configuration Release -o nupkg
       - name: Upload nuget package
-        run: dotnet nuget push .\nupkg\*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
+        if: ${{ env.NUGET_API_KEY != '' }}
+        run: dotnet nuget push .\nupkg\*.nupkg -k $env:NUGET_API_KEY -s https://api.nuget.org/v3/index.json
