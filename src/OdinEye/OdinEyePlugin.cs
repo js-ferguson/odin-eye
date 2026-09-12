@@ -41,7 +41,17 @@
                 return;
             }
 
-            SetupHarmonyPatches();
+            try
+            {
+                SetupHarmonyPatches();
+            }
+            catch (System.Exception ex)
+            {
+                Logger.LogError(
+                    $"Failed to apply OdinEye's Harmony patches: {ex.Message}. " +
+                    "In-game event hooks (chat, world/player events, etc.) will not fire, but the REST API and WebSocket server remain available.");
+                return;
+            }
 
             Logger.LogInfo("OdinEye running!");
         }
