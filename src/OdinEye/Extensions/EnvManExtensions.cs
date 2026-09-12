@@ -24,8 +24,17 @@ namespace OdinEye.Extensions
 
         public static bool IsAfternoonSafe(this EnvMan env) => Invoke(IsAfternoonMethod, env);
 
+        // IsDay()/IsNight()/IsAfternoon() are static methods on the current
+        // Valheim build (confirmed via Mono.Cecil against the live game
+        // assembly) despite reading like instance methods from the old,
+        // stale ValheimGameLibs reference package. BindingFlags.Instance
+        // alone excludes them, so GetMethod silently returned null here and
+        // Invoke() below silently short-circuited to false with no
+        // exception -- DayCycle always fell through to "unknown" -- see
+        // ODINEYE-10. Include both flags so this keeps working regardless
+        // of which one Valheim actually uses.
         private static MethodInfo GetBoolMethod(string name) =>
-            typeof(EnvMan).GetMethod(name, BindingFlags.Public | BindingFlags.Instance);
+            typeof(EnvMan).GetMethod(name, BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance);
 
         private static bool Invoke(MethodInfo method, EnvMan env) =>
             method != null && (bool)method.Invoke(env, null);
