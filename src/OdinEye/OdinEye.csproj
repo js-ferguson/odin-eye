@@ -473,6 +473,7 @@
             <PackageItems Include="$(TargetDir)System.Threading.Tasks.Extensions.dll" />
             <PackageItems Include="$(TargetDir)Utf8Json.dll" />
             <PackageItems Include="$(TargetDir)WebsocketSharp.Core.dll" />
+            <PackageItems Include="$(TargetDir)NGuid.dll" />
         </ItemGroup>
         <Copy SourceFiles="@(PackageItems)" DestinationFolder="$(PluginFolder)" SkipUnchangedFiles="true" />
     </Target>
