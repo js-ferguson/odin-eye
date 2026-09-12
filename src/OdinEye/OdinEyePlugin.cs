@@ -30,7 +30,7 @@
 
             try
             {
-                SetupDependencies();
+                HttpWebServer = new HttpWebServer(httpServerAddress.Value, Logger);
             }
             catch (System.Exception ex)
             {
@@ -38,6 +38,18 @@
                     $"Failed to start OdinEye's Http/WebSocket server at '{httpServerAddress.Value}': {ex.Message}. " +
                     "Check the [Hosting] HttpServerAddress setting in the org.bepinex.plugins.odineye.cfg config file. " +
                     "OdinEye's REST API and WebSocket event stream will be unavailable until this is fixed.");
+                return;
+            }
+
+            try
+            {
+                SetupEventPipeline();
+            }
+            catch (System.Exception ex)
+            {
+                Logger.LogError(
+                    $"Failed to initialize OdinEye's event pipeline: {ex.Message}. " +
+                    "OdinEye's WebSocket event stream will be unavailable until this is fixed.");
                 return;
             }
 
@@ -66,9 +78,8 @@
             harmony.PatchAll(assembly);
         }
         
-        private void SetupDependencies()
+        private void SetupEventPipeline()
         {
-            HttpWebServer = new HttpWebServer(httpServerAddress.Value, Logger);
             StatsSnapshotCoroutine = new GameStatsSnapshotCoroutine(HttpWebServer);
             EventHandler = new EventHandler();
             EventHandler.Configure(options => options
