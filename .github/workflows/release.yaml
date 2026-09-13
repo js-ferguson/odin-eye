@@ -12,6 +12,10 @@ env:
   # from upstream automatically) -- gates the nuget-publish steps below,
   # which are upstream-specific and unrelated to producing the plugin zip.
   NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+  # Same gating pattern, for the Thunderstore-publish steps below
+  # (ODINEYE-21) -- a Thunderstore Service Account token, from
+  # thunderstore.io -> Settings -> Teams -> Service Accounts.
+  THUNDERSTORE_TOKEN: ${{ secrets.THUNDERSTORE_TOKEN }}
 
 jobs:
   build:
@@ -69,3 +73,28 @@ jobs:
       - name: Upload nuget package
         if: ${{ env.NUGET_API_KEY != '' }}
         run: dotnet nuget push .\nupkg\*.nupkg -k $env:NUGET_API_KEY -s https://api.nuget.org/v3/index.json
+
+      # Publishes OdinEye.Client to Thunderstore (ODINEYE-21) -- only runs
+      # if THUNDERSTORE_TOKEN is actually configured. NOT verified end-to-end
+      # against a real Thunderstore account -- see thunderstore-client.toml's
+      # own header comment. If this step ever needs debugging, split
+      # `tcli publish` back into a `tcli build` + manual zip inspection first.
+      - uses: actions/setup-dotnet@v3
+        if: ${{ env.THUNDERSTORE_TOKEN != '' }}
+        with:
+          dotnet-version: '6.0.x'
+      - name: Install tcli
+        if: ${{ env.THUNDERSTORE_TOKEN != '' }}
+        run: dotnet tool install -g tcli
+      - name: Set Thunderstore package version
+        if: ${{ env.THUNDERSTORE_TOKEN != '' }}
+        # thunderstore-client.toml's versionNumber is just a placeholder --
+        # Thunderstore version numbers have no leading "v", unlike this
+        # repo's own git tags/zip filenames.
+        shell: pwsh
+        run: |
+          $version = "${{ github.event.release.tag_name }}" -replace '^v', ''
+          (Get-Content thunderstore-client.toml) -replace 'versionNumber = "0.0.0"', "versionNumber = ""$version""" | Set-Content thunderstore-client.toml
+      - name: Publish OdinEye.Client to Thunderstore
+        run: tcli publish --config-path thunderstore-client.toml --token $env:THUNDERSTORE_TOKEN
+        if: ${{ env.THUNDERSTORE_TOKEN != '' }}

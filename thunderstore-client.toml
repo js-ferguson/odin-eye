@@ -1,0 +1,65 @@
+# Thunderstore package config for OdinEye.Client (ODINEYE-21). Built/published
+# via `tcli` (https://github.com/thunderstore-io/thunderstore-cli) from
+# release.yaml, gated behind the THUNDERSTORE_TOKEN secret -- same
+# "only runs if configured" pattern as this repo's NUGET_API_KEY-gated steps.
+# Lives at repo root (not alongside icon.png/README.md in thunderstore/client/)
+# because tcli's [[build.copy]] `source` paths are resolved relative to
+# wherever tcli is invoked from, and CI always runs from the repo root where
+# the client's built dist/OdinEye.Client/ files actually land.
+#
+# NOT verified against a real `tcli build`/`publish` run -- this environment
+# has neither a `dotnet` CLI nor a Thunderstore account/token. First real use
+# should start with a local `tcli build --config-path thunderstore-client.toml`
+# and a manual inspection of the resulting zip before trusting the automated
+# `publish` step.
+
+[config]
+schemaVersion = "0.0.1"
+
+[package]
+namespace = "js-ferguson"
+name = "OdinEyeClient"
+# Placeholder -- release.yaml overwrites this to match the release tag
+# (stripped of its leading "v") before running tcli.
+versionNumber = "0.0.0"
+description = "Optional OdinEye companion: submits your character's real lifetime stats (playtime, deaths, boss kills) to your server's OdinEye instance."
+websiteUrl = "https://github.com/js-ferguson/odin-eye"
+containsNsfwContent = false
+
+[package.dependencies]
+# Keep in sync with whatever BepInEx version this repo's own
+# packages.config files (BepInEx.BaseLib/BepInEx.Core) are actually built
+# and tested against -- check https://valheim.thunderstore.io/package/denikson/BepInExPack_Valheim/
+# for the current version if this ever needs bumping.
+denikson-BepInExPack_Valheim = "5.4.2350"
+
+[build]
+icon = "./thunderstore/client/icon.png"
+readme = "./thunderstore/client/README.md"
+outdir = "./dist/thunderstore"
+
+# Sources match release.yaml's PrepPlugin-driven dist/OdinEye.Client/ output
+# exactly (see OdinEye.Client.csproj's own PrepPlugin target for the
+# authoritative file list) -- target "plugins/" mirrors BepInEx's own
+# folder layout, which is what every mod manager expects inside a
+# Thunderstore package zip.
+[[build.copy]]
+source = "dist/OdinEye.Client/OdinEye.Client.dll"
+target = "plugins/"
+
+[[build.copy]]
+source = "dist/OdinEye.Client/OdinEye.Models.dll"
+target = "plugins/"
+
+[[build.copy]]
+source = "dist/OdinEye.Client/NGuid.dll"
+target = "plugins/"
+
+[[build.copy]]
+source = "dist/OdinEye.Client/Utf8Json.dll"
+target = "plugins/"
+
+[publish]
+repository = "https://thunderstore.io"
+communities = ["valheim"]
+categories = []
