@@ -74,11 +74,12 @@ jobs:
         if: ${{ env.NUGET_API_KEY != '' }}
         run: dotnet nuget push .\nupkg\*.nupkg -k $env:NUGET_API_KEY -s https://api.nuget.org/v3/index.json
 
-      # Publishes OdinEye.Client to Thunderstore (ODINEYE-21) -- only runs
+      # Publishes both packages to Thunderstore (ODINEYE-21/22) -- only runs
       # if THUNDERSTORE_TOKEN is actually configured. NOT verified end-to-end
-      # against a real Thunderstore account -- see thunderstore-client.toml's
-      # own header comment. If this step ever needs debugging, split
-      # `tcli publish` back into a `tcli build` + manual zip inspection first.
+      # against a real Thunderstore account until the two packages' own
+      # first real releases -- see each thunderstore-*.toml's own header
+      # comment. If a publish step ever needs debugging, split `tcli
+      # publish` back into a `tcli build` + manual zip inspection first.
       - uses: actions/setup-dotnet@v3
         if: ${{ env.THUNDERSTORE_TOKEN != '' }}
         with:
@@ -86,15 +87,19 @@ jobs:
       - name: Install tcli
         if: ${{ env.THUNDERSTORE_TOKEN != '' }}
         run: dotnet tool install -g tcli
-      - name: Set Thunderstore package version
+      - name: Set Thunderstore package versions
         if: ${{ env.THUNDERSTORE_TOKEN != '' }}
-        # thunderstore-client.toml's versionNumber is just a placeholder --
+        # Both thunderstore-*.toml's versionNumber is just a placeholder --
         # Thunderstore version numbers have no leading "v", unlike this
         # repo's own git tags/zip filenames.
         shell: pwsh
         run: |
           $version = "${{ github.event.release.tag_name }}" -replace '^v', ''
           (Get-Content thunderstore-client.toml) -replace 'versionNumber = "0.0.0"', "versionNumber = ""$version""" | Set-Content thunderstore-client.toml
+          (Get-Content thunderstore-server.toml) -replace 'versionNumber = "0.0.0"', "versionNumber = ""$version""" | Set-Content thunderstore-server.toml
       - name: Publish OdinEye.Client to Thunderstore
         run: tcli publish --config-path thunderstore-client.toml --token $env:THUNDERSTORE_TOKEN
+        if: ${{ env.THUNDERSTORE_TOKEN != '' }}
+      - name: Publish OdinEye to Thunderstore
+        run: tcli publish --config-path thunderstore-server.toml --token $env:THUNDERSTORE_TOKEN
         if: ${{ env.THUNDERSTORE_TOKEN != '' }}

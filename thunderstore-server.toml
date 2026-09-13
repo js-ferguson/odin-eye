@@ -1,0 +1,90 @@
+# Thunderstore package config for the server-side OdinEye plugin. Mirrors
+# thunderstore-client.toml (see that file's own header comment for the
+# general mechanics: built/published via `tcli`, THUNDERSTORE_TOKEN-gated
+# in release.yaml, source paths resolved relative to wherever tcli is
+# invoked from -- always the repo root in CI, after dist/OdinEye/ has been
+# populated).
+#
+# `categories = ["server-side"]` is a best-effort guess at Thunderstore's
+# actual slug for that category (confirmed the *display* label "Server-side"
+# exists on the Valheim community, not the exact string this field expects)
+# -- if the publish step ever errors specifically on this field, that's
+# the first thing to check/fix, independent of everything else here.
+
+[config]
+schemaVersion = "0.0.1"
+
+[package]
+namespace = "SeasonedProfessionals"
+name = "OdinEye"
+# Placeholder -- release.yaml overwrites this to match the release tag
+# (stripped of its leading "v") before running tcli.
+versionNumber = "0.0.0"
+description = "Valheim dedicated-server plugin exposing game server data through a REST API and WebSocket event stream. Install on your server, not your own machine."
+websiteUrl = "https://github.com/js-ferguson/odin-eye"
+containsNsfwContent = false
+
+[package.dependencies]
+# Keep in sync with thunderstore-client.toml's own copy of this pin.
+denikson-BepInExPack_Valheim = "5.4.2350"
+
+[build]
+icon = "./thunderstore/server/icon.png"
+readme = "./thunderstore/server/README.md"
+outdir = "./dist/thunderstore"
+
+# Sources match release.yaml's PrepPlugin-driven dist/OdinEye/ output
+# exactly (see OdinEye.csproj's own PrepPlugin target for the
+# authoritative file list).
+[[build.copy]]
+source = "dist/OdinEye/OdinEye.dll"
+target = "plugins/"
+
+[[build.copy]]
+source = "dist/OdinEye/OdinEye.Models.dll"
+target = "plugins/"
+
+[[build.copy]]
+source = "dist/OdinEye/NGuid.dll"
+target = "plugins/"
+
+[[build.copy]]
+source = "dist/OdinEye/Utf8Json.dll"
+target = "plugins/"
+
+[[build.copy]]
+source = "dist/OdinEye/WebsocketSharp.Core.dll"
+target = "plugins/"
+
+[[build.copy]]
+source = "dist/OdinEye/protobuf-net.dll"
+target = "plugins/"
+
+[[build.copy]]
+source = "dist/OdinEye/protobuf-net.Core.dll"
+target = "plugins/"
+
+[[build.copy]]
+source = "dist/OdinEye/System.Buffers.dll"
+target = "plugins/"
+
+[[build.copy]]
+source = "dist/OdinEye/System.Collections.Immutable.dll"
+target = "plugins/"
+
+[[build.copy]]
+source = "dist/OdinEye/System.Memory.dll"
+target = "plugins/"
+
+[[build.copy]]
+source = "dist/OdinEye/System.Runtime.CompilerServices.Unsafe.dll"
+target = "plugins/"
+
+[[build.copy]]
+source = "dist/OdinEye/System.Threading.Tasks.Extensions.dll"
+target = "plugins/"
+
+[publish]
+repository = "https://thunderstore.io"
+communities = ["valheim"]
+categories = ["server-side"]
