@@ -12,6 +12,15 @@
         <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
         <LangVersion>9.0</LangVersion>
         <FileAlignment>512</FileAlignment>
+        <!-- OdinEye.Models targets netstandard2.0. SDK-style projects get
+        binding redirects for that automatically; an old-style EXE project
+        does not unless these are set, and without them resolving
+        netstandard at runtime fails on real .NET Framework (CI) even
+        though it is silent on Mono locally. GenerateBindingRedirectsOutputType
+        is required because auto-redirects otherwise only apply to
+        Library/Web outputs, not Exe. -->
+        <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+        <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <PlatformTarget>AnyCPU</PlatformTarget>
@@ -40,13 +49,6 @@
         <Reference Include="nunitlite, Version=3.14.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
           <HintPath>..\..\packages\NUnitLite.3.14.0\lib\net45\nunitlite.dll</HintPath>
         </Reference>
-        <!-- OdinEye.Models targets netstandard2.0, which needs an actual
-        netstandard.dll at runtime under plain .NET Framework (unlike inside
-        the game process, where Mono resolves it without one). Same fix,
-        same file, as OdinEye.csproj's own netstandard reference. -->
-        <Reference Include="netstandard, Version=2.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-          <HintPath>..\..\packages\ValheimGameLibs.0.221.4\lib\netstandard.dll</HintPath>
-        </Reference>
         <Reference Include="System" />
         <Reference Include="System.Core" />
     </ItemGroup>
@@ -57,7 +59,6 @@
         <Compile Include="SubmissionSchedulerTests.cs" />
     </ItemGroup>
     <ItemGroup>
-      <None Include="App.config" />
       <None Include="packages.config" />
     </ItemGroup>
     <ItemGroup>
