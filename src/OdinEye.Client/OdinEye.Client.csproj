@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="..\..\packages\BepInEx.PluginInfoProps.2.1.0\build\BepInEx.PluginInfoProps.props" Condition="Exists('..\..\packages\BepInEx.PluginInfoProps.2.1.0\build\BepInEx.PluginInfoProps.props')" />
+    <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+    <PropertyGroup>
+        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+        <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+        <ProjectGuid>{9A2D6F3B-8C1E-4F5A-B0D7-3E2C1A9B6D4F}</ProjectGuid>
+        <OutputType>Library</OutputType>
+        <AppDesignerFolder>Properties</AppDesignerFolder>
+        <RootNamespace>OdinEye.Client</RootNamespace>
+        <AssemblyName>OdinEye.Client</AssemblyName>
+        <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
+        <LangVersion>9.0</LangVersion>
+        <FileAlignment>512</FileAlignment>
+        <!-- Own property (distinct from OdinEye.csproj's PluginFolder) so
+        release.yaml can stage the server and client packages into separate
+        folders in one solution build without one overwriting the other. -->
+        <ClientPluginFolder>C:/Program Files (x86)/Steam/steamapps/common/Valheim/BepInEx/plugins</ClientPluginFolder>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>full</DebugType>
+        <Optimize>false</Optimize>
+        <OutputPath>bin\Debug\</OutputPath>
+        <DefineConstants>DEBUG;TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugType>pdbonly</DebugType>
+        <Optimize>true</Optimize>
+        <OutputPath>bin\Release\</OutputPath>
+        <DefineConstants>TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+    <ItemGroup>
+        <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>..\..\packages\ValheimGameLibs.0.221.4\lib\Assembly-CSharp.dll</HintPath>
+        </Reference>
+        <Reference Include="assembly_valheim, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>..\..\packages\ValheimGameLibs.0.221.4\lib\assembly_valheim.dll</HintPath>
+        </Reference>
+        <Reference Include="BepInEx, Version=5.4.20.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>..\..\packages\BepInEx.BaseLib.5.4.20\lib\net35\BepInEx.dll</HintPath>
+        </Reference>
+        <Reference Include="com.rlabrecque.steamworks.net, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>..\..\packages\ValheimGameLibs.0.221.4\lib\com.rlabrecque.steamworks.net.dll</HintPath>
+        </Reference>
+        <Reference Include="mscorlib" />
+        <Reference Include="NGuid, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <!-- Not used directly by any .cs file here: OdinEye.Models.dll is
+          what actually calls into NGuid (NameBasedGuid). Kept as a direct
+          reference purely so its CopyLocal lands NGuid.dll in $(TargetDir),
+          same reasoning as OdinEye.csproj's own NGuid reference: a
+          ProjectReference to OdinEye.Models doesn't propagate its NuGet
+          dependencies into this project's output on its own. -->
+          <HintPath>..\..\packages\NGuid.0.2.0\lib\netstandard2.0\NGuid.dll</HintPath>
+        </Reference>
+        <Reference Include="System" />
+        <Reference Include="System.Core" />
+        <Reference Include="System.Net.Http" />
+        <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>..\..\packages\UnityEngine.Modules.2023.2.1\lib\net45\UnityEngine.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>..\..\packages\UnityEngine.Modules.2023.2.1\lib\net45\UnityEngine.CoreModule.dll</HintPath>
+        </Reference>
+        <Reference Include="Utf8Json, Version=1.3.7.0, Culture=neutral, PublicKeyToken=8a73d3ba7e392e27, processorArchitecture=MSIL">
+          <HintPath>..\..\packages\Utf8Json.1.3.7\lib\net47\Utf8Json.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="OdinEyeClientPlugin.cs" />
+        <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Include="Stats\CharacterStatsPayloadBuilder.cs" />
+        <Compile Include="Stats\IPlayerStatsSource.cs" />
+        <Compile Include="Stats\PlayerProfileStatsSource.cs" />
+        <Compile Include="Submission\HttpStatsSubmitter.cs" />
+        <Compile Include="Submission\IStatsSubmitter.cs" />
+        <Compile Include="Submission\SubmissionScheduler.cs" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Include="packages.config" />
+    </ItemGroup>
+    <ItemGroup>
+      <Analyzer Include="..\..\packages\BepInEx.Analyzers.1.0.8\analyzers\dotnet\cs\BepInEx.Analyzers.CodeFixes.dll" />
+      <Analyzer Include="..\..\packages\BepInEx.Analyzers.1.0.8\analyzers\dotnet\cs\BepInEx.Analyzers.dll" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\OdinEye.Models\OdinEye.Models.csproj">
+        <Project>{0c64b257-49e8-4202-bb95-035170eaf5ec}</Project>
+        <Name>OdinEye.Models</Name>
+      </ProjectReference>
+    </ItemGroup>
+    <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+    <Import Project="..\..\packages\BepInEx.Core.5.4.21\build\BepInEx.Core.targets" Condition="Exists('..\..\packages\BepInEx.Core.5.4.21\build\BepInEx.Core.targets')" />
+    <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+      <PropertyGroup>
+        <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105.The missing file is {0}.</ErrorText>
+      </PropertyGroup>
+      <Error Condition="!Exists('..\..\packages\BepInEx.Core.5.4.21\build\BepInEx.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\BepInEx.Core.5.4.21\build\BepInEx.Core.targets'))" />
+      <Error Condition="!Exists('..\..\packages\BepInEx.PluginInfoProps.2.1.0\build\BepInEx.PluginInfoProps.props')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\BepInEx.PluginInfoProps.2.1.0\build\BepInEx.PluginInfoProps.props'))" />
+    </Target>
+
+    <!--Post build task that copies the plugin .dlls to the Valheim BepInEx plugin folder-->
+    <Target Name="PrepPlugin" AfterTargets="Build">
+        <ItemGroup>
+            <PackageItems Include="$(TargetDir)$(AssemblyName).dll" />
+            <PackageItems Include="$(TargetDir)OdinEye.Models.dll" />
+            <PackageItems Include="$(TargetDir)NGuid.dll" />
+            <PackageItems Include="$(TargetDir)Utf8Json.dll" />
+        </ItemGroup>
+        <Copy SourceFiles="@(PackageItems)" DestinationFolder="$(ClientPluginFolder)" SkipUnchangedFiles="true" />
+    </Target>
+
+</Project>

@@ -4,6 +4,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OdinEye", "src\OdinEye\Odin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OdinEye.Models", "src\OdinEye.Models\OdinEye.Models.csproj", "{0C64B257-49E8-4202-BB95-035170EAF5EC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OdinEye.Client", "src\OdinEye.Client\OdinEye.Client.csproj", "{9A2D6F3B-8C1E-4F5A-B0D7-3E2C1A9B6D4F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OdinEye.Client.Tests", "src\OdinEye.Client.Tests\OdinEye.Client.Tests.csproj", "{4B7E1C9A-2D5F-4E3B-9A8C-6F1D0E2B3C4A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +22,13 @@ Global
 		{0C64B257-49E8-4202-BB95-035170EAF5EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C64B257-49E8-4202-BB95-035170EAF5EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0C64B257-49E8-4202-BB95-035170EAF5EC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A2D6F3B-8C1E-4F5A-B0D7-3E2C1A9B6D4F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A2D6F3B-8C1E-4F5A-B0D7-3E2C1A9B6D4F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A2D6F3B-8C1E-4F5A-B0D7-3E2C1A9B6D4F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A2D6F3B-8C1E-4F5A-B0D7-3E2C1A9B6D4F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4B7E1C9A-2D5F-4E3B-9A8C-6F1D0E2B3C4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B7E1C9A-2D5F-4E3B-9A8C-6F1D0E2B3C4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B7E1C9A-2D5F-4E3B-9A8C-6F1D0E2B3C4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B7E1C9A-2D5F-4E3B-9A8C-6F1D0E2B3C4A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

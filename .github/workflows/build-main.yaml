@@ -19,3 +19,6 @@ jobs:
         run: nuget restore OdinEye.sln
       - name: Build solution
         run: msbuild OdinEye.sln -t:rebuild -property:Configuration=Release
+
+      - name: Run OdinEye.Client test suite
+        run: .\src\OdinEye.Client.Tests\bin\Release\OdinEye.Client.Tests.exe

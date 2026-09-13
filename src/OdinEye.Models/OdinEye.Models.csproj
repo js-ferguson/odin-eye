@@ -12,6 +12,7 @@
 
     <ItemGroup>
       <PackageReference Include="protobuf-net" Version="3.2.30" />
+      <PackageReference Include="NGuid" Version="0.2.0" />
     </ItemGroup>
 
 </Project>

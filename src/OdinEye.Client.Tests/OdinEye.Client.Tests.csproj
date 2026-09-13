@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+    <PropertyGroup>
+        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+        <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+        <ProjectGuid>{4B7E1C9A-2D5F-4E3B-9A8C-6F1D0E2B3C4A}</ProjectGuid>
+        <OutputType>Exe</OutputType>
+        <AppDesignerFolder>Properties</AppDesignerFolder>
+        <RootNamespace>OdinEye.Client.Tests</RootNamespace>
+        <AssemblyName>OdinEye.Client.Tests</AssemblyName>
+        <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
+        <LangVersion>9.0</LangVersion>
+        <FileAlignment>512</FileAlignment>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>full</DebugType>
+        <Optimize>false</Optimize>
+        <OutputPath>bin\Debug\</OutputPath>
+        <DefineConstants>DEBUG;TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugType>pdbonly</DebugType>
+        <Optimize>true</Optimize>
+        <OutputPath>bin\Release\</OutputPath>
+        <DefineConstants>TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+    <ItemGroup>
+        <Reference Include="mscorlib" />
+        <Reference Include="nunit.framework, Version=3.14.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+          <HintPath>..\..\packages\NUnit.3.14.0\lib\net45\nunit.framework.dll</HintPath>
+        </Reference>
+        <Reference Include="nunitlite, Version=3.14.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+          <HintPath>..\..\packages\NUnitLite.3.14.0\lib\net45\nunitlite.dll</HintPath>
+        </Reference>
+        <Reference Include="System" />
+        <Reference Include="System.Core" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="CharacterStatsPayloadBuilderTests.cs" />
+        <Compile Include="Program.cs" />
+        <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Include="SubmissionSchedulerTests.cs" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Include="packages.config" />
+    </ItemGroup>
+    <ItemGroup>
+      <!-- Only the pure/testable classes (Stats/CharacterStatsPayloadBuilder,
+      Submission/SubmissionScheduler) are exercised here. Referencing the
+      whole OdinEye.Client assembly is still safe even though this test
+      project never loads BepInEx/Unity/Valheim: the CLR resolves an
+      assembly lazily, only when a type from it is actually touched, and
+      these tests never touch OdinEyeClientPlugin, PlayerProfileStatsSource
+      or HttpStatsSubmitter. -->
+      <ProjectReference Include="..\OdinEye.Client\OdinEye.Client.csproj">
+        <Project>{9a2d6f3b-8c1e-4f5a-b0d7-3e2c1a9b6d4f}</Project>
+        <Name>OdinEye.Client</Name>
+      </ProjectReference>
+      <!-- CharacterStatsPayloadBuilder.Build returns OdinEye.Models.Api.CharacterStatsSubmission,
+      so the tests need a direct reference to it too (C# requires this even
+      though OdinEye.Client already references it transitively). -->
+      <ProjectReference Include="..\OdinEye.Models\OdinEye.Models.csproj">
+        <Project>{0c64b257-49e8-4202-bb95-035170eaf5ec}</Project>
+        <Name>OdinEye.Models</Name>
+      </ProjectReference>
+    </ItemGroup>
+    <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
