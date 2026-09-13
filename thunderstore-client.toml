@@ -17,7 +17,7 @@
 schemaVersion = "0.0.1"
 
 [package]
-namespace = "js-ferguson"
+namespace = "SeasonedProfessionals"
 name = "OdinEyeClient"
 # Placeholder -- release.yaml overwrites this to match the release tag
 # (stripped of its leading "v") before running tcli.
