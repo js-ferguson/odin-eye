@@ -400,7 +400,9 @@
         <Compile Include="Extensions\ZNetExtensions.cs" />
         <Compile Include="Extensions\ZNetPeerExtensions.cs" />
         <Compile Include="Http\Api\Controllers\BossDetailsController.cs" />
+        <Compile Include="Http\Api\Controllers\CharacterStatsController.cs" />
         <Compile Include="Http\Api\Controllers\IController.cs" />
+        <Compile Include="Http\Api\Controllers\IPostController.cs" />
         <Compile Include="Http\Api\Controllers\PlayersController.cs" />
         <Compile Include="Http\Api\Controllers\ServerDetailsController.cs" />
         <Compile Include="Http\Api\Controllers\WorldDetailsController.cs" />

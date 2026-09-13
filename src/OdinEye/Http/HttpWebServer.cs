@@ -22,7 +22,8 @@
             new PlayersController(),
             new ServerDetailsController(),
             new WorldDetailsController(),
-            new BossDetailsController()
+            new BossDetailsController(),
+            new CharacterStatsController()
         };
 
         public HttpWebServer(string address, ILogger logger)
@@ -56,6 +57,42 @@
 
                         break;
                     }
+                }
+            };
+
+            httpServer.OnPost += (sender, args) =>
+            {
+                foreach (var controller in controllers)
+                {
+                    if (!(controller is IPostController postController))
+                    {
+                        continue;
+                    }
+
+                    var rawUrl = args.Request.RawUrl;
+                    var minimumLengthForNonEmptyParameter = postController.RoutePrefix.Length + postController.RouteSuffix.Length;
+                    if (rawUrl.Length <= minimumLengthForNonEmptyParameter ||
+                        !rawUrl.StartsWith(postController.RoutePrefix) ||
+                        !rawUrl.EndsWith(postController.RouteSuffix))
+                    {
+                        continue;
+                    }
+
+                    var routeParameter = rawUrl.Substring(
+                        postController.RoutePrefix.Length,
+                        rawUrl.Length - postController.RoutePrefix.Length - postController.RouteSuffix.Length);
+
+                    try
+                    {
+                        postController.OnPost(args, routeParameter);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError($"Unhandled exception in {controller.GetType().Name} for {args.Request.RawUrl}: {ex}");
+                        args.Response.Error();
+                    }
+
+                    break;
                 }
             };
         }
