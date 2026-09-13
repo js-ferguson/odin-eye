@@ -62,6 +62,8 @@ target = "plugins/"
 [publish]
 repository = "https://thunderstore.io"
 communities = ["valheim"]
-# Best-effort guess at the actual category slug, same caveat as
-# thunderstore-server.toml's own "server-side" entry.
+# Confirmed-correct slug, but not actually applied by tcli 0.2.4 on
+# publish -- see thunderstore-server.toml's matching comment. Set
+# manually via the Thunderstore website instead; that sticks across
+# future automated releases regardless of what this field does.
 categories = ["client-side"]

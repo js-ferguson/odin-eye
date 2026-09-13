@@ -5,11 +5,16 @@
 # invoked from -- always the repo root in CI, after dist/OdinEye/ has been
 # populated).
 #
-# `categories = ["server-side"]` is a best-effort guess at Thunderstore's
-# actual slug for that category (confirmed the *display* label "Server-side"
-# exists on the Valheim community, not the exact string this field expects)
-# -- if the publish step ever errors specifically on this field, that's
-# the first thing to check/fix, independent of everything else here.
+# `categories = ["server-side"]` below is the confirmed-correct slug
+# (checked directly against https://thunderstore.io/api/experimental/community/valheim/category/),
+# but tcli 0.2.4 doesn't actually apply it on publish -- both this package
+# and OdinEyeClient came back with an empty categories list after their
+# first real publish despite this field being set. Categories were set
+# manually instead, once, via the Thunderstore website (team -> package ->
+# categories) -- that's a property of the package's community listing, not
+# of each version, so it isn't reset by future automated releases even
+# though this field keeps doing nothing. Left in place in case a future
+# tcli version actually wires this up.
 
 [config]
 schemaVersion = "0.0.1"
