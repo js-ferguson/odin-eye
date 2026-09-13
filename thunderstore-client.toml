@@ -62,4 +62,6 @@ target = "plugins/"
 [publish]
 repository = "https://thunderstore.io"
 communities = ["valheim"]
-categories = []
+# Best-effort guess at the actual category slug, same caveat as
+# thunderstore-server.toml's own "server-side" entry.
+categories = ["client-side"]
