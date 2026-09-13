@@ -12,15 +12,6 @@
         <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
         <LangVersion>9.0</LangVersion>
         <FileAlignment>512</FileAlignment>
-        <!-- OdinEye.Models targets netstandard2.0. SDK-style projects get
-        binding redirects for that automatically; an old-style EXE project
-        does not unless these are set, and without them resolving
-        netstandard at runtime fails on real .NET Framework (CI) even
-        though it is silent on Mono locally. GenerateBindingRedirectsOutputType
-        is required because auto-redirects otherwise only apply to
-        Library/Web outputs, not Exe. -->
-        <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-        <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
         <PlatformTarget>AnyCPU</PlatformTarget>
@@ -49,6 +40,22 @@
         <Reference Include="nunitlite, Version=3.14.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
           <HintPath>..\..\packages\NUnitLite.3.14.0\lib\net45\nunitlite.dll</HintPath>
         </Reference>
+        <!-- OdinEye.Models targets netstandard2.0, which needs a real,
+        validly-signed netstandard.dll present at runtime under plain .NET
+        Framework (the game process's Mono runtime resolves this without
+        one, which is why this was silent locally and in the live BepInEx
+        test but not on CI). Two earlier attempts failed: relying on
+        implicit/GAC resolution alone (file not found on the CI image), and
+        shipping ValheimGameLibs' netstandard.dll (present, but fails
+        strong-name validation, likely modified by a BepInEx-adjacent
+        publicizing step). This is Microsoft's own, unmodified reference
+        assembly instead, paired with the matching bindingRedirect in
+        App.config below (its self-identified version is 2.0.0.0, not the
+        2.1.0.0 real MSBuild on Windows requests implicitly). -->
+        <Reference Include="netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+          <HintPath>..\..\packages\Microsoft.NETFramework.ReferenceAssemblies.net481.1.0.3\build\.NETFramework\v4.8.1\Facades\netstandard.dll</HintPath>
+          <Private>true</Private>
+        </Reference>
         <Reference Include="System" />
         <Reference Include="System.Core" />
     </ItemGroup>
@@ -59,6 +66,7 @@
         <Compile Include="SubmissionSchedulerTests.cs" />
     </ItemGroup>
     <ItemGroup>
+      <None Include="App.config" />
       <None Include="packages.config" />
     </ItemGroup>
     <ItemGroup>
