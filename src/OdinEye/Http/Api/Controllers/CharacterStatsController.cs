@@ -1,6 +1,7 @@
 namespace OdinEye.Http.Api.Controllers
 {
     using Extensions;
+    using Models;
     using Models.Api;
     using System;
     using System.Collections.Concurrent;

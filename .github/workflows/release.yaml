@@ -24,31 +24,38 @@ jobs:
         uses: NuGet/setup-nuget@v1.0.5
       - name: Restore Packages
         run: nuget restore OdinEye.sln
-      - name: Build plugin package
-        # PluginFolder overrides OdinEye.csproj's own PrepPlugin post-build
-        # target (normally a hardcoded local Steam path) so it stages the
-        # plugin's actual runtime file set -- OdinEye.dll plus its
-        # third-party dependencies, not the Unity/Valheim/BepInEx reference
-        # assemblies those are compiled against -- into a workspace-local
-        # folder we can zip up below. That target is the single source of
-        # truth for which files ship; this workflow never duplicates the list.
-        run: msbuild OdinEye.sln -t:rebuild -property:Configuration=Release -property:PluginFolder=${{ github.workspace }}\dist\OdinEye
+      - name: Build server and client plugin packages
+        # PluginFolder/ClientPluginFolder override OdinEye.csproj's and
+        # OdinEye.Client.csproj's own PrepPlugin post-build targets (normally
+        # hardcoded local Steam paths) so each stages its actual runtime
+        # file set -- the plugin dll plus its third-party dependencies, not
+        # the Unity/Valheim/BepInEx reference assemblies those are compiled
+        # against -- into a workspace-local folder we can zip up below. Those
+        # targets are the single source of truth for which files ship; this
+        # workflow never duplicates either list.
+        run: msbuild OdinEye.sln -t:rebuild -property:Configuration=Release -property:PluginFolder=${{ github.workspace }}\dist\OdinEye -property:ClientPluginFolder=${{ github.workspace }}\dist\OdinEye.Client
 
-      - name: Zip plugin package
-        # Contents at the zip's root (no wrapping folder) -- matches what
+      - name: Zip plugin packages
+        # Contents at each zip's root (no wrapping folder) -- matches what
         # valheim_server's mods-install-manual.sh expects when it extracts
         # a manually-uploaded/GitHub-sourced zip straight into the mod's
-        # plugins/ subfolder.
+        # plugins/ subfolder. The client package is optional for players
+        # (ODINEYE-20): installing it only adds client-submitted character
+        # stats to what the server-side package already provides on its own.
         shell: pwsh
-        run: Compress-Archive -Path "dist/OdinEye/*" -DestinationPath "dist/OdinEye-${{ github.event.release.tag_name }}.zip"
+        run: |
+          Compress-Archive -Path "dist/OdinEye/*" -DestinationPath "dist/OdinEye-${{ github.event.release.tag_name }}.zip"
+          Compress-Archive -Path "dist/OdinEye.Client/*" -DestinationPath "dist/OdinEye.Client-${{ github.event.release.tag_name }}.zip"
 
-      - name: Upload release asset
+      - name: Upload release assets
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # Attaches to the SAME release that triggered this workflow, so
         # admin panels/tools that pick "the one .zip on the latest release"
         # (e.g. valheim_server's GitHub-mod-install) find it immediately.
-        run: gh release upload "${{ github.event.release.tag_name }}" "dist/OdinEye-${{ github.event.release.tag_name }}.zip" --clobber
+        # Two assets now ship per release: the server plugin (required) and
+        # the optional client plugin.
+        run: gh release upload "${{ github.event.release.tag_name }}" "dist/OdinEye-${{ github.event.release.tag_name }}.zip" "dist/OdinEye.Client-${{ github.event.release.tag_name }}.zip" --clobber
 
       # Publishes OdinEye.Models to nuget.org -- upstream-specific, and
       # only runs if NUGET_API_KEY is actually configured on this repo.

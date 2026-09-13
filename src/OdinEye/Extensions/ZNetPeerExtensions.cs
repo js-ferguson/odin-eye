@@ -1,5 +1,6 @@
 ﻿namespace OdinEye.Extensions
 {
+    using Models;
     using Models.Proto;
 
     public static class ZNetPeerExtensions
