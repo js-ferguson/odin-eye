@@ -40,6 +40,13 @@
         <Reference Include="nunitlite, Version=3.14.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
           <HintPath>..\..\packages\NUnitLite.3.14.0\lib\net45\nunitlite.dll</HintPath>
         </Reference>
+        <!-- OdinEye.Models targets netstandard2.0, which needs an actual
+        netstandard.dll at runtime under plain .NET Framework (unlike inside
+        the game process, where Mono resolves it without one). Same fix,
+        same file, as OdinEye.csproj's own netstandard reference. -->
+        <Reference Include="netstandard, Version=2.1.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+          <HintPath>..\..\packages\ValheimGameLibs.0.221.4\lib\netstandard.dll</HintPath>
+        </Reference>
         <Reference Include="System" />
         <Reference Include="System.Core" />
     </ItemGroup>
@@ -50,6 +57,7 @@
         <Compile Include="SubmissionSchedulerTests.cs" />
     </ItemGroup>
     <ItemGroup>
+      <None Include="App.config" />
       <None Include="packages.config" />
     </ItemGroup>
     <ItemGroup>
