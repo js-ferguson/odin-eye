@@ -17,6 +17,7 @@
             {
                 DayNumber = EnvMan.instance.GetCurrentDay(),
                 DayCycle = GetDayCycle(),
+                NetTime = ZNet.instance.GetTimeSeconds(),
                 WorldName = ZNet.instance.GetWorldName(),
                 SeedName = ZNet.m_world.m_seedName,
                 WorldKeys = ZNet.m_world.m_startingGlobalKeys,
