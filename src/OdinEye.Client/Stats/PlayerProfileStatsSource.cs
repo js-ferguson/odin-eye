@@ -30,7 +30,19 @@ namespace OdinEye.Client.Stats
             }
 
             var stats = new Dictionary<string, float>();
-            var statValues = profile.m_playerStats?.m_stats;
+            // Was profile.m_playerStats?.m_stats -- a "PlayerStats" wrapper
+            // this code assumed sat between PlayerProfile and the actual
+            // Dictionary<PlayerStatType, float>. Confirmed via IL
+            // disassembly of the real, currently-running game assembly
+            // (Valheim l-1.0.12, network version 40) that no such wrapper
+            // exists: m_stats is a field directly on PlayerProfile itself.
+            // The old path threw MissingFieldException on every single
+            // Update() tick (silently retried, since SubmitCurrentStats'
+            // own caller swallows exceptions per-tick rather than crashing
+            // the game) -- confirmed live: a real player's OdinEye.Client
+            // never submitted anything, ever, despite loading and being
+            // correctly configured, until this fix.
+            var statValues = profile.m_stats;
 
             foreach (PlayerStatType statType in Enum.GetValues(typeof(PlayerStatType)))
             {
