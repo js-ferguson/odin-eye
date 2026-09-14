@@ -18,46 +18,51 @@ namespace OdinEye.Client.Stats
     // ValheimGameLibs compile-time reference package (the publicized/
     // stripped game-assembly stubs it builds against) has no version newer
     // than 0.221.4 published anywhere -- confirmed live against nuget.org's
-    // full version list -- while the actual live game is 1.0.x. A live
-    // player's real BepInEx log caught this exact gap: the original code
-    // (profile.m_playerStats?.m_stats, assuming a "PlayerStats" wrapper
-    // between PlayerProfile and its real stats dictionary) compiled fine
-    // against that stub but threw MissingFieldException against the real,
-    // running 1.0.12 assembly on every single submission attempt --
-    // confirmed live: no real player's OdinEye.Client has EVER
-    // successfully submitted anything, despite loading and being correctly
-    // configured. A straight field-name fix (PlayerProfile.m_stats
-    // directly, the real 1.0.12 shape, confirmed via IL disassembly of the
-    // actual running server's assembly_valheim.dll) turned out not to
-    // compile either -- surfacing that this project's own local copy of
-    // the 0.221.4 stub no longer agrees with whatever CI's fresh restore
-    // of that exact same nominal package version actually contains, an
-    // unresolved discrepancy not worth chasing further. Reflection
-    // sidesteps the whole question: it resolves against whatever the
-    // REAL game assembly loaded at runtime actually looks like, not
-    // whatever shape happened to be available to compile against.
+    // full version list -- while the actual live game is 1.0.x.
+    //
+    // The real shape, confirmed via IL disassembly (ikdasm) of the actual
+    // running server's assembly_valheim.dll, PlayerProfile class:
+    //   .field public initonly class PlayerProfile/PlayerStats[] m_playerStats
+    // -- a fixed 10-element array, NOT a single wrapper object. The nested
+    // PlayerProfile.PlayerStats class is what actually declares m_stats
+    // (Dictionary<PlayerStatType, float>), m_knownWorlds, and the rest of
+    // the per-category dictionaries. PlayerProfile's own GetStat/SetStat
+    // methods always read/write index 0 for a normal (non-achievement-
+    // difficulty-specific) stat -- confirmed by a `c_RawStats = 0` literal
+    // constant on PlayerProfile and by GetStat/SetStat's own IL, which
+    // falls back to `m_playerStats[0]` whenever achievement tracking is
+    // off (Achievements.CanGetAchievements(false)) and always writes index
+    // 0 unconditionally in SetStat. Index 0 is therefore the real lifetime
+    // "raw stats" slot we want; the other 9 slots are per-achievement-
+    // difficulty variants, not per-world or per-session data.
+    //
+    // Two real, sequentially-discovered bugs shipped and were fixed here
+    // before this shape was confirmed (see PRs #17/#18): both assumed
+    // m_playerStats was a single object with its own m_stats/m_knownWorlds
+    // fields, so GetFieldValue(wrapper, "m_stats") always returned null
+    // (arrays have no such field) -- no exception, just every stat silently
+    // defaulting to 0. That's a real player's actual confirmed symptom
+    // (v1.2.8: submission succeeded, every stat included, every value 0)
+    // once the earlier MissingFieldException/missing-dependency bugs were
+    // fixed -- fixed for real now by indexing into the array first.
     public sealed class PlayerProfileStatsSource : IPlayerStatsSource
     {
         // Not one of PlayerStatType's values -- Valheim tracks total real
         // playtime separately, as per-world seconds in
-        // PlayerProfile.m_knownWorlds (see Decision 1 / ODINEYE-13). Summed
-        // here into one lifetime total.
+        // PlayerProfile.PlayerStats.m_knownWorlds (see Decision 1 /
+        // ODINEYE-13). Summed here into one lifetime total.
         public const string PlayTimeSecondsKey = "PlayTimeSeconds";
 
-        // EVERY PlayerProfile field this class reads goes through
-        // GetFieldValue() below, none accessed directly -- confirmed live
-        // that even m_knownWorlds, originally assumed stable enough to
-        // read directly, throws the exact same MissingFieldException class
-        // of failure the stats dictionary did (see this file's own header
-        // comment for the full story). The two don't even agree with each
-        // other: IL disassembly of the SERVER's own assembly_valheim.dll
-        // shows m_knownWorlds present and public on PlayerProfile, but a
-        // real player's client build throws looking for that exact field
-        // at runtime -- client and dedicated-server builds evidently don't
-        // share one consistent PlayerProfile layout. Reflection resolved
-        // fresh against whatever's actually loaded is the only thing that
-        // has held up under real testing; no field on this type gets a
-        // second exemption from that.
+        // Matches PlayerProfile's own c_RawStats literal (confirmed via IL
+        // disassembly) -- the array slot GetStat/SetStat treat as the real,
+        // always-updated lifetime stats when achievement-difficulty
+        // tracking isn't in play.
+        private const int RawStatsIndex = 0;
+
+        // EVERY PlayerProfile/PlayerStats field this class reads goes
+        // through GetFieldValue() below, none accessed directly -- see
+        // this file's header comment for why (compile-time stub staleness,
+        // not caution for its own sake).
         private static object GetFieldValue(object target, string fieldName)
         {
             if (target == null)
@@ -66,6 +71,20 @@ namespace OdinEye.Client.Stats
             }
             var field = target.GetType().GetField(fieldName, BindingFlags.Public | BindingFlags.Instance);
             return field?.GetValue(target);
+        }
+
+        // PlayerProfile.m_playerStats[RawStatsIndex] -- see this class's
+        // header comment for why index 0 specifically. Returned as a plain
+        // object (its real type, PlayerProfile.PlayerStats, isn't
+        // available to compile against either); reflected into again by
+        // callers via GetFieldValue().
+        private static object GetRawPlayerStats(object profile)
+        {
+            if (!(GetFieldValue(profile, "m_playerStats") is Array statsArray) || statsArray.Length <= RawStatsIndex)
+            {
+                return null;
+            }
+            return statsArray.GetValue(RawStatsIndex);
         }
 
         public IReadOnlyDictionary<string, float> GetStats()
@@ -77,7 +96,8 @@ namespace OdinEye.Client.Stats
             }
 
             var stats = new Dictionary<string, float>();
-            var statValues = GetStatsDictionary(profile);
+            var rawPlayerStats = GetRawPlayerStats(profile);
+            var statValues = GetFieldValue(rawPlayerStats, "m_stats") as IDictionary;
 
             foreach (PlayerStatType statType in Enum.GetValues(typeof(PlayerStatType)))
             {
@@ -90,7 +110,7 @@ namespace OdinEye.Client.Stats
             }
 
             float totalPlaytime = 0f;
-            if (GetFieldValue(profile, "m_knownWorlds") is IDictionary knownWorlds)
+            if (GetFieldValue(rawPlayerStats, "m_knownWorlds") is IDictionary knownWorlds)
             {
                 foreach (var value in knownWorlds.Values)
                 {
@@ -100,28 +120,6 @@ namespace OdinEye.Client.Stats
             stats[PlayTimeSecondsKey] = totalPlaytime;
 
             return stats;
-        }
-
-        // Tries PlayerProfile.m_stats directly first (confirmed live to be
-        // the real shape on the SERVER's own assembly, at least); falls
-        // back to the older PlayerProfile.m_playerStats.m_stats wrapper
-        // path (the shape this code originally assumed) if the direct
-        // field genuinely isn't there. Both paths go through
-        // GetFieldValue() -- see this class's own field-access comment.
-        private static IDictionary GetStatsDictionary(PlayerProfile profile)
-        {
-            if (GetFieldValue(profile, "m_stats") is IDictionary direct)
-            {
-                return direct;
-            }
-
-            var wrapper = GetFieldValue(profile, "m_playerStats");
-            if (wrapper == null)
-            {
-                return null;
-            }
-
-            return GetFieldValue(wrapper, "m_stats") as IDictionary;
         }
     }
 }
