@@ -23,6 +23,7 @@
             new ServerDetailsController(),
             new WorldDetailsController(),
             new BossDetailsController(),
+            new WorldModifiersController(),
             new CharacterStatsController()
         };
 
