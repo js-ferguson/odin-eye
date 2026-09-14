@@ -11,13 +11,17 @@ namespace OdinEye.Models.Api
     // scope in the same file.
     public class WorldModifiersDetails
     {
+        // Always all five categories (combat, deathpenalty, resources,
+        // raids, portals) -- see WorldModifiersController's own comment
+        // for exactly where this data comes from (the world's own
+        // "preset" global key, empirically confirmed, not guessed).
         public IEnumerable<WorldModifierValue> Modifiers { get; set; } = Enumerable.Empty<WorldModifierValue>();
 
-        // Valheim's own F2 in-game overlay renders this exact text --
-        // included as a low-risk fallback alongside the structured
-        // Modifiers list above, in case any individual category's enum
-        // reflection below doesn't resolve to something meaningful the
-        // first time this actually compiles/runs (see ODINEYE-23).
+        // A short human-readable line built from Modifiers itself (e.g.
+        // "portals: casual", or "Default" when every category is
+        // untouched) -- not Valheim's own F2 overlay text, which would
+        // need calling into ServerOptionsGUI's Unity-UI-coupled internals
+        // (see WorldModifiersController's comment on why that was dropped).
         public string Summary { get; set; }
     }
 }
