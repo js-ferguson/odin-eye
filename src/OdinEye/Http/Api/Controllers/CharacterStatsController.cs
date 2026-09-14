@@ -106,8 +106,27 @@ namespace OdinEye.Http.Api.Controllers
             requestArguments.Response.Ok(new AcceptedResponse());
         }
 
+        // Deliberately NOT ZNet.instance.GetAllPeers() (the extension used by
+        // PlayersController/GameStatsSnapshotCoroutine for live health/
+        // stamina data): that one only yields a peer once it also has a
+        // live character ZDO (ZDOMan.instance.GetZDO(peer.m_characterID) !=
+        // null), which is a real, confirmed-live race against
+        // OdinEyeClientPlugin submitting on its very first Update() tick
+        // after spawning -- the client's own log ("Character ID for player
+        // (..., 0:0). Skipping.") shows the character ID can genuinely
+        // still read as 0:0 at that exact instant. That gate exists for a
+        // different reason (PlayersController needs real health/stamina
+        // numbers, which do need a live ZDO) and has nothing to do with
+        // "is this GUID a currently-connected, authenticated player" --
+        // all this needs is the peer's identity, which ZNetPatch's own
+        // RPC_PeerInfo handler shows is reliably available (peer.m_socket/
+        // peer.m_playerName) from the moment a peer joins, well before any
+        // character spawns. Iterating ZNet.instance.m_peers directly via
+        // ZNetPeerExtensions.ToPlayer() (the same identity computation,
+        // matching peer.SteamId/peer.Name field-for-field) avoids the race
+        // entirely (ODINEYE-25).
         private static bool IsConnectedPlayer(Guid playerId) =>
-            ZNet.instance.GetAllPeers().Any(peer => NameBasedGuid.NewPlayerGuid(peer.SteamId, peer.Name) == playerId);
+            ZNet.instance.m_peers.Any(peer => peer.ToPlayer().Id == playerId);
 
         private static bool IsValidStatValue(float value, float previousValue)
         {
