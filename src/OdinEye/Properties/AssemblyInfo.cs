@@ -13,10 +13,15 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
-// Setting ComVisible to false makes the types in this assembly not visible 
-// to COM components.  If you need to access a type in this assembly from 
+// Setting ComVisible to false makes the types in this assembly not visible
+// to COM components.  If you need to access a type in this assembly from
 // COM, set the ComVisible attribute to true on that type.
 [assembly: ComVisible(false)]
+
+// Lets OdinEye.Tests exercise internal-but-pure logic (e.g.
+// CharacterStatsController.IsValidStatValue) directly, without widening
+// the actual public API surface (ODINEYE-18).
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("OdinEye.Tests")]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("6BC0320E-49F2-4A19-BE85-E909D6852C1C")]
