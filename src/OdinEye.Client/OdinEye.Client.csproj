@@ -64,6 +64,23 @@
         <Reference Include="System" />
         <Reference Include="System.Core" />
         <Reference Include="System.Net.Http" />
+        <Reference Include="System.Threading.Tasks.Extensions, Version=4.1.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+          <!-- Not used directly by any .cs file here: Utf8Json itself
+          references this assembly (confirmed via monodis's assemblyref
+          dump against the actual Utf8Json.dll this project builds
+          against; it's the ValueTask-support assembly for pre-.NET-4.5-
+          ValueTask platforms). A ProjectReference/package Reference to
+          Utf8Json doesn't propagate ITS OWN NuGet dependencies into this
+          project's Reference list or output on its own (old-style
+          packages.config csproj, unlike PackageReference-style, never
+          auto-flows transitive references), same reasoning as this
+          file's existing NGuid reference. Without this, the built plugin
+          loads fine but throws a FileNotFoundException/FileLoadException
+          the first time Utf8Json actually serializes anything, i.e. the
+          first real stats submission, confirmed live against a real
+          player's BepInEx log. -->
+          <HintPath>..\..\packages\System.Threading.Tasks.Extensions.4.4.0\lib\netstandard2.0\System.Threading.Tasks.Extensions.dll</HintPath>
+        </Reference>
         <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
           <HintPath>..\..\packages\UnityEngine.Modules.2023.2.1\lib\net45\UnityEngine.dll</HintPath>
         </Reference>
@@ -114,6 +131,7 @@
             <PackageItems Include="$(TargetDir)OdinEye.Models.dll" />
             <PackageItems Include="$(TargetDir)NGuid.dll" />
             <PackageItems Include="$(TargetDir)Utf8Json.dll" />
+            <PackageItems Include="$(TargetDir)System.Threading.Tasks.Extensions.dll" />
         </ItemGroup>
         <Copy SourceFiles="@(PackageItems)" DestinationFolder="$(ClientPluginFolder)" SkipUnchangedFiles="true" />
     </Target>
