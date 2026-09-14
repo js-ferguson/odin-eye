@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+    <PropertyGroup>
+        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+        <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+        <ProjectGuid>{B066E3BC-4011-4A34-AE0C-559EC04CEAC5}</ProjectGuid>
+        <OutputType>Exe</OutputType>
+        <AppDesignerFolder>Properties</AppDesignerFolder>
+        <RootNamespace>OdinEye.Tests</RootNamespace>
+        <AssemblyName>OdinEye.Tests</AssemblyName>
+        <TargetFrameworkVersion>v4.8.1</TargetFrameworkVersion>
+        <LangVersion>9.0</LangVersion>
+        <FileAlignment>512</FileAlignment>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugSymbols>true</DebugSymbols>
+        <DebugType>full</DebugType>
+        <Optimize>false</Optimize>
+        <OutputPath>bin\Debug\</OutputPath>
+        <DefineConstants>DEBUG;TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+        <PlatformTarget>AnyCPU</PlatformTarget>
+        <DebugType>pdbonly</DebugType>
+        <Optimize>true</Optimize>
+        <OutputPath>bin\Release\</OutputPath>
+        <DefineConstants>TRACE</DefineConstants>
+        <ErrorReport>prompt</ErrorReport>
+        <WarningLevel>4</WarningLevel>
+    </PropertyGroup>
+    <ItemGroup>
+        <Reference Include="mscorlib" />
+        <Reference Include="nunit.framework, Version=3.14.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+          <HintPath>..\..\packages\NUnit.3.14.0\lib\net45\nunit.framework.dll</HintPath>
+        </Reference>
+        <Reference Include="nunitlite, Version=3.14.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
+          <HintPath>..\..\packages\NUnitLite.3.14.0\lib\net45\nunitlite.dll</HintPath>
+        </Reference>
+        <!-- Same reasoning as OdinEye.Client.Tests.csproj's own copy of
+        this reference: OdinEye.Models targets netstandard2.0, which needs
+        a real, validly-signed netstandard.dll present at runtime under
+        plain .NET Framework. -->
+        <Reference Include="netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+          <HintPath>..\..\packages\Microsoft.NETFramework.ReferenceAssemblies.net481.1.0.3\build\.NETFramework\v4.8.1\Facades\netstandard.dll</HintPath>
+          <Private>true</Private>
+        </Reference>
+        <Reference Include="NGuid, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <!-- Not used directly by any .cs file here: OdinEye.Models.dll
+          is what actually calls into NGuid (NameBasedGuid). Kept as a
+          direct reference purely so its CopyLocal lands NGuid.dll in
+          $(TargetDir), since an old-style ProjectReference to an
+          SDK-style netstandard2.0 project (OdinEye.Models) doesn't
+          propagate ITS OWN NuGet dependencies into this project's
+          output on its own, same reasoning as OdinEye.Client.csproj's/
+          OdinEye.csproj's own identical NGuid reference. Confirmed
+          live: without this, NameBasedGuid.NewPlayerGuid throws
+          FileNotFoundException at test-run time despite compiling and
+          building fine. -->
+          <HintPath>..\..\packages\NGuid.0.2.0\lib\netstandard2.0\NGuid.dll</HintPath>
+        </Reference>
+        <Reference Include="System" />
+        <Reference Include="System.Core" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="CharacterStatsControllerValidationTests.cs" />
+        <Compile Include="NameBasedGuidTests.cs" />
+        <Compile Include="PeerExtensionsTests.cs" />
+        <Compile Include="Program.cs" />
+        <Compile Include="Properties\AssemblyInfo.cs" />
+    </ItemGroup>
+    <ItemGroup>
+      <None Include="App.config" />
+      <None Include="packages.config" />
+    </ItemGroup>
+    <ItemGroup>
+      <!-- Only pure logic is exercised here (NameBasedGuid, PeerExtensions,
+      CharacterStatsController.IsValidStatValue). Referencing the whole
+      OdinEye assembly is still safe even though this test project never
+      loads BepInEx/Unity/Valheim: the CLR resolves an assembly lazily,
+      only when a type from it is actually touched, and these tests never
+      touch anything that calls into ZNet.instance/EnvMan.instance/
+      ZDOMan.instance (ODINEYE-18; see that ticket for why the rest of
+      OdinEye stays integration-tested only for now). -->
+      <ProjectReference Include="..\OdinEye\OdinEye.csproj">
+        <Project>{6bc0320e-49f2-4a19-be85-e909d6852c1c}</Project>
+        <Name>OdinEye</Name>
+      </ProjectReference>
+      <ProjectReference Include="..\OdinEye.Models\OdinEye.Models.csproj">
+        <Project>{0c64b257-49e8-4202-bb95-035170eaf5ec}</Project>
+        <Name>OdinEye.Models</Name>
+      </ProjectReference>
+    </ItemGroup>
+    <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -128,7 +128,12 @@ namespace OdinEye.Http.Api.Controllers
         private static bool IsConnectedPlayer(Guid playerId) =>
             ZNet.instance.m_peers.Any(peer => peer.ToPlayer().Id == playerId);
 
-        private static bool IsValidStatValue(float value, float previousValue)
+        // internal (not private) + InternalsVisibleTo (OdinEye.csproj's
+        // AssemblyInfo.cs) so OdinEye.Tests can exercise this pure
+        // validation logic directly -- no live ZNet/EnvMan/ZDOMan
+        // dependency here at all, unlike IsConnectedPlayer above, so it
+        // doesn't need a real game process the way that does (ODINEYE-18).
+        internal static bool IsValidStatValue(float value, float previousValue)
         {
             if (float.IsNaN(value) || float.IsInfinity(value) || value < 0)
             {
