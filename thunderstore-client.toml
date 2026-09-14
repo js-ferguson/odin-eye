@@ -38,11 +38,21 @@ icon = "./thunderstore/client/icon.png"
 readme = "./thunderstore/client/README.md"
 outdir = "./dist/thunderstore"
 
-# Sources match release.yaml's PrepPlugin-driven dist/OdinEye.Client/ output
-# exactly (see OdinEye.Client.csproj's own PrepPlugin target for the
+# Sources should match release.yaml's PrepPlugin-driven dist/OdinEye.Client/
+# output exactly (see OdinEye.Client.csproj's own PrepPlugin target for the
 # authoritative file list) -- target "plugins/" mirrors BepInEx's own
 # folder layout, which is what every mod manager expects inside a
 # Thunderstore package zip.
+#
+# THIS LIST IS NOT AUTOMATICALLY KEPT IN SYNC WITH PrepPlugin -- it's a
+# separate, hand-maintained [[build.copy]] list because tcli has no way to
+# just "copy everything PrepPlugin staged." Confirmed live this drifts for
+# real: v1.2.7's PrepPlugin fix (adding System.Threading.Tasks.Extensions.dll)
+# shipped correctly to the GitHub release zip (built straight from
+# dist/OdinEye.Client/) but NOT to Thunderstore, since tcli only copies what's
+# listed below -- a real player's client kept failing on v1.2.7 until this
+# list caught up in a follow-up release. Whenever PrepPlugin's PackageItems
+# list changes, this list (and thunderstore-server.toml's) must change too.
 [[build.copy]]
 source = "dist/OdinEye.Client/OdinEye.Client.dll"
 target = "plugins/"
@@ -57,6 +67,10 @@ target = "plugins/"
 
 [[build.copy]]
 source = "dist/OdinEye.Client/Utf8Json.dll"
+target = "plugins/"
+
+[[build.copy]]
+source = "dist/OdinEye.Client/System.Threading.Tasks.Extensions.dll"
 target = "plugins/"
 
 [publish]
