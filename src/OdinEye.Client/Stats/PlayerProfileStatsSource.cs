@@ -3,7 +3,6 @@ namespace OdinEye.Client.Stats
     using System;
     using System.Collections;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Reflection;
 
     // Game-dependent adapter (not unit tested for the same reason the
@@ -42,21 +41,32 @@ namespace OdinEye.Client.Stats
         // Not one of PlayerStatType's values -- Valheim tracks total real
         // playtime separately, as per-world seconds in
         // PlayerProfile.m_knownWorlds (see Decision 1 / ODINEYE-13). Summed
-        // here into one lifetime total. m_knownWorlds itself has been the
-        // same public Dictionary<string, float> field across every game
-        // version checked so far, so it's still read directly rather than
-        // reflectively -- only the stats dictionary's own location has
-        // ever been observed to move.
+        // here into one lifetime total.
         public const string PlayTimeSecondsKey = "PlayTimeSeconds";
 
-        // Resolved once, not per call -- GetStats() runs on every
-        // SubmissionScheduler tick (every 5 minutes per player, plus once
-        // on login), not hot enough to need it, but no reason to redo the
-        // same two reflection lookups every time either.
-        private static readonly Lazy<FieldInfo> DirectStatsField = new Lazy<FieldInfo>(
-            () => typeof(PlayerProfile).GetField("m_stats", BindingFlags.Public | BindingFlags.Instance));
-        private static readonly Lazy<FieldInfo> WrapperField = new Lazy<FieldInfo>(
-            () => typeof(PlayerProfile).GetField("m_playerStats", BindingFlags.Public | BindingFlags.Instance));
+        // EVERY PlayerProfile field this class reads goes through
+        // GetFieldValue() below, none accessed directly -- confirmed live
+        // that even m_knownWorlds, originally assumed stable enough to
+        // read directly, throws the exact same MissingFieldException class
+        // of failure the stats dictionary did (see this file's own header
+        // comment for the full story). The two don't even agree with each
+        // other: IL disassembly of the SERVER's own assembly_valheim.dll
+        // shows m_knownWorlds present and public on PlayerProfile, but a
+        // real player's client build throws looking for that exact field
+        // at runtime -- client and dedicated-server builds evidently don't
+        // share one consistent PlayerProfile layout. Reflection resolved
+        // fresh against whatever's actually loaded is the only thing that
+        // has held up under real testing; no field on this type gets a
+        // second exemption from that.
+        private static object GetFieldValue(object target, string fieldName)
+        {
+            if (target == null)
+            {
+                return null;
+            }
+            var field = target.GetType().GetField(fieldName, BindingFlags.Public | BindingFlags.Instance);
+            return field?.GetValue(target);
+        }
 
         public IReadOnlyDictionary<string, float> GetStats()
         {
@@ -79,35 +89,39 @@ namespace OdinEye.Client.Stats
                 stats[statType.ToString()] = value;
             }
 
-            stats[PlayTimeSecondsKey] = profile.m_knownWorlds?.Values.Sum() ?? 0f;
+            float totalPlaytime = 0f;
+            if (GetFieldValue(profile, "m_knownWorlds") is IDictionary knownWorlds)
+            {
+                foreach (var value in knownWorlds.Values)
+                {
+                    totalPlaytime += Convert.ToSingle(value);
+                }
+            }
+            stats[PlayTimeSecondsKey] = totalPlaytime;
 
             return stats;
         }
 
         // Tries PlayerProfile.m_stats directly first (confirmed live to be
-        // the real 1.0.x shape); falls back to the older
-        // PlayerProfile.m_playerStats.m_stats wrapper path (the shape this
-        // code originally assumed, and which -- per this class's own
-        // comment -- may still be what a stale compile-time reference
-        // expects) if the direct field genuinely isn't there. Either way,
-        // this is resolved against whatever's ACTUALLY loaded at runtime,
-        // not a compile-time guess.
+        // the real shape on the SERVER's own assembly, at least); falls
+        // back to the older PlayerProfile.m_playerStats.m_stats wrapper
+        // path (the shape this code originally assumed) if the direct
+        // field genuinely isn't there. Both paths go through
+        // GetFieldValue() -- see this class's own field-access comment.
         private static IDictionary GetStatsDictionary(PlayerProfile profile)
         {
-            var direct = DirectStatsField.Value;
-            if (direct != null)
+            if (GetFieldValue(profile, "m_stats") is IDictionary direct)
             {
-                return direct.GetValue(profile) as IDictionary;
+                return direct;
             }
 
-            var wrapper = WrapperField.Value?.GetValue(profile);
+            var wrapper = GetFieldValue(profile, "m_playerStats");
             if (wrapper == null)
             {
                 return null;
             }
 
-            var nested = wrapper.GetType().GetField("m_stats", BindingFlags.Public | BindingFlags.Instance);
-            return nested?.GetValue(wrapper) as IDictionary;
+            return GetFieldValue(wrapper, "m_stats") as IDictionary;
         }
     }
 }
