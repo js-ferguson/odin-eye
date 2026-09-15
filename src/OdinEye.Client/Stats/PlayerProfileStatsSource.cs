@@ -45,6 +45,18 @@ namespace OdinEye.Client.Stats
     // (v1.2.8: submission succeeded, every stat included, every value 0)
     // once the earlier MissingFieldException/missing-dependency bugs were
     // fixed -- fixed for real now by indexing into the array first.
+    //
+    // A THIRD bug (ODINEYE-27), found investigating a real player whose
+    // BossKillMultiplayer/BossKillSolo read 0 despite confirmed boss
+    // kills: GetStats() used to iterate Enum.GetValues(typeof(PlayerStatType))
+    // -- OUR OWN compiled enum, from the same stale ValheimGameLibs stub
+    // described above. Confirmed via IL disassembly that stub's enum has
+    // only 106 members while the real, running game's has 207 -- roughly
+    // HALF of every real stat the live game tracks (anything added since
+    // the stub was published, BossKillMultiplayer/BossKillSolo included)
+    // was never even attempted, for every player, always. Fixed by
+    // iterating the real, live dictionary's own keys directly instead of
+    // our enum's membership -- see GetStats() below.
     public sealed class PlayerProfileStatsSource : IPlayerStatsSource
     {
         // Not one of PlayerStatType's values -- Valheim tracks total real
@@ -99,14 +111,18 @@ namespace OdinEye.Client.Stats
             var rawPlayerStats = GetRawPlayerStats(profile);
             var statValues = GetFieldValue(rawPlayerStats, "m_stats") as IDictionary;
 
-            foreach (PlayerStatType statType in Enum.GetValues(typeof(PlayerStatType)))
+            // Iterate the REAL dictionary's own keys (ODINEYE-27), not
+            // Enum.GetValues(typeof(PlayerStatType)) -- see this class's
+            // header comment for why that silently dropped ~half of every
+            // real stat. entry.Key.ToString() resolves against whatever
+            // enum the actually-running game defines, regardless of what
+            // our own stale compile-time stub knows about.
+            if (statValues != null)
             {
-                float value = 0f;
-                if (statValues != null && statValues.Contains(statType))
+                foreach (DictionaryEntry entry in statValues)
                 {
-                    value = Convert.ToSingle(statValues[statType]);
+                    stats[entry.Key.ToString()] = Convert.ToSingle(entry.Value);
                 }
-                stats[statType.ToString()] = value;
             }
 
             float totalPlaytime = 0f;
