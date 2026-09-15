@@ -57,6 +57,11 @@ namespace OdinEye.Client.Stats
     // was never even attempted, for every player, always. Fixed by
     // iterating the real, live dictionary's own keys directly instead of
     // our enum's membership -- see GetStats() below.
+    //
+    // ODINEYE-28: while investigating the above, noticed m_knownWorlds
+    // (already read here to compute PlayTimeSecondsKey) also directly
+    // answers "how many distinct worlds has this character played on" --
+    // its own .Count, surfaced as KnownWorldsCountKey below.
     public sealed class PlayerProfileStatsSource : IPlayerStatsSource
     {
         // Not one of PlayerStatType's values -- Valheim tracks total real
@@ -64,6 +69,21 @@ namespace OdinEye.Client.Stats
         // PlayerProfile.PlayerStats.m_knownWorlds (see Decision 1 /
         // ODINEYE-13). Summed here into one lifetime total.
         public const string PlayTimeSecondsKey = "PlayTimeSeconds";
+
+        // Also derived from m_knownWorlds (ODINEYE-28): its own .Count is
+        // "how many distinct worlds this character has ever played on" --
+        // the exact same dictionary the game's own in-built stats screen
+        // labels "Known worlds:" (confirmed via IL disassembly of
+        // TextsDialog.AddStats). Keyed by WORLD NAME, not a server
+        // identity Valheim doesn't track at all -- two different servers
+        // both running a world named e.g. "seasoned" collide into one
+        // entry here, same as they would in the game's own stats screen.
+        // Distinct from WorldLoads (a load-EVENT counter, already exposed
+        // via GetStats()'s live-dictionary iteration below) -- that one
+        // can be far larger than the number of distinct worlds, since
+        // reconnecting to the same world repeatedly increments it every
+        // time.
+        public const string KnownWorldsCountKey = "KnownWorldsCount";
 
         // Matches PlayerProfile's own c_RawStats literal (confirmed via IL
         // disassembly) -- the array slot GetStat/SetStat treat as the real,
@@ -126,14 +146,17 @@ namespace OdinEye.Client.Stats
             }
 
             float totalPlaytime = 0f;
+            int knownWorldsCount = 0;
             if (GetFieldValue(rawPlayerStats, "m_knownWorlds") is IDictionary knownWorlds)
             {
+                knownWorldsCount = knownWorlds.Count;
                 foreach (var value in knownWorlds.Values)
                 {
                     totalPlaytime += Convert.ToSingle(value);
                 }
             }
             stats[PlayTimeSecondsKey] = totalPlaytime;
+            stats[KnownWorldsCountKey] = knownWorldsCount;
 
             return stats;
         }
