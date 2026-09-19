@@ -96,8 +96,11 @@
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="Stats\CharacterStatsPayloadBuilder.cs" />
         <Compile Include="Stats\IPlayerStatsSource.cs" />
+        <Compile Include="Stats\CheatStatusReader.cs" />
         <Compile Include="Stats\PlayerProfileStatsSource.cs" />
+        <Compile Include="Submission\HttpCheatStatusSubmitter.cs" />
         <Compile Include="Submission\HttpStatsSubmitter.cs" />
+        <Compile Include="Submission\ICheatStatusSubmitter.cs" />
         <Compile Include="Submission\IStatsSubmitter.cs" />
         <Compile Include="Submission\SubmissionScheduler.cs" />
     </ItemGroup>
