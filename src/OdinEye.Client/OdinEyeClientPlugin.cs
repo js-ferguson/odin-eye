@@ -20,6 +20,7 @@ namespace OdinEye.Client
 
         private IPlayerStatsSource statsSource;
         private IStatsSubmitter statsSubmitter;
+        private ICheatStatusSubmitter cheatStatusSubmitter;
         private SubmissionScheduler scheduler;
         private Guid? currentPlayerId;
 
@@ -47,12 +48,23 @@ namespace OdinEye.Client
 
             statsSource = new PlayerProfileStatsSource();
             statsSubmitter = new HttpStatsSubmitter(baseUri, message => Logger.LogWarning(message));
+            // VALSER-50: same ServerUrl, same submission cadence as the
+            // lifetime-stats submitter above -- a separate call (not part
+            // of CharacterStatsSubmission's payload) since it hits a
+            // different endpoint with different semantics. See
+            // CheatStatusReader's header comment for why this can't reuse
+            // the stats pipe.
+            cheatStatusSubmitter = new HttpCheatStatusSubmitter(baseUri, message => Logger.LogWarning(message));
             scheduler = new SubmissionScheduler(SubmissionInterval);
 
             Logger.LogInfo($"OdinEye client: character-stats submission enabled, reporting to {baseUri}");
         }
 
-        private void OnDestroy() => (statsSubmitter as IDisposable)?.Dispose();
+        private void OnDestroy()
+        {
+            (statsSubmitter as IDisposable)?.Dispose();
+            (cheatStatusSubmitter as IDisposable)?.Dispose();
+        }
 
         private void Update()
         {
@@ -86,6 +98,7 @@ namespace OdinEye.Client
             }
 
             SubmitCurrentStats(currentPlayerId.Value);
+            SubmitCheatStatus(currentPlayerId.Value);
         }
 
         private void SubmitCurrentStats(Guid playerId)
@@ -103,6 +116,20 @@ namespace OdinEye.Client
             }
 
             statsSubmitter.Submit(playerId, submission);
+        }
+
+        // VALSER-50: null means CheatStatusReader couldn't resolve the
+        // game API this build (see its own header comment) -- skip rather
+        // than submit a confidently wrong "clean".
+        private void SubmitCheatStatus(Guid playerId)
+        {
+            var cheated = CheatStatusReader.IsCheated();
+            if (cheated == null)
+            {
+                return;
+            }
+
+            cheatStatusSubmitter.Submit(playerId, cheated.Value);
         }
 
         // Must match the server's own derivation exactly (ZNetPeerExtensions/

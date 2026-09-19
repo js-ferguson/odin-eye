@@ -24,7 +24,8 @@
             new WorldDetailsController(),
             new BossDetailsController(),
             new WorldModifiersController(),
-            new CharacterStatsController()
+            new CharacterStatsController(),
+            new CheatStatusController()
         };
 
         public HttpWebServer(string address, ILogger logger)
