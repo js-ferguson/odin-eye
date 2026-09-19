@@ -62,6 +62,36 @@ namespace OdinEye.Client.Stats
     // (already read here to compute PlayTimeSecondsKey) also directly
     // answers "how many distinct worlds has this character played on" --
     // its own .Count, surfaced as KnownWorldsCountKey below.
+    //
+    // ODINEYE-29: boss progression on the admin-panel side (VALSER-48)
+    // was inferring "did this character kill boss X" from the Forsaken
+    // Power stats (SetPowerX/UsePowerX) -- a proxy, and an unreliable
+    // one: a character can kill a boss and never (re-)activate the
+    // guardian power afterward, so it under-reports real kills. IL
+    // disassembly (ikdasm) of the real running server's
+    // assembly_valheim.dll found a much more direct signal already
+    // being persisted by the game itself, one level down from m_stats:
+    // PlayerProfile.PlayerStats.m_enemyStats is a Dictionary<string,
+    // float>[] keyed by enemy prefab name (index 0 = the same "raw
+    // stats" RawStatsIndex slot m_stats/m_knownWorlds already use; the
+    // other slots are per-achievement-difficulty variants, same split
+    // as everywhere else in this class). It's written by exactly one
+    // call site, PlayerProfile.IncrementStatEnemy(name, amount,
+    // modifiers, cheated), itself only ever called from
+    // Game.RPC_RegisterKill -- which Character.OnDeath only sends to a
+    // given player's own client when THAT character was one of the
+    // flagged credited attackers on the dying creature's ZDO (checked
+    // against the local character's own ZDOID before the RPC is ever
+    // sent). So m_enemyStats[0][bossPrefabName] >= 1 means,
+    // unambiguously, "this specific character was personally credited
+    // with a kill of this specific enemy" -- bosses included -- with
+    // zero dependency on ever activating the resulting guardian power.
+    // Folded into the same stats dictionary GetStats() already
+    // returns, under EnemyKillKeyPrefix, so it rides the existing wire
+    // format with no server/agent/admin-panel API change needed; the
+    // real boss prefab name strings (exact casing) aren't confirmed
+    // yet -- that needs a live submission from a character with a
+    // confirmed kill, once this ships.
     public sealed class PlayerProfileStatsSource : IPlayerStatsSource
     {
         // Not one of PlayerStatType's values -- Valheim tracks total real
@@ -84,6 +114,15 @@ namespace OdinEye.Client.Stats
         // reconnecting to the same world repeatedly increments it every
         // time.
         public const string KnownWorldsCountKey = "KnownWorldsCount";
+
+        // ODINEYE-29: prefixes every m_enemyStats[RawStatsIndex] entry
+        // (keyed by enemy prefab name -- see this class's header comment)
+        // so it can never collide with a real PlayerStatType name in the
+        // same flat stats dictionary, and so a consumer can recognize
+        // "this is a per-enemy kill count" without a fixed enum of every
+        // possible enemy name (new creatures ship over time, same
+        // reasoning as ODINEYE-27's live-dictionary-keys fix above).
+        public const string EnemyKillKeyPrefix = "EnemyKill:";
 
         // Matches PlayerProfile's own c_RawStats literal (confirmed via IL
         // disassembly) -- the array slot GetStat/SetStat treat as the real,
@@ -157,6 +196,21 @@ namespace OdinEye.Client.Stats
             }
             stats[PlayTimeSecondsKey] = totalPlaytime;
             stats[KnownWorldsCountKey] = knownWorldsCount;
+
+            // ODINEYE-29: m_enemyStats is itself an array (raw slot +
+            // per-achievement-difficulty variants, same RawStatsIndex
+            // convention as m_playerStats) -- index into it the same way
+            // GetRawPlayerStats() indexes into m_playerStats, then read
+            // its own per-enemy-name dictionary.
+            if (GetFieldValue(rawPlayerStats, "m_enemyStats") is Array enemyStatsArray
+                && enemyStatsArray.Length > RawStatsIndex
+                && enemyStatsArray.GetValue(RawStatsIndex) is IDictionary enemyStats)
+            {
+                foreach (DictionaryEntry entry in enemyStats)
+                {
+                    stats[EnemyKillKeyPrefix + entry.Key] = Convert.ToSingle(entry.Value);
+                }
+            }
 
             return stats;
         }
