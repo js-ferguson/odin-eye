@@ -92,6 +92,9 @@
         </Reference>
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="Hud\ClockHudElement.cs" />
+        <Compile Include="Hud\EnvManTimeReader.cs" />
+        <Compile Include="Hud\TemporalClock.cs" />
         <Compile Include="OdinEyeClientPlugin.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
         <Compile Include="Stats\CharacterStatsPayloadBuilder.cs" />
