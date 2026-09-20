@@ -21,18 +21,16 @@ namespace OdinEye.Client.Tests
         [TestCase(100, "2:13 AM")]
         [TestCase(269, "5:59 AM")] // one second before dawn
         [TestCase(8100, "12:00 PM")] // day 4's noon (1800*4 + 900)
+        // totalSeconds should always be >= 0 in practice, but Mod()'s
+        // negative-handling is real behavior worth locking in with an
+        // actual expected value (code review: a prior version of this
+        // test only asserted "doesn't throw", which would pass even if
+        // the wraparound math produced a wrong day/AM-PM) rather than
+        // treating it as an unreachable defensive branch.
+        [TestCase(-100, "9:47 PM")]
         public void Format_MatchesTheServerSidePythonImplementation(double totalSeconds, string expected)
         {
             Assert.That(TemporalClock.Format(totalSeconds), Is.EqualTo(expected));
-        }
-
-        [Test]
-        public void Format_NeverThrowsForANegativeInput()
-        {
-            // totalSeconds should always be >= 0 in practice, but the
-            // Mod() helper's negative-handling is real behavior worth
-            // locking in, not just an unreachable defensive branch.
-            Assert.That(() => TemporalClock.Format(-100), Throws.Nothing);
         }
     }
 }

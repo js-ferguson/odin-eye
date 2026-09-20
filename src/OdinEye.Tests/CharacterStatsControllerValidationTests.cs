@@ -1,5 +1,6 @@
 namespace OdinEye.Tests
 {
+    using System;
     using NUnit.Framework;
     using OdinEye.Http.Api.Controllers;
 
@@ -26,11 +27,10 @@ namespace OdinEye.Tests
             Assert.That(CharacterStatsController.IsValidStatValue(float.PositiveInfinity, previousValue: 0f), Is.False);
         }
 
-        [Test]
-        public void RejectsNegativeInfinity()
-        {
-            Assert.That(CharacterStatsController.IsValidStatValue(float.NegativeInfinity, previousValue: 0f), Is.False);
-        }
+        // RejectsNegativeInfinity was removed (code review): the guard is
+        // a single sign-agnostic float.IsInfinity(value) check, so it
+        // executes the identical branch as RejectsPositiveInfinity above
+        // -- the sign never changes which code path runs.
 
         [Test]
         public void RejectsNegativeValues()
@@ -41,10 +41,15 @@ namespace OdinEye.Tests
         [Test]
         public void RejectsAValuePastThePlausibleCeiling()
         {
-            // The ceiling is "seconds since Valheim's Early Access release"
-            // -- astronomically smaller than float.MaxValue, so this value
-            // is guaranteed to exceed it regardless of when the test runs.
-            Assert.That(CharacterStatsController.IsValidStatValue(float.MaxValue, previousValue: 0f), Is.False);
+            // Code review: this used to assert against float.MaxValue,
+            // which is astronomically larger than the real ceiling
+            // ("seconds since Valheim's Early Access release") -- so it
+            // could never have actually exercised the real boundary
+            // check, only proven SOME value fails. Computed the same way
+            // production code does, plus a margin, so a wrong epoch/unit/
+            // sign in that real calculation would actually be caught.
+            var realCeiling = (float)(DateTime.UtcNow - new DateTime(2021, 2, 2, 0, 0, 0, DateTimeKind.Utc)).TotalSeconds;
+            Assert.That(CharacterStatsController.IsValidStatValue(realCeiling + 1000f, previousValue: 0f), Is.False);
         }
 
         [Test]

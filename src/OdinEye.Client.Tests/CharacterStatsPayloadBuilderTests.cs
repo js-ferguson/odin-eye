@@ -31,7 +31,9 @@ namespace OdinEye.Client.Tests
 
         [TestCase(float.NaN)]
         [TestCase(float.PositiveInfinity)]
-        [TestCase(float.NegativeInfinity)]
+        // float.NegativeInfinity was removed (code review): the guard is
+        // a single sign-agnostic float.IsInfinity() check, so it executes
+        // the identical branch as the PositiveInfinity case above.
         [TestCase(-1f)]
         public void Build_FiltersOutImpossibleValues(float invalidValue)
         {
