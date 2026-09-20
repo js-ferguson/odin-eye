@@ -418,6 +418,7 @@
         <Compile Include="Middlewares\LoggingMiddleware.cs" />
         <Compile Include="Models\Peer.cs" />
         <Compile Include="OdinEyePlugin.cs" />
+        <Compile Include="Patches\CharacterDeathPatch.cs" />
         <Compile Include="Patches\ChatPatch.cs" />
         <Compile Include="Patches\EnvManPatch.cs" />
         <Compile Include="Patches\GamePatch.cs" />
