@@ -24,6 +24,14 @@
         RandomEventSet = 102,
         
         EnvironmentMorningStart = 200,
-        EnvironmentEveningStart = 201
+        EnvironmentEveningStart = 201,
+
+        // ODINEYE-31, stage 1: a non-player Character died and was
+        // credited to at least one connected player -- see
+        // CharacterDeathPatch. Deliberately just an observable event for
+        // now (logged + WebSocket-broadcast, same as every other event
+        // here), not yet persisted/aggregated anywhere -- see that
+        // ticket for the staged plan and why.
+        EnemyKilled = 300
     }
 }
