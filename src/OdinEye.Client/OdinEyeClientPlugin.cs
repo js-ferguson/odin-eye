@@ -2,6 +2,7 @@ namespace OdinEye.Client
 {
     using BepInEx;
     using BepInEx.Configuration;
+    using OdinEye.Client.Hud;
     using OdinEye.Client.Stats;
     using OdinEye.Client.Submission;
     using OdinEye.Models;
@@ -10,13 +11,21 @@ namespace OdinEye.Client
     // Optional companion to the server-side OdinEye plugin (ODINEYE-20).
     // A player who never installs this changes nothing about the server or
     // its API -- see CHARACTER-STATS-INVESTIGATION.md. When installed but
-    // left unconfigured (the default), it also does nothing: no local data
-    // is read or sent unless ServerUrl is explicitly set.
+    // left unconfigured (the default), character-stats submission also
+    // does nothing: no local data is read or sent unless ServerUrl is
+    // explicitly set. The HUD clock (ODINEYE-32) is the one exception --
+    // a purely local, no-server-dependency visual feature, on by default
+    // (its own ShowClock toggle), independent of ServerUrl entirely.
     [BepInPlugin("org.bepinex.plugins.odineye.client", "odineye.client", "1.0.0.0")]
     public class OdinEyeClientPlugin : BaseUnityPlugin
     {
         // Decision 4 (ODINEYE-16): submit on login, then every 5 minutes.
         private static readonly TimeSpan SubmissionInterval = TimeSpan.FromMinutes(5);
+
+        // ODINEYE-32: cheap enough to recompute every frame (it's just a
+        // few float ops + string formatting), but there's no reason to
+        // -- the displayed minute can't change faster than this anyway.
+        private static readonly TimeSpan ClockUpdateInterval = TimeSpan.FromSeconds(1);
 
         private IPlayerStatsSource statsSource;
         private IStatsSubmitter statsSubmitter;
@@ -24,15 +33,29 @@ namespace OdinEye.Client
         private SubmissionScheduler scheduler;
         private Guid? currentPlayerId;
 
+        private ConfigEntry<bool> showClock;
+        private ClockHudElement clockHud;
+        private DateTime nextClockUpdateUtc;
+
         private void Awake()
         {
+            showClock = Config.Bind(
+                "Hud",
+                "ShowClock",
+                true,
+                "Show a small in-game clock just below the minimap (VALSER-40/41's own \"temporal hours\" " +
+                "reading -- dawn is always 6:00 AM, dusk always 6:00 PM). Purely local/visual -- reads " +
+                "nothing from your character and sends nothing anywhere, unaffected by ServerUrl below.");
+            clockHud = new ClockHudElement();
+
             var serverUrl = Config.Bind(
                 "Server",
                 "ServerUrl",
                 string.Empty,
                 "The OdinEye server's base URL to submit this character's lifetime stats to " +
-                "(e.g. http://yourserver.com:2469/). Leave empty to disable this plugin entirely -- " +
-                "nothing is read from your character or sent anywhere unless this is set.");
+                "(e.g. http://yourserver.com:2469/). Leave empty to disable stats/cheat-status " +
+                "submission -- nothing is read from your character or sent anywhere unless this is set. " +
+                "Does not affect the HUD clock above.");
 
             if (string.IsNullOrWhiteSpace(serverUrl.Value))
             {
@@ -68,9 +91,11 @@ namespace OdinEye.Client
 
         private void Update()
         {
+            UpdateClock();
+
             if (statsSubmitter == null)
             {
-                return; // disabled: not configured, or a bad ServerUrl
+                return; // stats/cheat-status disabled: not configured, or a bad ServerUrl
             }
 
             if (Player.m_localPlayer == null)
@@ -99,6 +124,34 @@ namespace OdinEye.Client
 
             SubmitCurrentStats(currentPlayerId.Value);
             SubmitCheatStatus(currentPlayerId.Value);
+        }
+
+        // ODINEYE-32: entirely independent of the stats/cheat-status
+        // pipeline above -- runs (when enabled) even with no ServerUrl
+        // configured at all, and even before the local player has
+        // spawned in (Minimap.instance is what actually gates it, via
+        // ClockHudElement itself).
+        private void UpdateClock()
+        {
+            if (!showClock.Value)
+            {
+                return;
+            }
+
+            var nowUtc = DateTime.UtcNow;
+            if (nowUtc < nextClockUpdateUtc)
+            {
+                return;
+            }
+            nextClockUpdateUtc = nowUtc + ClockUpdateInterval;
+
+            var totalSeconds = EnvManTimeReader.GetTotalSeconds();
+            if (totalSeconds == null)
+            {
+                return;
+            }
+
+            clockHud.SetText(TemporalClock.Format(totalSeconds.Value));
         }
 
         private void SubmitCurrentStats(Guid playerId)
