@@ -31,11 +31,11 @@ namespace OdinEye.Client.Submission
             httpClient = new HttpClient();
         }
 
-        public async void Submit(Guid playerId, bool cheated)
+        public async void Submit(Guid playerId, bool cheated, bool bypassEnabled)
         {
             try
             {
-                var json = JsonSerializer.Serialize(new CheatStatusSubmission { Cheated = cheated });
+                var json = JsonSerializer.Serialize(new CheatStatusSubmission { Cheated = cheated, BypassEnabled = bypassEnabled });
                 var requestUri = new Uri(serverBaseUri, $"players/{playerId}/cheatStatus");
 
                 using (var content = new ByteArrayContent(json))

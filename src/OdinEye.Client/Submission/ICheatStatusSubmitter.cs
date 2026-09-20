@@ -10,7 +10,7 @@ namespace OdinEye.Client.Submission
         // Fire-and-forget by design, same reasoning as IStatsSubmitter:
         // a failed submission is simply retried on the next scheduled
         // tick, so this must never throw back into the caller's Update
-        // loop.
-        void Submit(Guid playerId, bool cheated);
+        // loop. bypassEnabled: ODINEYE-30, see CheatBypassReader.
+        void Submit(Guid playerId, bool cheated, bool bypassEnabled);
     }
 }

@@ -9,8 +9,8 @@ namespace OdinEye.Http.Api.Controllers
     using Utf8Json;
     using WebSocketSharp.Server;
 
-    // Backs the live cheat/achievement-eligibility status API (VALSER-50):
-    // GET /players/cheatStatus and POST /players/{id}/cheatStatus.
+    // Backs the live cheat/achievement-eligibility status API (VALSER-50,
+    // ODINEYE-30): GET /players/cheatStatus and POST /players/{id}/cheatStatus.
     // Deliberately separate from CharacterStatsController/{id}/stats
     // (ODINEYE-12/19): that endpoint's IsValidStatValue() rejects any
     // submission lower than the previous one, built for ever-increasing
@@ -19,10 +19,14 @@ namespace OdinEye.Http.Api.Controllers
     // every submission here is simply accepted and overwrites the last
     // one, no history kept. Same in-memory-only, cleared-on-restart
     // statelessness as every other live-state controller here.
+    //
+    // ODINEYE-30: stores the whole CheatStatusSubmission (Cheated AND
+    // BypassEnabled), not just the Cheated bool -- was a plain
+    // ConcurrentDictionary<string, bool> before this.
     public class CheatStatusController : IController, IPostController
     {
-        private static readonly ConcurrentDictionary<string, bool> CheatedByPlayerId =
-            new ConcurrentDictionary<string, bool>();
+        private static readonly ConcurrentDictionary<string, CheatStatusSubmission> StatusByPlayerId =
+            new ConcurrentDictionary<string, CheatStatusSubmission>();
 
         public string Route => "/players/cheatStatus";
 
@@ -32,7 +36,7 @@ namespace OdinEye.Http.Api.Controllers
 
         public void OnGet(HttpRequestEventArgs requestArguments)
         {
-            requestArguments.Response.Ok(new Dictionary<string, bool>(CheatedByPlayerId));
+            requestArguments.Response.Ok(new Dictionary<string, CheatStatusSubmission>(StatusByPlayerId));
         }
 
         public void OnPost(HttpRequestEventArgs requestArguments, string routeParameter)
@@ -66,7 +70,7 @@ namespace OdinEye.Http.Api.Controllers
                 return;
             }
 
-            CheatedByPlayerId[playerId.ToString()] = submission.Cheated;
+            StatusByPlayerId[playerId.ToString()] = submission;
             requestArguments.Response.Ok(new AcceptedResponse());
         }
 
