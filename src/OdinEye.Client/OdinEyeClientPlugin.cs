@@ -120,7 +120,10 @@ namespace OdinEye.Client
 
         // VALSER-50: null means CheatStatusReader couldn't resolve the
         // game API this build (see its own header comment) -- skip rather
-        // than submit a confidently wrong "clean".
+        // than submit a confidently wrong "clean". CheatBypassReader
+        // (ODINEYE-30) has no such uncertainty -- it's built on old,
+        // stable pre-1.0 APIs -- so it's read unconditionally whenever
+        // Cheated itself was resolvable.
         private void SubmitCheatStatus(Guid playerId)
         {
             var cheated = CheatStatusReader.IsCheated();
@@ -129,7 +132,7 @@ namespace OdinEye.Client
                 return;
             }
 
-            cheatStatusSubmitter.Submit(playerId, cheated.Value);
+            cheatStatusSubmitter.Submit(playerId, cheated.Value, CheatBypassReader.IsEnabled());
         }
 
         // Must match the server's own derivation exactly (ZNetPeerExtensions/
