@@ -17,7 +17,15 @@
         private readonly ILogger logger;
         private WebSocketSessionManager defaultWebSocketSessionManager;
 
-        private IEnumerable<IController> controllers = new IController[]
+        // object, not IController -- every controller so far has
+        // implemented IController (a GET route) alongside IPostController
+        // where it also accepts POSTs, but ODINEYE-33's
+        // PlayerNotifyController is the first POST-only controller (there's
+        // nothing to GET back), so this list can no longer be typed to the
+        // GET-only interface. Both loops below already check "is
+        // IController"/"is IPostController" per entry rather than assuming
+        // every entry is both.
+        private IEnumerable<object> controllers = new object[]
         {
             new PlayersController(),
             new ServerDetailsController(),
@@ -25,7 +33,8 @@
             new BossDetailsController(),
             new WorldModifiersController(),
             new CharacterStatsController(),
-            new CheatStatusController()
+            new CheatStatusController(),
+            new PlayerNotifyController()
         };
 
         public HttpWebServer(string address, ILogger logger)
@@ -45,11 +54,16 @@
             {
                 foreach (var controller in controllers)
                 {
-                    if (string.Equals(controller.Route, args.Request.RawUrl))
+                    if (!(controller is IController getController))
+                    {
+                        continue;
+                    }
+
+                    if (string.Equals(getController.Route, args.Request.RawUrl))
                     {
                         try
                         {
-                            controller.OnGet(args);
+                            getController.OnGet(args);
                         }
                         catch (Exception ex)
                         {
