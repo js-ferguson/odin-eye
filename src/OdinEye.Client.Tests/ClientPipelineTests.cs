@@ -114,19 +114,19 @@ namespace OdinEye.Client.Tests
         // --- Vomit Bomb -------------------------------------------------------------------
 
         [Test]
-        public void EatingBlueberriesAlone_Counts()
+        public void EatingPukeberriesWithNothingToClear_Counts()
         {
-            Assert.That(CounterRules.CountsAsVomitBomb(true, "Blueberries", 1), Is.True);
+            Assert.That(CounterRules.CountsAsVomitBomb(true, "Pukeberries", 0), Is.True);
         }
 
-        [TestCase(false, "Blueberries", 1, TestName = "eating failed")]
-        [TestCase(true, "Blueberries", 2, TestName = "another food is also active")]
-        [TestCase(true, "Blueberries", 0, TestName = "impossible: ate but nothing is active")]
-        [TestCase(true, "CookedMeat", 1, TestName = "a different food")]
-        [TestCase(true, null, 1, TestName = "no item")]
-        public void AnythingElse_IsNotAVomitBomb(bool eaten, string item, int activeFoodCount)
+        [TestCase(false, "Pukeberries", 0, TestName = "eating failed")]
+        [TestCase(true, "Pukeberries", 1, TestName = "one food was active beforehand (the normal, intended use)")]
+        [TestCase(true, "Pukeberries", 3, TestName = "food memory was full beforehand")]
+        [TestCase(true, "CookedMeat", 0, TestName = "a different item")]
+        [TestCase(true, null, 0, TestName = "no item")]
+        public void AnythingElse_IsNotAVomitBomb(bool eaten, string item, int foodsBeforeEating)
         {
-            Assert.That(CounterRules.CountsAsVomitBomb(eaten, item, activeFoodCount), Is.False);
+            Assert.That(CounterRules.CountsAsVomitBomb(eaten, item, foodsBeforeEating), Is.False);
         }
 
         // --- Mike Tyson / Mushashi Master of Blades -----------------------------------------

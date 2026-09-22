@@ -30,11 +30,15 @@ namespace OdinEye.Client.Counters
         // name needs live confirmation (ODINEYE-34) before this is trusted.
         public const string DwarfEyeItemName = "GreydwarfEye";
 
-        // Vomit Bomb. The brief said "Bukeperries" -- no such item exists in
-        // Valheim. Implemented against "Blueberries" (a real, early-game
-        // food) as the closest match, needing the same live confirmation as
-        // every other item-name guess here.
-        public const string VomitBombItemName = "Blueberries";
+        // Vomit Bomb. The brief said "Bukeperries" -- the real item's
+        // internal name is "Pukeberries" (confirmed live, eip.gg). It is
+        // not a normal food: eating it attaches the SE_Puke status effect,
+        // which removes one active food buff per second for its duration --
+        // it never becomes a tracked food itself. Confirmed via IL
+        // disassembly of the live assembly that this still goes through
+        // Player.EatFood (SE_Puke is attached via SharedData.
+        // m_consumeStatusEffect, applied inside that same method).
+        public const string VomitBombItemName = "Pukeberries";
 
         // Marksman counts an arrow that this player fired hitting a live
         // enemy. Not other players, not tamed animals, not something already
@@ -85,11 +89,14 @@ namespace OdinEye.Client.Counters
         public static float BoatSecondsToAdd(bool isOnBoat, float elapsedSeconds, float maxPlausibleGapSeconds) =>
             isOnBoat && elapsedSeconds > 0f && elapsedSeconds <= maxPlausibleGapSeconds ? elapsedSeconds : 0f;
 
-        // Vomit Bomb: eating counts only when it actually succeeded, the
-        // item eaten was Blueberries, and it left exactly one food buff
-        // active -- the brief's "no other food items applied".
-        public static bool CountsAsVomitBomb(bool eatenSuccessfully, string itemSharedName, int activeFoodCount) =>
-            eatenSuccessfully && itemSharedName == VomitBombItemName && activeFoodCount == 1;
+        // Vomit Bomb: Pukeberries clears existing food buffs rather than
+        // adding one of its own, so "no other food items applied" has to be
+        // checked on the state BEFORE eating, not after (after is always
+        // heading toward zero regardless, since that is what it does) --
+        // eating it while genuinely nothing was active, i.e. entirely
+        // pointlessly, is the joke.
+        public static bool CountsAsVomitBomb(bool eatenSuccessfully, string itemSharedName, int activeFoodCountBeforeEating) =>
+            eatenSuccessfully && itemSharedName == VomitBombItemName && activeFoodCountBeforeEating == 0;
 
         // Mike Tyson / Mushashi Master of Blades: a kill counts when it was
         // MY hit, with the weapon skill this achievement cares about, on a
