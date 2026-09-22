@@ -151,6 +151,40 @@ namespace OdinEye.Client.Tests
             Assert.That(CounterRules.MeadsToCount(statusIsReady, producedItems), Is.EqualTo(0));
         }
 
+        // --- Gilligan's Island --------------------------------------------------------------
+
+        [Test]
+        public void ARoofedBedWithBothOtherPieces_Qualifies()
+        {
+            Assert.That(CounterRules.IsQualifyingOutpost(true, true, true), Is.True);
+        }
+
+        [TestCase(false, true, true, TestName = "bed is not covered")]
+        [TestCase(true, false, true, TestName = "no crafting station nearby")]
+        [TestCase(true, true, false, TestName = "no portal nearby")]
+        public void MissingAnyOnePiece_DoesNotQualify(bool covered, bool craftingStation, bool portal)
+        {
+            Assert.That(CounterRules.IsQualifyingOutpost(covered, craftingStation, portal), Is.False);
+        }
+
+        [Test]
+        public void TheVeryFirstOutpostEver_IsANewLandmass()
+        {
+            Assert.That(CounterRules.IsNewLandmass(Enumerable.Empty<bool>()), Is.True);
+        }
+
+        [Test]
+        public void OceanSeparatedFromEveryKnownLandmass_IsNew()
+        {
+            Assert.That(CounterRules.IsNewLandmass(new[] { true, true, true }), Is.True);
+        }
+
+        [Test]
+        public void NotOceanSeparatedFromAtLeastOneKnownLandmass_IsNotNew()
+        {
+            Assert.That(CounterRules.IsNewLandmass(new[] { true, false, true }), Is.False);
+        }
+
         // --- Dead-Eye Dick ------------------------------------------------------------------
 
         [Test]

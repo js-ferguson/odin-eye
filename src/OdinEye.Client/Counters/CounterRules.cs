@@ -1,5 +1,8 @@
 namespace OdinEye.Client.Counters
 {
+    using System.Collections.Generic;
+    using System.Linq;
+
     // ODINEYE-38: the decisions behind the counters Valheim does not keep,
     // separated from the Harmony patches that gather the facts so they can be
     // tested without a game. Each takes plain values the patch reads.
@@ -16,6 +19,7 @@ namespace OdinEye.Client.Counters
         public const string ChickenMeatCookedKey = "Custom:ChickenMeatCooked"; // KFC - The Colonel
         public const string LoxPiesCookedKey = "Custom:LoxPiesCooked"; // Baked as Bro
         public const string MeadsMadeKey = "Custom:MeadsMade"; // Punky Brewster
+        public const string OutpostLandmassesKey = "Custom:OutpostLandmasses"; // Gilligan's Island
 
         // Farmer Joe. One counter per tameable species this live build
         // actually has (confirmed via IL class search: no Asksvin or Moose
@@ -163,6 +167,30 @@ namespace OdinEye.Client.Counters
         // pointlessly, is the joke.
         public static bool CountsAsVomitBomb(bool eatenSuccessfully, string itemSharedName, int activeFoodCountBeforeEating) =>
             eatenSuccessfully && itemSharedName == VomitBombItemName && activeFoodCountBeforeEating == 0;
+
+        // Gilligan's Island. An outpost = a roofed bed with a crafting-
+        // station-family piece and a portal both nearby (see
+        // OutpostTracking for the radius and how "nearby"/"roofed" are
+        // actually read from the live world). The brief said "a covered,
+        // bed, crafting bench with a portal in close vicinity" -- read as
+        // the BED being the covered one, not the bench or portal needing
+        // their own roof; flagged on the ticket as an interpretation to
+        // confirm, not a certainty.
+        public static bool IsQualifyingOutpost(bool bedIsCovered, bool hasCraftingStationNearby, bool hasPortalNearby) =>
+            bedIsCovered && hasCraftingStationNearby && hasPortalNearby;
+
+        // Gilligan's Island. A qualifying outpost counts as a NEW landmass
+        // only if it is ocean-separated from EVERY landmass already
+        // credited -- an empty list (the very first outpost ever) is
+        // vacuously new. This is a heuristic, not real landmass/graph
+        // connectivity: OutpostTracking decides "ocean-separated" by
+        // sampling WorldGenerator's own biome along the straight line to
+        // each already-credited anchor, which can misjudge a roundabout
+        // land bridge as separate or clip a third landmass and miss a
+        // real separation -- an accepted approximation for a low-stakes
+        // achievement, not a target for more precision on its own.
+        public static bool IsNewLandmass(IEnumerable<bool> oceanSeparatedFromEachKnownLandmass) =>
+            oceanSeparatedFromEachKnownLandmass.All(separated => separated);
 
         // Mike Tyson / Mushashi Master of Blades: a kill counts when it was
         // MY hit, with the weapon skill this achievement cares about, on a
