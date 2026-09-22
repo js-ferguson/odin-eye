@@ -74,6 +74,26 @@ namespace OdinEye.Client.Tests
             Assert.That(CounterRules.FoodBurntToCoal(burnt, amount), Is.EqualTo(0));
         }
 
+        // --- KFC - The Colonel ---------------------------------------------------------------
+
+        [Test]
+        public void FinishedCookedChickenMeat_CountsTheWholeAmountIncludingBonus()
+        {
+            Assert.That(CounterRules.CookedChickenMeatToCount(true, "CookedChickenMeat", 1), Is.EqualTo(1));
+            Assert.That(CounterRules.CookedChickenMeatToCount(true, "CookedChickenMeat", 2), Is.EqualTo(2));
+        }
+
+        [TestCase(false, "CookedChickenMeat", 1, TestName = "not finished")]
+        [TestCase(true, "Coal", 1, TestName = "burnt chicken turns to coal")]
+        [TestCase(true, "Bread", 1, TestName = "other food")]
+        [TestCase(true, null, 1, TestName = "unknown product")]
+        [TestCase(true, "CookedChickenMeat", 0, TestName = "nothing taken")]
+        [TestCase(true, "CookedChickenMeat", -3, TestName = "nonsense amount")]
+        public void ThingsThatAreNotFinishedChicken_CountNothing(bool done, string produced, int amount)
+        {
+            Assert.That(CounterRules.CookedChickenMeatToCount(done, produced, amount), Is.EqualTo(0));
+        }
+
         // --- Dead-Eye Dick ------------------------------------------------------------------
 
         [Test]
