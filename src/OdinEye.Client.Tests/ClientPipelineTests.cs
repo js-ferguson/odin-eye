@@ -299,6 +299,88 @@ namespace OdinEye.Client.Tests
             Assert.That(stats.ContainsKey("Derived:StationOrUpgradePlaced"), Is.False);
         }
 
+        // --- Peter North ---------------------------------------------------------------
+
+        [Test]
+        public void FurthestNorth_TracksTheHighWaterMarkOfTheLivePosition()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var z = 100f;
+
+            var first = new CounterAugmentedStatsSource(source, store, () => null, () => z, () => false).GetStats();
+            z = 250f;
+            var risen = new CounterAugmentedStatsSource(source, store, () => null, () => z, () => false).GetStats();
+            z = 40f; // wandered back south -- must not lower it
+            var afterRetreat = new CounterAugmentedStatsSource(source, store, () => null, () => z, () => false).GetStats();
+
+            Assert.That(first["Derived:FurthestNorthZ"], Is.EqualTo(100f));
+            Assert.That(risen["Derived:FurthestNorthZ"], Is.EqualTo(250f));
+            Assert.That(afterRetreat["Derived:FurthestNorthZ"], Is.EqualTo(250f));
+        }
+
+        [Test]
+        public void FurthestNorth_SouthOfSpawnIsFlooredAtZero_NeverSentNegative()
+        {
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+
+            var stats = new CounterAugmentedStatsSource(source, NewStore(), () => null, () => -500f, () => false).GetStats();
+
+            Assert.That(stats["Derived:FurthestNorthZ"], Is.EqualTo(0f));
+        }
+
+        [Test]
+        public void FurthestNorth_IsAbsentWithoutACharacterLoaded()
+        {
+            var stats = new CounterAugmentedStatsSource(new FakeSource(), NewStore(), () => null, () => 999f, () => true).GetStats();
+
+            Assert.That(stats, Is.Empty);
+        }
+
+        [Test]
+        public void FurthestNorth_IsAbsentWhenNoPositionIsAvailable()
+        {
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+
+            var stats = new CounterAugmentedStatsSource(source, NewStore(), () => null, () => null, () => false).GetStats();
+
+            Assert.That(stats.ContainsKey("Derived:FurthestNorthZ"), Is.False);
+        }
+
+        [Test]
+        public void ReachedDeepNorth_LatchesOnAndStaysOnAfterLeaving()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var inDeepNorth = true;
+
+            var whileThere = new CounterAugmentedStatsSource(source, store, () => null, () => 9000f, () => inDeepNorth).GetStats();
+            inDeepNorth = false; // left again
+            var afterLeaving = new CounterAugmentedStatsSource(source, store, () => null, () => 9000f, () => inDeepNorth).GetStats();
+
+            Assert.That(whileThere["Custom:ReachedDeepNorth"], Is.EqualTo(1f));
+            Assert.That(afterLeaving["Custom:ReachedDeepNorth"], Is.EqualTo(1f));
+        }
+
+        [Test]
+        public void ReachedDeepNorth_IsAbsentUntilActuallyReached()
+        {
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+
+            var stats = new CounterAugmentedStatsSource(source, NewStore(), () => null, () => 9000f, () => false).GetStats();
+
+            Assert.That(stats.ContainsKey("Custom:ReachedDeepNorth"), Is.False);
+        }
+
+        [TestCase(100f, 100f)]
+        [TestCase(0f, 0f)]
+        [TestCase(-1f, 0f)]
+        [TestCase(-9999f, 0f)]
+        public void NorthDistanceToRaise_FloorsAtZero(float positionZ, float expected)
+        {
+            Assert.That(CounterRules.NorthDistanceToRaise(positionZ), Is.EqualTo(expected));
+        }
+
         [Test]
         public void TheMetaRidesInTheSubmission_AndIsOptional()
         {

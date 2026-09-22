@@ -242,7 +242,8 @@ namespace OdinEye.Client
             counters = new CustomCounterStore(
                 Path.Combine(Paths.ConfigPath, $"odineye.client.counters.{playerId:N}.json"),
                 message => Logger.LogWarning(message));
-            fullStatsSource = new CounterAugmentedStatsSource(statsSource, counters, StationNames.Get);
+            fullStatsSource = new CounterAugmentedStatsSource(statsSource, counters, StationNames.Get,
+                NorthTracking.CurrentNorthZ, NorthTracking.IsInDeepNorth);
             seeded = false;
             seedDeadlineUtc = nowUtc + SeedTimeout;
             loginSubmitted = false;

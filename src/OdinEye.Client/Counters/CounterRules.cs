@@ -10,6 +10,13 @@ namespace OdinEye.Client.Counters
         public const string DwarfEyesTouchedKey = "Custom:DwarfEyesTouched";
         public const string FoodBurntToCoalKey = "Custom:FoodBurntToCoal";
 
+        // Peter North. World +Z is north (confirmed via the live game's own
+        // world-generation constants: Ashlands sits at large negative Z,
+        // Deep North at large positive Z) -- see NorthTracking for where
+        // these are actually read from the local player.
+        public const string FurthestNorthZKey = "Derived:FurthestNorthZ";
+        public const string ReachedDeepNorthKey = "Custom:ReachedDeepNorth";
+
         // The item a stone oven produces from bread dough. Burnt bread is a
         // different item (coal), so it can never match.
         public const string BreadItemName = "Bread";
@@ -49,5 +56,14 @@ namespace OdinEye.Client.Counters
         // kill can drop more than one at once).
         public static int DwarfEyesToCount(bool byLocalPlayer, bool pickupSucceeded, string itemSharedName, int stack) =>
             byLocalPlayer && pickupSucceeded && itemSharedName == DwarfEyeItemName && stack > 0 ? stack : 0;
+
+        // Peter North. A submitted stat can never be negative -- the server
+        // rejects the whole submission if one is (CharacterStatsController.
+        // IsValidStatValue) -- so a position south of world Z=0 (spawn) is
+        // floored at 0 rather than sent as-is. That loses nothing: south of
+        // spawn is never a contender for "furthest north" anyway, and 0 is
+        // indistinguishable from "never left spawn," which is the correct
+        // starting point either way.
+        public static float NorthDistanceToRaise(float positionZ) => positionZ > 0f ? positionZ : 0f;
     }
 }
