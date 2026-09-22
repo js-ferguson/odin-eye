@@ -145,6 +145,12 @@ namespace OdinEye.Client.Patches
                         {
                             ClientRuntime.Counters?.Increment(CounterRules.ChickenMeatCookedKey, chickenCount);
                         }
+
+                        var loxPieCount = CounterRules.LoxPieToCount(true, productName, amount);
+                        if (loxPieCount > 0)
+                        {
+                            ClientRuntime.Counters?.Increment(CounterRules.LoxPiesCookedKey, loxPieCount);
+                        }
                     }
 
                     if (isBurnt)

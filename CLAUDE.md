@@ -47,10 +47,10 @@ Client mod (`OdinEye.Client`):
   (cumulative, sampled via `Ship.GetLocalShip()`), `Custom:VomitBombs`,
   `Custom:FistKills`, `Custom:SwordKills` (both via a `Character.ApplyDamage`
   postfix checking `HitData.GetAttacker()`/`m_skill` and whether the target
-  died from that exact hit), `Custom:ChickenMeatCooked` (via
-  `CookingStationPatches`, same "Done" slot read as `Custom:BreadCollected`
-  but matched against `CookedChickenMeat` instead of `Bread`), and `Meta`
-  (player ID, version).
+  died from that exact hit), `Custom:ChickenMeatCooked`,
+  `Custom:LoxPiesCooked` (both via `CookingStationPatches`, same "Done" slot
+  read as `Custom:BreadCollected` but matched against `CookedChickenMeat`/
+  `LoxMeatPie` instead of `Bread`), and `Meta` (player ID, version).
   `Derived:FurthestNorthZ`/`Custom:ReachedDeepNorth` feed valheim_server's
   "Peter North" achievement, and the panel also derives a "most achievements
   held" title (The All-Fathers Finest) from its own awards table with no
