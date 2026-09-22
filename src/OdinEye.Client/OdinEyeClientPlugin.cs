@@ -38,6 +38,12 @@ namespace OdinEye.Client
         // different players' machines.
         private static readonly TimeSpan EventFlushInterval = TimeSpan.FromSeconds(5);
 
+        // Gilligan's Island: OutpostTracking.Scan enumerates every loaded
+        // Bed each time it runs, so this stays slow -- an outpost being
+        // finished a minute later than it could be is unnoticeable; the
+        // per-frame cost of FindObjectsOfType every frame would not be.
+        private static readonly TimeSpan OutpostScanInterval = TimeSpan.FromSeconds(60);
+
         // How long a login waits for the server to say which counters it
         // already holds before submitting anyway (ODINEYE-36).
         private static readonly TimeSpan SeedTimeout = TimeSpan.FromSeconds(10);
@@ -58,6 +64,8 @@ namespace OdinEye.Client
         private HttpClient seedClient;
         private HttpEventSubmitter eventSubmitter;
         private CustomCounterStore counters;
+        private OutpostAnchorStore outpostAnchors;
+        private DateTime nextOutpostScanUtc;
         private IPlayerStatsSource fullStatsSource;
         private volatile bool seeded;
         private DateTime seedDeadlineUtc;
@@ -163,6 +171,8 @@ namespace OdinEye.Client
             ClientRuntime.Counters = null;
             counters?.Flush();
             counters = null;
+            outpostAnchors?.Flush();
+            outpostAnchors = null;
             fullStatsSource = null;
             currentPlayerId = null;
             loginSubmitted = false;
@@ -206,6 +216,13 @@ namespace OdinEye.Client
                 eventSubmitter.Flush(playerId, ClientRuntime.Events);
             }
 
+            if (nowUtc >= nextOutpostScanUtc)
+            {
+                nextOutpostScanUtc = nowUtc + OutpostScanInterval;
+                OutpostTracking.Scan(outpostAnchors);
+                outpostAnchors.Flush();
+            }
+
             if (!loginSubmitted)
             {
                 // The login submission waits for the server's answer about
@@ -242,6 +259,9 @@ namespace OdinEye.Client
             counters = new CustomCounterStore(
                 Path.Combine(Paths.ConfigPath, $"odineye.client.counters.{playerId:N}.json"),
                 message => Logger.LogWarning(message));
+            outpostAnchors = new OutpostAnchorStore(
+                Path.Combine(Paths.ConfigPath, $"odineye.client.outposts.{playerId:N}.json"),
+                message => Logger.LogWarning(message));
             fullStatsSource = new CounterAugmentedStatsSource(statsSource, counters, StationNames.Get,
                 NorthTracking.CurrentNorthZ, NorthTracking.IsInDeepNorth, BoatTracking.IsOnBoat);
             seeded = false;
@@ -249,6 +269,7 @@ namespace OdinEye.Client
             loginSubmitted = false;
             lastSubmittedStats = null;
             nextEventFlushUtc = nowUtc + EventFlushInterval;
+            nextOutpostScanUtc = nowUtc + OutpostScanInterval;
 
             var store = counters;
             Task.Run(async () =>

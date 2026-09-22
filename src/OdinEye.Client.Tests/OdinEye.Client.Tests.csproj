@@ -63,6 +63,7 @@
         <Compile Include="CharacterStatsPayloadBuilderTests.cs" />
         <Compile Include="ClientPipelineTests.cs" />
         <Compile Include="CustomCounterStoreTests.cs" />
+        <Compile Include="OutpostAnchorStoreTests.cs" />
         <Compile Include="PieceStatsAndPolicyTests.cs" />
         <Compile Include="Program.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />

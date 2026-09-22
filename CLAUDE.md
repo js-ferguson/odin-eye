@@ -59,7 +59,16 @@ Client mod (`OdinEye.Client`):
   fermenting recipe's own `m_producedItems` -- a PUBLIC field on
   `Fermenter.ItemConversion` -- before the real tap RPC fires, since
   `RPC_Tap` computes the spawn only on the fermenter's owner and never
-  broadcasts it), and `Meta` (player ID, version). This live build has no
+  broadcasts it), `Custom:OutpostLandmasses` (via `OutpostTracking`, on
+  its own slow periodic timer rather than a Harmony patch -- there is no
+  single game method to hook for "a bed just became a qualifying
+  outpost". A "new landmass" is a client-only judgment: `WorldGenerator`
+  only exists in the running game, so the ocean-crossing check against
+  every already-credited landmass runs entirely on the client, backed by
+  a small local-only position cache (`OutpostAnchorStore`, never synced
+  to the server) rather than any server-side rule type or table -- this
+  achievement is an ordinary `counter_threshold` once the client decides
+  a count), and `Meta` (player ID, version). This live build has no
   `Asksvin`/`Moose` classes, so Farmer Joe is scoped to those three
   species only -- see its own ticket.
   `Derived:FurthestNorthZ`/`Custom:ReachedDeepNorth` feed valheim_server's

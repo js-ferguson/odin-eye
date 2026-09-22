@@ -121,6 +121,8 @@
         <Compile Include="Stats\BoatTracking.cs" />
         <Compile Include="Stats\CounterAugmentedStatsSource.cs" />
         <Compile Include="Stats\NorthTracking.cs" />
+        <Compile Include="Stats\OutpostAnchorStore.cs" />
+        <Compile Include="Stats\OutpostTracking.cs" />
         <Compile Include="Stats\StationNames.cs" />
         <Compile Include="Submission\HttpEventSubmitter.cs" />
         <Compile Include="Submission\StatsSeeder.cs" />
