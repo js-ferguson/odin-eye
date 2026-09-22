@@ -392,6 +392,9 @@
     <ItemGroup>
         <Compile Include="Coroutines\GameStatsSnapshotCoroutine.cs" />
         <Compile Include="Events\EventHandler.cs" />
+        <Compile Include="Events\EventFeed.cs" />
+        <Compile Include="Events\ClientEventCleaner.cs" />
+        <Compile Include="Events\EnemyKillDetails.cs" />
         <Compile Include="Events\EventHandlerConfigurationOptions.cs" />
         <Compile Include="Extensions\EnvManExtensions.cs" />
         <Compile Include="Extensions\HttpListenerResponseExtensions.cs" />
@@ -401,9 +404,12 @@
         <Compile Include="Http\Api\Controllers\BossDetailsController.cs" />
         <Compile Include="Http\Api\Controllers\CharacterStatsController.cs" />
         <Compile Include="Http\Api\Controllers\CheatStatusController.cs" />
+        <Compile Include="Http\Api\Controllers\EventsController.cs" />
         <Compile Include="Http\Api\Controllers\IController.cs" />
         <Compile Include="Http\Api\Controllers\IPostController.cs" />
         <Compile Include="Http\Api\Controllers\PlayerNotifyController.cs" />
+        <Compile Include="Http\Api\Controllers\PlayerEventsController.cs" />
+        <Compile Include="Http\Api\Controllers\PlayersMetaController.cs" />
         <Compile Include="Http\Api\Controllers\PlayersController.cs" />
         <Compile Include="Http\Api\Controllers\ServerDetailsController.cs" />
         <Compile Include="Http\Api\Controllers\WorldDetailsController.cs" />
@@ -413,6 +419,7 @@
         <Compile Include="Logging\ILogger.cs" />
         <Compile Include="Logging\Logger.cs" />
         <Compile Include="Middlewares\EventDispatcherMiddleware.cs" />
+        <Compile Include="Middlewares\EventFeedMiddleware.cs" />
         <Compile Include="Middlewares\ExceptionHandlerMiddleware.cs" />
         <Compile Include="Middlewares\IEventMiddleware.cs" />
         <Compile Include="Middlewares\EventMiddleware.cs" />

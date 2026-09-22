@@ -452,3 +452,9 @@ $RECYCLE.BIN/
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# Local-build artifact on Linux: msbuild resolves the (Windows-only)
+# hardcoded PluginFolder/ClientPluginFolder default ("C:/Program Files...")
+# as a literal relative path and creates it as a real directory tree.
+# Harmless, but never worth committing.
+C:/

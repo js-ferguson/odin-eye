@@ -17,6 +17,7 @@
         public static OdinEyePlugin Instance { get; private set; }
         public ILogger Logger { get; private set; }
         public EventHandler EventHandler { get; private set; }
+        public EventFeed EventFeed { get; private set; }
         public HttpWebServer HttpWebServer { get; private set; }
         public GameStatsSnapshotCoroutine StatsSnapshotCoroutine { get; private set; }
 
@@ -82,9 +83,11 @@
         {
             StatsSnapshotCoroutine = new GameStatsSnapshotCoroutine(HttpWebServer);
             EventHandler = new EventHandler();
+            EventFeed = new EventFeed();
             EventHandler.Configure(options => options
                 .AddMiddleware(new ExceptionHandlerMiddleware(Logger))
                 .AddMiddleware(new LoggingMiddleware(Logger))
+                .AddMiddleware(new EventFeedMiddleware(EventFeed))
                 .AddMiddleware(new EventDispatcherMiddleware(HttpWebServer)));
         }
     }

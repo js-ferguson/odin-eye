@@ -14,7 +14,7 @@ namespace OdinEye.Client.Stats
     // being submitted.
     public static class CharacterStatsPayloadBuilder
     {
-        public static CharacterStatsSubmission Build(IReadOnlyDictionary<string, float> rawStats)
+        public static CharacterStatsSubmission Build(IReadOnlyDictionary<string, float> rawStats, SubmissionMeta meta = null)
         {
             if (rawStats == null)
             {
@@ -25,7 +25,7 @@ namespace OdinEye.Client.Stats
                 .Where(stat => IsValidStatValue(stat.Value))
                 .ToDictionary(stat => stat.Key, stat => stat.Value);
 
-            return new CharacterStatsSubmission { Stats = validStats };
+            return new CharacterStatsSubmission { Stats = validStats, Meta = meta };
         }
 
         private static bool IsValidStatValue(float value) =>
