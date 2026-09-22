@@ -43,11 +43,18 @@ Client mod (`OdinEye.Client`):
   `Derived:StationOrUpgradePlaced` (high-water), `Custom:ArrowHitsEnemy`,
   `Custom:BreadCollected`, `Custom:DwarfEyesTouched`, `Custom:FoodBurntToCoal`,
   `Derived:FurthestNorthZ` (high-water, +Z is north), `Custom:ReachedDeepNorth`
-  (once-ever flag, via `Player.GetCurrentBiome()`), and `Meta` (player ID,
-  version). The last two feed valheim_server's "Peter North" achievement --
-  the one achievement in that whole system that gets taken away from one
-  player and given to another, so it lives on a rule type of its own
-  (`leaderboard`) rather than the usual plain threshold.
+  (once-ever flag, via `Player.GetCurrentBiome()`), `Custom:TimeOnBoatSeconds`
+  (cumulative, sampled via `Ship.GetLocalShip()`), `Custom:VomitBombs`,
+  `Custom:FistKills`, `Custom:SwordKills` (both via a `Character.ApplyDamage`
+  postfix checking `HitData.GetAttacker()`/`m_skill` and whether the target
+  died from that exact hit), and `Meta` (player ID, version).
+  `Derived:FurthestNorthZ`/`Custom:ReachedDeepNorth` feed valheim_server's
+  "Peter North" achievement, and the panel also derives a "most achievements
+  held" title (The All-Fathers Finest) from its own awards table with no
+  client involvement at all. Both are the only achievements in that whole
+  system ever taken away from one player and given to another, so they live
+  on their own rule types (`leaderboard`/`most_achievements`) rather than
+  the usual plain threshold.
 * `Counters/CustomCounterStore` keeps counters per character in BepInEx's
   config folder and is seeded from the server at login, because the server
   rejects a whole submission if any value goes DOWN.

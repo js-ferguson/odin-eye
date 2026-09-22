@@ -11,20 +11,31 @@ namespace OdinEye.Client.Stats
     // live-state readers, all three injected, so it is testable with fakes.
     public sealed class CounterAugmentedStatsSource : IPlayerStatsSource
     {
+        // The Admiral: a gap between two GetStats() calls longer than this
+        // (the game suspended, a computer slept) is never credited as time
+        // on a boat -- see CounterRules.BoatSecondsToAdd.
+        private static readonly TimeSpan MaxPlausibleBoatGap = TimeSpan.FromMinutes(5);
+
         private readonly IPlayerStatsSource inner;
         private readonly CustomCounterStore store;
         private readonly Func<ISet<string>> stationNames;
         private readonly Func<float?> currentNorthZ;
         private readonly Func<bool> isInDeepNorth;
+        private readonly Func<bool> isOnBoat;
+        private readonly Func<DateTime> nowUtc;
+        private DateTime? lastBoatSampleUtc;
 
         public CounterAugmentedStatsSource(IPlayerStatsSource inner, CustomCounterStore store, Func<ISet<string>> stationNames,
-            Func<float?> currentNorthZ = null, Func<bool> isInDeepNorth = null)
+            Func<float?> currentNorthZ = null, Func<bool> isInDeepNorth = null,
+            Func<bool> isOnBoat = null, Func<DateTime> nowUtc = null)
         {
             this.inner = inner ?? throw new ArgumentNullException(nameof(inner));
             this.store = store ?? throw new ArgumentNullException(nameof(store));
             this.stationNames = stationNames ?? (() => null);
             this.currentNorthZ = currentNorthZ ?? (() => null);
             this.isInDeepNorth = isInDeepNorth ?? (() => false);
+            this.isOnBoat = isOnBoat ?? (() => false);
+            this.nowUtc = nowUtc ?? (() => DateTime.UtcNow);
         }
 
         public IReadOnlyDictionary<string, float> GetStats()
@@ -68,6 +79,25 @@ namespace OdinEye.Client.Stats
             {
                 store.RaiseTo(CounterRules.ReachedDeepNorthKey, 1f);
             }
+
+            // The Admiral: credit the real elapsed time since the LAST time
+            // this ran (the 30s check + login) if the player is on a boat
+            // right now -- the same "sample, don't reconstruct the whole
+            // path" approximation the game's own DistanceSail stat uses.
+            // Nothing is credited on the first call of a session (nothing
+            // to measure the gap from yet).
+            var now = nowUtc();
+            if (lastBoatSampleUtc.HasValue)
+            {
+                var elapsed = (float)(now - lastBoatSampleUtc.Value).TotalSeconds;
+                var toAdd = CounterRules.BoatSecondsToAdd(isOnBoat(), elapsed, (float)MaxPlausibleBoatGap.TotalSeconds);
+                if (toAdd > 0f)
+                {
+                    store.Increment(CounterRules.TimeOnBoatSecondsKey, toAdd);
+                }
+            }
+
+            lastBoatSampleUtc = now;
 
             foreach (var kv in store.Snapshot())
             {

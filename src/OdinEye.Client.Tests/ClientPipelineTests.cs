@@ -94,6 +94,61 @@ namespace OdinEye.Client.Tests
             Assert.That(CounterRules.DwarfEyesToCount(mine, succeeded, item, stack), Is.EqualTo(0));
         }
 
+        // --- The Admiral ----------------------------------------------------------------
+
+        [Test]
+        public void OnABoat_CreditsTheWholeElapsedGap()
+        {
+            Assert.That(CounterRules.BoatSecondsToAdd(true, 30f, 300f), Is.EqualTo(30f));
+        }
+
+        [TestCase(false, 30f, 300f, TestName = "not on a boat")]
+        [TestCase(true, 0f, 300f, TestName = "no time elapsed")]
+        [TestCase(true, -5f, 300f, TestName = "nonsense negative elapsed time")]
+        [TestCase(true, 301f, 300f, TestName = "gap longer than the sanity cap")]
+        public void AnythingElse_CreditsNoBoatTime(bool onBoat, float elapsed, float cap)
+        {
+            Assert.That(CounterRules.BoatSecondsToAdd(onBoat, elapsed, cap), Is.EqualTo(0f));
+        }
+
+        // --- Vomit Bomb -------------------------------------------------------------------
+
+        [Test]
+        public void EatingBlueberriesAlone_Counts()
+        {
+            Assert.That(CounterRules.CountsAsVomitBomb(true, "Blueberries", 1), Is.True);
+        }
+
+        [TestCase(false, "Blueberries", 1, TestName = "eating failed")]
+        [TestCase(true, "Blueberries", 2, TestName = "another food is also active")]
+        [TestCase(true, "Blueberries", 0, TestName = "impossible: ate but nothing is active")]
+        [TestCase(true, "CookedMeat", 1, TestName = "a different food")]
+        [TestCase(true, null, 1, TestName = "no item")]
+        public void AnythingElse_IsNotAVomitBomb(bool eaten, string item, int activeFoodCount)
+        {
+            Assert.That(CounterRules.CountsAsVomitBomb(eaten, item, activeFoodCount), Is.False);
+        }
+
+        // --- Mike Tyson / Mushashi Master of Blades -----------------------------------------
+
+        [Test]
+        public void MyKillingBlow_WithTheRightSkill_Counts()
+        {
+            Assert.That(CounterRules.CountsAsWeaponKill(true, "Unarmed", "Unarmed", true, false, false, true), Is.True);
+            Assert.That(CounterRules.CountsAsWeaponKill(true, "Swords", "Swords", true, false, false, true), Is.True);
+        }
+
+        [TestCase(false, "Unarmed", "Unarmed", true, false, false, true, TestName = "someone else's hit")]
+        [TestCase(true, "Swords", "Unarmed", true, false, false, true, TestName = "wrong skill")]
+        [TestCase(true, "Unarmed", "Unarmed", true, false, false, false, TestName = "not a killing blow")]
+        [TestCase(true, "Unarmed", "Unarmed", false, false, false, true, TestName = "not a character")]
+        [TestCase(true, "Unarmed", "Unarmed", true, true, false, true, TestName = "the target is a player")]
+        [TestCase(true, "Unarmed", "Unarmed", true, false, true, true, TestName = "the target is tamed")]
+        public void AnythingElse_IsNotACountedWeaponKill(bool mine, string skill, string wantSkill, bool isCharacter, bool isPlayer, bool isTamed, bool isDeadNow)
+        {
+            Assert.That(CounterRules.CountsAsWeaponKill(mine, skill, wantSkill, isCharacter, isPlayer, isTamed, isDeadNow), Is.False);
+        }
+
         // --- Homeless -------------------------------------------------------------------
 
         [Test]
@@ -379,6 +434,83 @@ namespace OdinEye.Client.Tests
         public void NorthDistanceToRaise_FloorsAtZero(float positionZ, float expected)
         {
             Assert.That(CounterRules.NorthDistanceToRaise(positionZ), Is.EqualTo(expected));
+        }
+
+        // --- The Admiral (integration) -------------------------------------------------------
+
+        private static readonly DateTime T0 = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        [Test]
+        public void BoatTime_CreditsNothingOnTheFirstCallOfASession()
+        {
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+
+            var stats = new CounterAugmentedStatsSource(source, NewStore(), () => null,
+                isOnBoat: () => true, nowUtc: () => T0).GetStats();
+
+            Assert.That(stats.ContainsKey("Custom:TimeOnBoatSeconds"), Is.False);
+        }
+
+        [Test]
+        public void BoatTime_CreditsTheGapBetweenCallsWhileOnABoat()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null, isOnBoat: () => true, nowUtc: () => now);
+            augmented.GetStats();
+
+            now += TimeSpan.FromSeconds(30);
+            var stats = augmented.GetStats();
+
+            Assert.That(stats["Custom:TimeOnBoatSeconds"], Is.EqualTo(30f));
+        }
+
+        [Test]
+        public void BoatTime_AccumulatesAcrossSeveralChecks()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null, isOnBoat: () => true, nowUtc: () => now);
+            augmented.GetStats();
+            now += TimeSpan.FromSeconds(30);
+            augmented.GetStats();
+            now += TimeSpan.FromSeconds(30);
+
+            var stats = augmented.GetStats();
+
+            Assert.That(stats["Custom:TimeOnBoatSeconds"], Is.EqualTo(60f));
+        }
+
+        [Test]
+        public void BoatTime_CreditsNothingWhenNotOnABoat()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null, isOnBoat: () => false, nowUtc: () => now);
+            augmented.GetStats();
+
+            now += TimeSpan.FromSeconds(30);
+            var stats = augmented.GetStats();
+
+            Assert.That(stats.ContainsKey("Custom:TimeOnBoatSeconds"), Is.False);
+        }
+
+        [Test]
+        public void BoatTime_DropsAGapLongerThanTheSanityCap()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null, isOnBoat: () => true, nowUtc: () => now);
+            augmented.GetStats();
+
+            now += TimeSpan.FromMinutes(20); // computer slept, or similar
+            var stats = augmented.GetStats();
+
+            Assert.That(stats.ContainsKey("Custom:TimeOnBoatSeconds"), Is.False);
         }
 
         [Test]
