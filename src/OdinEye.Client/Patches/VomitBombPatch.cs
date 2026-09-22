@@ -12,10 +12,28 @@ namespace OdinEye.Client.Patches
     // afterward would only ever show it heading toward empty, telling us
     // nothing about whether anything was there to begin with.
     //
-    // Player.EatFood(ItemDrop.ItemData) is public and returns whether it
-    // actually succeeded (false if CanEat() rejects it); Player.GetFoods()
-    // (public) returns the live active-food list.
-    [HarmonyPatch(typeof(Player), "EatFood")]
+    // BUG FIX (confirmed live 2026-09-23: balgore ate Pukeberries with an
+    // empty food bar and Custom:VomitBombs never moved): this was
+    // originally hooked on Player.EatFood, on the assumption that eating
+    // Pukeberries still routes through it. Re-reading Player.EatFood's own
+    // IL end to end shows it has NOTHING to do with status effects at all
+    // -- no SEMan/StatusEffect reference anywhere in that method. The real
+    // entry point is Player.ConsumeItem(Inventory, ItemDrop.ItemData, bool):
+    // it applies m_shared.m_consumeStatusEffect via SEMan.AddStatusEffect
+    // UNCONDITIONALLY (once CanConsumeItem's own "already have this effect
+    // or its category" rejection has passed), and only THEN calls
+    // Player.EatFood -- and only if m_shared.m_food > 0. Pukeberries has no
+    // food value, so EatFood was never being called for it at all; the old
+    // hook could never have fired, regardless of active food count. Moved
+    // to ConsumeItem, the actual place the status effect (and therefore
+    // this achievement's real trigger) happens.
+    //
+    // Player.ConsumeItem is public and returns whether it actually
+    // succeeded (false if CanConsumeItem() rejects it -- including the
+    // "already have this status effect/category" case, so a true result
+    // here really does mean the effect was freshly applied); Player.
+    // GetFoods() (public) returns the live active-food list.
+    [HarmonyPatch(typeof(Player), "ConsumeItem")]
     public static class VomitBombPatch
     {
         [HarmonyPrefix]
