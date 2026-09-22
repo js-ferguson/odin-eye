@@ -111,6 +111,9 @@
         <Compile Include="Patches\ClientRuntime.cs" />
         <Compile Include="Patches\CookingStationPatches.cs" />
         <Compile Include="Patches\DwarfEyePatch.cs" />
+        <Compile Include="Patches\VomitBombPatch.cs" />
+        <Compile Include="Patches\WeaponKillPatch.cs" />
+        <Compile Include="Stats\BoatTracking.cs" />
         <Compile Include="Stats\CounterAugmentedStatsSource.cs" />
         <Compile Include="Stats\NorthTracking.cs" />
         <Compile Include="Stats\StationNames.cs" />
