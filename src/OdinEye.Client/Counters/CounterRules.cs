@@ -13,6 +13,7 @@ namespace OdinEye.Client.Counters
         public const string VomitBombsKey = "Custom:VomitBombs"; // Vomit Bomb
         public const string FistKillsKey = "Custom:FistKills"; // Mike Tyson
         public const string SwordKillsKey = "Custom:SwordKills"; // Mushashi Master of Blades
+        public const string ChickenMeatCookedKey = "Custom:ChickenMeatCooked"; // KFC - The Colonel
 
         // Peter North. World +Z is north (confirmed via the live game's own
         // world-generation constants: Ashlands sits at large negative Z,
@@ -40,6 +41,12 @@ namespace OdinEye.Client.Counters
         // m_consumeStatusEffect, applied inside that same method).
         public const string VomitBombItemName = "Pukeberries";
 
+        // KFC - The Colonel. What a cooking station produces from raw
+        // chicken meat. Like BreadItemName, needs live confirmation
+        // (ODINEYE-34) before this is trusted -- the same class of bug the
+        // Pukeberries fix was about.
+        public const string CookedChickenItemName = "CookedChickenMeat";
+
         // Marksman counts an arrow that this player fired hitting a live
         // enemy. Not other players, not tamed animals, not something already
         // dead, and not an arrow someone else fired.
@@ -64,6 +71,12 @@ namespace OdinEye.Client.Counters
         // shape: the RPC that hands it over carries any bonus too.
         public static int FoodBurntToCoal(bool isBurntStatus, int amountTaken) =>
             isBurntStatus && amountTaken > 0 ? amountTaken : 0;
+
+        // KFC - The Colonel. Same shape as BreadToCount: only counts when
+        // the item taken out is actually cooked chicken meat, by the stack
+        // size actually taken (bonus yield included).
+        public static int CookedChickenMeatToCount(bool itemIsDone, string producedItemName, int amountTaken) =>
+            itemIsDone && producedItemName == CookedChickenItemName && amountTaken > 0 ? amountTaken : 0;
 
         // Dead-Eye Dick counts the local player's own successful pickups of
         // a Greydwarf eye, by the stack size actually picked up (a bush or a
