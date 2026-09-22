@@ -114,6 +114,7 @@
         <Compile Include="Patches\ClientRuntime.cs" />
         <Compile Include="Patches\CookingStationPatches.cs" />
         <Compile Include="Patches\DwarfEyePatch.cs" />
+        <Compile Include="Patches\FermenterTapPatch.cs" />
         <Compile Include="Patches\TameablePatch.cs" />
         <Compile Include="Patches\VomitBombPatch.cs" />
         <Compile Include="Patches\WeaponKillPatch.cs" />

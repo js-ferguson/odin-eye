@@ -54,9 +54,14 @@ Client mod (`OdinEye.Client`):
   `Custom:TamedBoar`/`Custom:TamedWolf`/`Custom:TamedLox` (via
   `TameablePatch`, a postfix on `Tameable.Tame()` keyed on the tamed
   Character's prefab name -- `assembly_utils`' `Utils.GetPrefabName`, now
-  referenced by the client project for this), and `Meta` (player ID,
-  version). This live build has no `Asksvin`/`Moose` classes, so Farmer Joe
-  is scoped to those three species only -- see its own ticket.
+  referenced by the client project for this), `Custom:MeadsMade` (via
+  `FermenterTapPatch`, a prefix on `Fermenter.Interact` that resolves the
+  fermenting recipe's own `m_producedItems` -- a PUBLIC field on
+  `Fermenter.ItemConversion` -- before the real tap RPC fires, since
+  `RPC_Tap` computes the spawn only on the fermenter's owner and never
+  broadcasts it), and `Meta` (player ID, version). This live build has no
+  `Asksvin`/`Moose` classes, so Farmer Joe is scoped to those three
+  species only -- see its own ticket.
   `Derived:FurthestNorthZ`/`Custom:ReachedDeepNorth` feed valheim_server's
   "Peter North" achievement, and the panel also derives a "most achievements
   held" title (The All-Fathers Finest) from its own awards table with no
