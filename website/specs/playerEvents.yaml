@@ -1,0 +1,110 @@
+openapi: 3.0.0
+info:
+  title: OdinEye API
+  description: OdinEye API Specification
+  version: v1
+servers:
+  - url: http://localhost:2469
+tags:
+  - name: events
+    description: The durable, pollable event feed
+    x-displayName: Events
+
+paths:
+  /players/{id}/events:
+    post:
+      tags:
+        - events
+      summary: Report client-observed events
+      description: |-
+        Lets an installed OdinEye.Client report the few things only a player's
+        own machine can observe. Every accepted event is attributed to `{id}`
+        (taken from the URL, never from the request body) and enters the same
+        feed `GET /events` and the WebSocket stream serve -- see
+        [Event types](/docs/events/event-types) for what each `Type` means and
+        its `Data` fields.
+
+        The whole batch is validated together and either fully accepted or
+        fully rejected: at most 20 events per request, `Type` must be one of
+        the allowed values, and every field is checked (player IDs must be
+        whole numbers, coordinates must be finite and within the game's
+        plausible world bounds). Rate limited to 20 events per player per
+        minute.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The player's OdinEye ID (a UUID).
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClientEventsSubmission'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedResponse'
+        '400':
+          description: |-
+            `{id}` is not a valid UUID, the body is missing/malformed/empty,
+            more than 20 events were sent, an unrecognized `Type` was used, or
+            any field failed validation. Nothing in the batch is applied.
+        '404':
+          description: No player with that ID is currently connected.
+        '429':
+          description: This player has already reported 20 events in the last minute.
+
+components:
+  schemas:
+    ClientEventsSubmission:
+      properties:
+        Events:
+          type: array
+          minItems: 1
+          maxItems: 20
+          items:
+            $ref: '#/components/schemas/ClientEvent'
+    ClientEvent:
+      properties:
+        Type:
+          type: string
+          enum:
+            - BedRemoved
+            - BedMissingAtRespawn
+        OwnerPlayerId:
+          description: Only meaningful for `BedRemoved` -- the bed claimant's player ID, as a string.
+          type: string
+          example: "-8234659128341902847"
+        RemoverPlayerId:
+          description: Only meaningful for `BedRemoved` -- the reporting (removing) player's own player ID, as a string.
+          type: string
+          example: "1002734981234"
+        X:
+          description: For `BedRemoved`, the bed's spawn point. For `BedMissingAtRespawn`, the lost custom spawn point.
+          type: number
+          format: float
+        "Y":
+          type: number
+          format: float
+        "Z":
+          type: number
+          format: float
+      example:
+        Type: BedRemoved
+        OwnerPlayerId: "-8234659128341902847"
+        RemoverPlayerId: "1002734981234"
+        X: 102.4
+        "Y": 32.1
+        "Z": -56.7
+    AcceptedResponse:
+      properties:
+        Accepted:
+          type: boolean
+          example: true

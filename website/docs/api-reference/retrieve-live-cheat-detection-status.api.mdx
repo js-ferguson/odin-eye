@@ -1,11 +1,11 @@
 ---
-id: retrieve-game-server-info
-title: "Retrieve game server info"
-description: "Returns general game server information."
-sidebar_label: "Retrieve game server info"
+id: retrieve-live-cheat-detection-status
+title: "Retrieve live cheat-detection status"
+description: "Returns every character's last-reported cheat status, keyed by their"
+sidebar_label: "Retrieve live cheat-detection status"
 hide_title: true
 hide_table_of_contents: true
-api: eJylU01v2zAM/SsCz0GduMO25BZgRVHsI8Wy7VL0oNiMrc2SNYk2Ehj+7yNtZ0ua09CDYYGk3nt8pDogXURYPUHE0GKA5xnkGLNgPJnawQq+IjXBRVWgw6ArVWiLaixWxu3rYLVU3sAMAkZfu4iM10E6n8vvEmzzkcuy2hE6kqz2vjLZAJD8jFLSQcxKtFpOPtQeA5kR8LM+fGnsDsNm/1jpI4YhSkePDGwYsmD5L9XzJWMbq9xwU9V75ce7ipGtIcJc1U5ReepJ+hibGlFvUw5Y4wQFVosZ4EFbXzHnYt7P4J7d+MFwZtR+ST4lhFUIzpwTlkl5pGBcMZJ8QldQeUkD85s05Q+YbUuo7dr7h/yabMipM0OVydllszdj369Q8H6ZLt/NoWcFZGgIbQeQD0jaVJEzvSQtUlmzNCiQGM5rQYIkXtTOpk2TpeugCRWXlER+lSRVnemqrCOt0jdvl9DzLsqGDWOeeDe5cXdHVOvHh6tZn+XU1mPGrY9OcGV7mhG0C3HSM4vVw8wcmzLueTDY4tWCv+Tp/i3w/zyOyWzCAyW8g8aJjKH9bnLq9AZPTnH7YoYkum6nI34PVd9L+HeD4chxPrY6GL0Tb56eGbBEnfMzEGt/IZfAOsvQyzRaXTUi4OrJic1/J3d/942n+Qer8mbt
+api: eJztVUtvGzcQ/isDXtoCesSOkzrqKU2NQughRtzHoSqws+SslgmXZEmulIWg/56Z3XVixz209+oicd7zzTejkyq4z2rzp4oOB0rqr4UylHWysdjg1Ua9o9Inn4EOlAbQLSbUhdI3GRzmskwUQypkWENYIBcsfV7ABxpYVg9QWrJp56fosP0Jvs1EUN2O79XWVNB7w5rq55tfYT2Z5eq7FWw9dNQFzhm8Gxbg7Afa+amKwFETSw60lIQE5E0M1hdgOcFyCdoRJq4geEjENqms4N19qfWw8+jBelY4x4K3xvqbgVZvnCVffgD80iek3nvr93C0pQ19ActN2i66AVrMO+8DJy9pWKmF4kwx+EyM50ldPnsmX4/BfPsLm+ngC/uIFmN0VqNo1++zmJxUZiQ7lF9liMROoX5PurAjGmPFFN1tCpFSsVOq+Oj1RgZB5mnyP1oacSutzQ8a1H1KXI40FJzJ3HzjcL8ns9ZTJG6ZugUE8SQ4huRElMk1wIG6YAwZaX8utw6BwffqvFA/DhFzvvFYu/9QEOMqqMPv6Jg8HTMtHP3OVwNl22fidAcdug69yXVf7BF96QbUrWVydNxJRj8ccYCLChjqzNXAbL/a+S2zLTJd2A5CA9WMViWkeTh2zQSp6bN+AyX1VMGxtY5piC4HrvMgxBgZLiUCD4GzSOR6bHwE8p6K/4QQQ1RscSIb89yN23PX153NWTBiA/qIzDYS9F7p6xfXdFUvL/RzXL5oLnF53Xxvllf1S7ygS/NcXzWPGNBwnfRkDKP0PH0WquMZBJaqPQnHIpaWH/ebOHFgqou1mRIvoNyLk+qTY8O2lLhZr13QPK2Qy+by6uUrdeYzYn0TRhbPHc5LBq9vt+rrI/NAB3eRtG3mrWBLSThZHS4EkMhZGGYJ7bGj6UQlGf54EaZDtDRUeGnYbz5JX6c8fVnD/0/cvz9xM4MLfSzSiR0pOjLhNFPn/p9EEH9IHmaE8EMMTqcaM/2W3Pks4r97bpjl/POAyQpL5cWB2Z2BG9nGaHPe11pTFJoe0PVSyJMDKsz7TGkGnJfsEz1fcZs=
 sidebar_class_name: "get api-method"
 info_path: docs/api-reference/odineye-api
 custom_edit_url: null
@@ -27,19 +27,23 @@ import TabItem from "@theme/TabItem";
 <h1
   className={"openapi__heading"}
 >
-  Retrieve game server info
+  Retrieve live cheat-detection status
 </h1>
 
 <MethodEndpoint
   method={"get"}
-  path={"/serverDetails"}
+  path={"/players/cheatStatus"}
 >
   
 </MethodEndpoint>
 
 
 
-Returns general game server information.
+Returns every character's last-reported cheat status, keyed by their
+player ID (see `Player.Id` under `GET /players`). In memory only, like
+every other live-state endpoint here -- cleared on restart. Reported by
+an installed OdinEye.Client; a character running without it simply has
+no entry.
 
 ## Request
 
@@ -97,29 +101,20 @@ Returns general game server information.
                     >
                       <SchemaItem
                         collapsible={false}
-                        name={"MaxNumberOfPlayers"}
+                        name={"properties"}
                         required={false}
-                        schemaName={"int32"}
-                        qualifierMessage={"**Possible values:** `>= 1`"}
-                        schema={{"type":"integer","description":"Maximum number of players permitted on the server.","format":"int32","minimum":1,"example":10}}
+                        schemaName={""}
+                        qualifierMessage={undefined}
+                        schema={{"Cheated":{"description":"Whether this character currently holds a flagged/cheated item, or the world itself is modded.","type":"boolean"},"BypassEnabled":{"description":"Whether this character has run Valheim's own\n`yesiuseddevcommandsbutiwantmyachievementsanyway 1` console command.\nIndependent of `Cheated` -- a character can be `Cheated: true` while\nalso having their own permanent bypass flag cleared.","type":"boolean"}}}
                       >
                         
                       </SchemaItem><SchemaItem
                         collapsible={false}
-                        name={"GameVersion"}
+                        name={"title"}
                         required={false}
-                        schemaName={"string"}
-                        qualifierMessage={"**Possible values:** `non-empty`"}
-                        schema={{"description":"Version of the game server.","type":"string","minLength":1,"example":"0.220.2"}}
-                      >
-                        
-                      </SchemaItem><SchemaItem
-                        collapsible={false}
-                        name={"SteamAppId"}
-                        required={false}
-                        schemaName={"string"}
-                        qualifierMessage={"**Possible values:** `non-empty`"}
-                        schema={{"description":"Steam application identifier of the game server.","type":"string","minLength":1,"example":"892970"}}
+                        schemaName={""}
+                        qualifierMessage={undefined}
+                        schema={"CheatStatusSubmission"}
                       >
                         
                       </SchemaItem>
@@ -130,7 +125,7 @@ Returns general game server information.
                   value={"Example (from schema)"}
                 >
                   <ResponseSamples
-                    responseExample={"{\n  \"MaxNumberOfPlayers\": 10,\n  \"GameVersion\": \"0.220.2\",\n  \"SteamAppId\": \"892970\"\n}"}
+                    responseExample={"{\n  \"9c858e4b-1c3a-5f2a-8f7d-4b6a1e2d3c4f\": {\n    \"Cheated\": false,\n    \"BypassEnabled\": false\n  }\n}"}
                     language={"json"}
                   >
                     

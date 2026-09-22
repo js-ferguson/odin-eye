@@ -1,0 +1,64 @@
+openapi: 3.0.0
+info:
+  title: OdinEye API
+  description: OdinEye API Specification
+  version: v1
+servers:
+  - url: http://localhost:2469
+tags:
+  - name: player
+    description: Player related resources
+    x-displayName: Players
+
+paths:
+  /players/{steamId}/notify:
+    post:
+      tags:
+        - player
+      summary: Show a HUD banner to one connected player
+      description: |-
+        Shows a brief message centered on screen to exactly one currently
+        connected player, using Valheim's own `MessageHud` "ShowMessage" routed
+        RPC -- this works for **every** player, whether or not they have
+        OdinEye.Client installed. POST-only: there's no state to read back.
+      parameters:
+        - name: steamId
+          in: path
+          required: true
+          description: The target player's Steam ID (64-bit, digits only).
+          schema:
+            type: string
+            example: "76561197960287930"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotifyRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedResponse'
+        '400':
+          description: "`steamId` isn't all digits, or `Message` is empty/whitespace/longer than 200 characters."
+        '404':
+          description: No player with that Steam ID is currently connected.
+
+components:
+  schemas:
+    NotifyRequest:
+      properties:
+        Message:
+          description: The text to show. Must be non-empty and at most 200 characters.
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: Welcome back!
+    AcceptedResponse:
+      properties:
+        Accepted:
+          type: boolean
+          example: true

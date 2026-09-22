@@ -1,0 +1,322 @@
+---
+id: submit-a-characters-stats
+title: "Submit a character's stats"
+description: "Accepted only from a currently connected player (`{id}`, see"
+sidebar_label: "Submit a character's stats"
+hide_title: true
+hide_table_of_contents: true
+api: eJztVl1v2zYU/SuEXhIHtpy4Wdd6wIA2DYpg6BIkaV/iAKaka5stRWokZdcw/N93LiUldpIVw7DHJkAiieT9POdcbpIg5z4Z3yX5QjqZB3I3QQaf3PeTgnzuVBWUNck4eZfnVAUqhDV6LWbOlkKKvHaOTMCH3BpDOa9XWq7JicPpRhXbaV94oomZXsWv6UUxFbUpsD79eH4rhs1mP+2l4nxJbi2WUtckytoHkZEw1gwMzWVQS+pPzEwZFajPLmqvMk1iZp0gLSsPx46kFkGVJLwyOYkvUi9IlQceK5qkx0Fpiok5OjJWaLtCEGEhDf5Q61Zq2CjWYkG6iKaxHoSXMPmN1kdHYjDg3ROzWlg493VWKu9RH6HYydemAIfGhoUyc/4oq0orKnpCzQQtyaB6rTNkI5XGDrMWdsZmPYl8Qfk3n4ppbMI0WsCZigxid5kKTqJGiAVVDbA1MVXtKutpLFYIFR5cTCdGFgIHcVkoc76m9AxxmIAoK+uCZ8s+WIdwpZ+YOeoLFysVFqi5mKnvWPCIppRooEWnDa1wANVg54eor64LNo98EKOY1aF2yKmtuUAgsS6yKHwPh6nwbBggM3NCfR2lST+pALmSgDlG4CYxeAHSVIElxZirZFjg2dFftUKoyTi4mp4C8xb5NjBCp9tsxcUHcSjF588XH3rsqEklGW+SsK7Yhw8O0WMFXS5lwJe6ht/t9r5xRz68t8WaTzz1DqQHVJKXYndzyYEMv3qOZrPjqnJonAuKPL81tMLDfvQ3XU0Hvze4SMUN0T47hr5BAyMygpz303dZVpo8p9cmZTNGIN5RdcX2pb7ai6HdZ+oyI7eb/Exb/N9u+8knCvJ5lJdVYy4VF3MTUZOtIzI1U9mTQ79/A+0QEdDM0HuyJY/o41il1pez2O79+jQCcVE8d84NngMaaK9dGTDXzAcKPZjDbis23O5WYpDxTGlKP1JoTX447E17UA/JQG0an4rbhYokYNqwkGkJ4UDMUUdy64BX7Fch+iTXSkfcPb26vNlpDsvckLmNFh2I6Xsqrqm0S4LSxa+CYb3bpgfstS3Ep8Gb0avT17+8PRm9eXV68vZ49Ob01wTdaEj7pSHTy5X5R6ofcAaeygwtaen44yBO0lE6Ok6PIw6CCvHjzYPGRWRs73cXz/ZmxuNWWOBtjnxljW/6Ozo+fgFXfyT/mVDdQNoBdmYhy9LsZsWc3Q25O3XdxtaGevpSdM0EY5RA0QES8FMVUVT6UWUzKASvxqzNfFhKzYyiYkhlFdZ9YR1QB33nVd0NGTbXjbQ44Lqpxuxp5tpaaOnm1Bh4MqkqR0tla49NrYA3Zh/GFcQhTWJKp89T+tN2lIlaHw+APIjphVGeRiRAoBe2YDW2PkTRhiiPk31xYo2NKtAoee00tixCqMbDobY5pgIOj0enr98mLLHc2+tHmT3vuvUokztS9KgML/PkGU32kazMzEaMtAjoRsS7q4vk6SzZWRM3FeVq1qIRO5cP5pcnXF8uRykjRNvBFQkQ1aTjxYEXXXn2HG0eQf/zYvXzYvW/X6xaPQz0PTAScJkCYCMpNy1/75IWIczc7sbPJOWlzSZDVz87vd3yZ/DU4Sp0h8eldEpmzCOwvFCen0HMmdT+6cVsF+OH1+0lqif+zXXtxfDbj2grk5E7jTc8om7NpRGzCSkAZ7jbcHjNwlkTxOCWjz8efDZptv3uREPIH+6935FFvg1gc9ZeF0tb8BknV3xzxd9xMsEvXmwsTJxd8fsm0WhaLee8v7HLP38DRxa6OQ==
+sidebar_class_name: "post api-method"
+info_path: docs/api-reference/odineye-api
+custom_edit_url: null
+---
+
+import ApiTabs from "@theme/ApiTabs";
+import DiscriminatorTabs from "@theme/DiscriminatorTabs";
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import SecuritySchemes from "@theme/ApiExplorer/SecuritySchemes";
+import MimeTabs from "@theme/MimeTabs";
+import ParamsItem from "@theme/ParamsItem";
+import ResponseSamples from "@theme/ResponseSamples";
+import SchemaItem from "@theme/SchemaItem";
+import SchemaTabs from "@theme/SchemaTabs";
+import Markdown from "@theme/Markdown";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+
+<h1
+  className={"openapi__heading"}
+>
+  Submit a character's stats
+</h1>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/players/stats"}
+>
+  
+</MethodEndpoint>
+
+
+
+Accepted only from a currently connected player (`{id}`, see
+`Player.Id` under `GET /players`). Every value must be non-negative,
+finite, plausible for elapsed real time since Valheim's release, and
+**no lower than the value already held for that same key** -- the
+whole submission is rejected (nothing is applied) if even one value
+fails any of these checks. `Stats` is an open, arbitrary key set on
+purpose: whatever the submitting OdinEye.Client reports is stored as
+given, with no fixed schema, so a new stat key (including ones a future
+Valheim version adds) needs no change here.
+
+## Request
+
+<details
+  style={{"marginBottom":"1rem"}}
+  className={"openapi-markdown__details"}
+  data-collapsed={false}
+  open={true}
+>
+  <summary
+    style={{}}
+  >
+    <h3
+      className={"openapi-markdown__details-summary-header-params"}
+    >
+      Path Parameters
+    </h3>
+  </summary><div>
+    <ul>
+      <ParamsItem
+        className={"paramsItem"}
+        param={{"name":"id","in":"path","required":true,"description":"The player's OdinEye ID (a UUID).","schema":{"type":"string","format":"uuid"}}}
+      >
+        
+      </ParamsItem>
+    </ul>
+  </div>
+</details><MimeTabs
+  className={"openapi-tabs__mime"}
+>
+  <TabItem
+    label={"application/json"}
+    value={"application/json-schema"}
+  >
+    <details
+      style={{}}
+      className={"openapi-markdown__details mime"}
+      data-collapsed={false}
+      open={true}
+    >
+      <summary
+        style={{}}
+        className={"openapi-markdown__details-summary-mime"}
+      >
+        <h3
+          className={"openapi-markdown__details-summary-header-body"}
+        >
+          Body
+        </h3><strong
+          className={"openapi-schema__required"}
+        >
+          required
+        </strong>
+      </summary><div
+        style={{"textAlign":"left","marginLeft":"1rem"}}
+      >
+        
+      </div><ul
+        style={{"marginLeft":"1rem"}}
+      >
+        <SchemaItem
+          collapsible={true}
+          className={"schemaItem"}
+        >
+          <details
+            style={{}}
+            className={"openapi-markdown__details"}
+          >
+            <summary
+              style={{}}
+            >
+              <span
+                className={"openapi-schema__container"}
+              >
+                <strong
+                  className={"openapi-schema__property"}
+                >
+                  Stats
+                </strong><span
+                  className={"openapi-schema__name"}
+                >
+                   object
+                </span>
+              </span>
+            </summary><div
+              style={{"marginLeft":"1rem"}}
+            >
+              <div
+                style={{"marginTop":".5rem","marginBottom":".5rem"}}
+              >
+                
+                
+                Stat key -&gt; value. See `GET /players/stats` for real key examples.
+                
+                
+              </div><SchemaItem
+                name={"property name*"}
+                required={false}
+                schemaName={"float"}
+                qualifierMessage={undefined}
+                schema={{"type":"number","format":"float"}}
+                collapsible={false}
+                discriminator={false}
+              >
+                
+              </SchemaItem>
+            </div>
+          </details>
+        </SchemaItem><SchemaItem
+          collapsible={true}
+          className={"schemaItem"}
+        >
+          <details
+            style={{}}
+            className={"openapi-markdown__details"}
+          >
+            <summary
+              style={{}}
+            >
+              <span
+                className={"openapi-schema__container"}
+              >
+                <strong
+                  className={"openapi-schema__property"}
+                >
+                  Meta
+                </strong><span
+                  className={"openapi-schema__name"}
+                >
+                   SubmissionMeta
+                </span>
+              </span>
+            </summary><div
+              style={{"marginLeft":"1rem"}}
+            >
+              <SchemaItem
+                collapsible={false}
+                name={"PlayerId"}
+                required={false}
+                schemaName={"string"}
+                qualifierMessage={undefined}
+                schema={{"description":"The game's own long-integer player ID (`PlayerProfile.GetPlayerID()`),\nas a string. This is what a claimed bed records as its owner, and\nwhat `POST /players/{id}/events`' `BedRemoved` event names.","type":"string","example":"-8234659128341902847"}}
+              >
+                
+              </SchemaItem><SchemaItem
+                collapsible={false}
+                name={"ClientVersion"}
+                required={false}
+                schemaName={"string"}
+                qualifierMessage={undefined}
+                schema={{"description":"The submitting OdinEye.Client's assembly version.","type":"string","example":"1.2.20.0"}}
+              >
+                
+              </SchemaItem>
+            </div>
+          </details>
+        </SchemaItem>
+      </ul>
+    </details>
+  </TabItem>
+</MimeTabs><div>
+  <div>
+    <ApiTabs
+      label={undefined}
+      id={undefined}
+    >
+      <TabItem
+        label={"200"}
+        value={"200"}
+      >
+        <div>
+          
+          
+          OK
+          
+          
+        </div><div>
+          <MimeTabs
+            className={"openapi-tabs__mime"}
+            schemaType={"response"}
+          >
+            <TabItem
+              label={"application/json"}
+              value={"application/json"}
+            >
+              <SchemaTabs
+                className={"openapi-tabs__schema"}
+              >
+                <TabItem
+                  label={"Schema"}
+                  value={"Schema"}
+                >
+                  <details
+                    style={{}}
+                    className={"openapi-markdown__details response"}
+                    data-collapsed={false}
+                    open={true}
+                  >
+                    <summary
+                      style={{}}
+                      className={"openapi-markdown__details-summary-response"}
+                    >
+                      <strong>
+                        Schema
+                      </strong>
+                    </summary><div
+                      style={{"textAlign":"left","marginLeft":"1rem"}}
+                    >
+                      
+                    </div><ul
+                      style={{"marginLeft":"1rem"}}
+                    >
+                      <SchemaItem
+                        collapsible={false}
+                        name={"Accepted"}
+                        required={false}
+                        schemaName={"boolean"}
+                        qualifierMessage={undefined}
+                        schema={{"type":"boolean","example":true}}
+                      >
+                        
+                      </SchemaItem>
+                    </ul>
+                  </details>
+                </TabItem><TabItem
+                  label={"Example (from schema)"}
+                  value={"Example (from schema)"}
+                >
+                  <ResponseSamples
+                    responseExample={"{\n  \"Accepted\": true\n}"}
+                    language={"json"}
+                  >
+                    
+                  </ResponseSamples>
+                </TabItem>
+              </SchemaTabs>
+            </TabItem>
+          </MimeTabs>
+        </div>
+      </TabItem><TabItem
+        label={"400"}
+        value={"400"}
+      >
+        <div>
+          
+          
+          `{id}` is not a valid UUID, the body is missing/malformed/empty, or
+          any single value is negative, non-finite, implausibly large, or
+          lower than the previously stored value for that key.
+          
+          
+        </div><div>
+          
+        </div>
+      </TabItem><TabItem
+        label={"404"}
+        value={"404"}
+      >
+        <div>
+          
+          
+          No player with that ID is currently connected.
+          
+          
+        </div><div>
+          
+        </div>
+      </TabItem>
+    </ApiTabs>
+  </div>
+</div>
+      

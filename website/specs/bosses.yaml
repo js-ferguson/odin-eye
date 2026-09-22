@@ -3,60 +3,61 @@ info:
   title: OdinEye API
   description: OdinEye API Specification
   version: v1
+servers:
+  - url: http://localhost:2469
 tags:
   - name: boss
     description: Boss related resources
     x-displayName: Bosses
 
 paths:
-  /v1/bosses:
+  /bossDetails:
     get:
       tags:
         - boss
-      summary: List all bosses
-      description: Returns a list of in-game bosses with names, keys and defeated status. The number of active bosses is also provided.
+      summary: Retrieve boss progression
+      description: Returns every boss with its name, key and defeated status, plus how many are currently active (summoned but not yet defeated).
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BossesResponse'
+                $ref: '#/components/schemas/BossDetails'
 
 components:
   schemas:
-    BossesResponse:
-      description: Represents a bosses response.
+    BossDetails:
+      description: Represents boss progression.
       type: object
       properties:
-        numberOfActiveBosses:
+        ActiveBosses:
           type: integer
-          description: |-
-            Number of currently active bosses.
-            An active boss represents a boss that has been summoned but has not yet been defeated.
+          description: Number of currently active (summoned, not yet defeated) bosses.
           format: int32
           minimum: 0
-          example: 2
-        entries:
+          example: 0
+        Bosses:
           type: array
           items:
             $ref: '#/components/schemas/Boss'
-          description: List of bosses.
+          description: |-
+            Always the same six bosses, in this order: Eikthyr, The Elder,
+            Bonemass, Moder, Yagluth, The Queen.
     Boss:
       description: Represents a boss.
       type: object
       properties:
-        key:
+        Key:
           description: Key of the boss.
           type: string
           minLength: 1
           example: gdking
-        name:
+        Name:
           description: Name of the boss.
           type: string
           minLength: 1
           example: The Elder
-        isDefeated:
+        IsDefeated:
           description: If true, the boss has been defeated.
           type: boolean
-      

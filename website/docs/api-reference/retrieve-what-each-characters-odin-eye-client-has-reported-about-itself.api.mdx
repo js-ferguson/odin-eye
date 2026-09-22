@@ -1,11 +1,11 @@
 ---
-id: retrieve-game-server-info
-title: "Retrieve game server info"
-description: "Returns general game server information."
-sidebar_label: "Retrieve game server info"
+id: retrieve-what-each-characters-odin-eye-client-has-reported-about-itself
+title: "Retrieve what each character's OdinEye.Client has reported about itself"
+description: "Returns the `Meta` (`PlayerId`, `ClientVersion`) last submitted alongside"
+sidebar_label: "Retrieve what each character's OdinEye.Client has reported about itself"
 hide_title: true
 hide_table_of_contents: true
-api: eJylU01v2zAM/SsCz0GduMO25BZgRVHsI8Wy7VL0oNiMrc2SNYk2Ehj+7yNtZ0ua09CDYYGk3nt8pDogXURYPUHE0GKA5xnkGLNgPJnawQq+IjXBRVWgw6ArVWiLaixWxu3rYLVU3sAMAkZfu4iM10E6n8vvEmzzkcuy2hE6kqz2vjLZAJD8jFLSQcxKtFpOPtQeA5kR8LM+fGnsDsNm/1jpI4YhSkePDGwYsmD5L9XzJWMbq9xwU9V75ce7ipGtIcJc1U5ReepJ+hibGlFvUw5Y4wQFVosZ4EFbXzHnYt7P4J7d+MFwZtR+ST4lhFUIzpwTlkl5pGBcMZJ8QldQeUkD85s05Q+YbUuo7dr7h/yabMipM0OVydllszdj369Q8H6ZLt/NoWcFZGgIbQeQD0jaVJEzvSQtUlmzNCiQGM5rQYIkXtTOpk2TpeugCRWXlER+lSRVnemqrCOt0jdvl9DzLsqGDWOeeDe5cXdHVOvHh6tZn+XU1mPGrY9OcGV7mhG0C3HSM4vVw8wcmzLueTDY4tWCv+Tp/i3w/zyOyWzCAyW8g8aJjKH9bnLq9AZPTnH7YoYkum6nI34PVd9L+HeD4chxPrY6GL0Tb56eGbBEnfMzEGt/IZfAOsvQyzRaXTUi4OrJic1/J3d/942n+Qer8mbt
+api: eJztVU1P20AQ/SujvRSkxElMgMANtahCVQUqtBeo5LE9iZfau9vdSdrIyn/vrGMCKVVPPTaXZHe+3rx5s2kV4yKo83tVVOixYPK3jBzU14EqKRReO9bWqHP1iXjpTQCuCLKPxJjBQXZT45r8VZkNIHtbazL8hXyQgOwQagwMYZk3mplKwNqaRdAlPRjCooJdvTcBQiwJB4Ek9c317R2MXJc4jFpdbkadOTscwDdaS6Z8/WC2drh69xTVnRNBAktTiiV7f/mcJjtM4AICOSnJBGRKZ7XhBzP3ttl37YtBsNIpMlhDAtD+MOApOGsCQajQERhakX8w0oZZUEjgykBDjfVrCanXMBxCURN6wWu7WEbPiRqopzRCeqvS8Th+7TN9/UHcCmtY6IxWdK7WBUbr6DFEl1aFoqIG4y9eO5Igmz9SwRKIZamjK9Y33jryrLel3N7paXCvq9/JfBfYPHUdpzYUrmghpL5gvWdcasx1Tcl74j7lu4PDOCoMgDJXr80idt2j3F7ImX5i4+p4NZylR9OT47NJOjuaTs7G6Wx6qjYDtSenP8PsxSUZ4brU5nJNyTZKsGMI1OQyiNU2w99BTJI0ScfJWG2kMmvuLm9j+hCDo9wjpl1Aq86K2fGMpvlwUhzh8Hie4nA2Py2H0/wEJ5SWR8V0vk/0nzt91ehLLN1noBriysYMC4oTdsiVHHaKbSK6gQrkY6+yy61a+lo8KmZ3PhrVtsC6soHP0+nJmdrIamszt514+lZ7+uDi5kr9vvgvbHDrqNDzXoziudqhXk0iQU6qNNiNy4iGts+G17Iq8CNu06vN358bVCIbT8767sXI7ZJBc6B6/juq9nlB/r9M/+hl6teD6SfHmtrEiXZKanvN3asei+pEifFfIgorWto2x0Cffb3ZxOvvS/JruZefK/Qa86iz+6+SsSIUGjqZCmtS8KIoyEVhr7BeRgSvHrwo2d0SCCeyGr8AvftNug==
 sidebar_class_name: "get api-method"
 info_path: docs/api-reference/odineye-api
 custom_edit_url: null
@@ -27,19 +27,23 @@ import TabItem from "@theme/TabItem";
 <h1
   className={"openapi__heading"}
 >
-  Retrieve game server info
+  Retrieve what each character's OdinEye.Client has reported about itself
 </h1>
 
 <MethodEndpoint
   method={"get"}
-  path={"/serverDetails"}
+  path={"/players/meta"}
 >
   
 </MethodEndpoint>
 
 
 
-Returns general game server information.
+Returns the `Meta` (`PlayerId`, `ClientVersion`) last submitted alongside
+each character's stats (see `POST /players/{id}/stats`), keyed by
+player ID (see `Player.Id` under `GET /players`). A separate endpoint
+from `GET /players/stats` so that one's own response shape never
+changes. In memory only -- cleared on restart.
 
 ## Request
 
@@ -97,29 +101,20 @@ Returns general game server information.
                     >
                       <SchemaItem
                         collapsible={false}
-                        name={"MaxNumberOfPlayers"}
+                        name={"properties"}
                         required={false}
-                        schemaName={"int32"}
-                        qualifierMessage={"**Possible values:** `>= 1`"}
-                        schema={{"type":"integer","description":"Maximum number of players permitted on the server.","format":"int32","minimum":1,"example":10}}
+                        schemaName={""}
+                        qualifierMessage={undefined}
+                        schema={{"PlayerId":{"description":"The game's own long-integer player ID (`PlayerProfile.GetPlayerID()`), as a string.","type":"string","example":"-8234659128341902847"},"ClientVersion":{"description":"The submitting OdinEye.Client's assembly version.","type":"string","example":"1.2.20.0"}}}
                       >
                         
                       </SchemaItem><SchemaItem
                         collapsible={false}
-                        name={"GameVersion"}
+                        name={"title"}
                         required={false}
-                        schemaName={"string"}
-                        qualifierMessage={"**Possible values:** `non-empty`"}
-                        schema={{"description":"Version of the game server.","type":"string","minLength":1,"example":"0.220.2"}}
-                      >
-                        
-                      </SchemaItem><SchemaItem
-                        collapsible={false}
-                        name={"SteamAppId"}
-                        required={false}
-                        schemaName={"string"}
-                        qualifierMessage={"**Possible values:** `non-empty`"}
-                        schema={{"description":"Steam application identifier of the game server.","type":"string","minLength":1,"example":"892970"}}
+                        schemaName={""}
+                        qualifierMessage={undefined}
+                        schema={"SubmissionMeta"}
                       >
                         
                       </SchemaItem>
@@ -130,7 +125,7 @@ Returns general game server information.
                   value={"Example (from schema)"}
                 >
                   <ResponseSamples
-                    responseExample={"{\n  \"MaxNumberOfPlayers\": 10,\n  \"GameVersion\": \"0.220.2\",\n  \"SteamAppId\": \"892970\"\n}"}
+                    responseExample={"{\n  \"9c858e4b-1c3a-5f2a-8f7d-4b6a1e2d3c4f\": {\n    \"PlayerId\": \"-8234659128341902847\",\n    \"ClientVersion\": \"1.2.20.0\"\n  }\n}"}
                     language={"json"}
                   >
                     

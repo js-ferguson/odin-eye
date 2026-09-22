@@ -3,13 +3,15 @@ info:
   title: OdinEye API
   description: OdinEye API Specification
   version: v1
+servers:
+  - url: http://localhost:2469
 tags:
   - name: world
     description: World related resources
     x-displayName: World
 
 paths:
-  /v1/worldInfo:
+  /worldDetails:
     get:
       tags:
         - world
@@ -21,19 +23,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorldInfo'
+                $ref: '#/components/schemas/WorldDetails'
 
 components:
   schemas:
-    WorldInfo:
+    WorldDetails:
       properties:
-        dayNumber: 
+        DayNumber:
           type: integer
           description: The current in-game day.
           format: int32
           minimum: 1
           example: 12
-        dayCycle:
+        DayCycle:
           description: The current in-game day cycle.
           type: string
           enum:
@@ -41,45 +43,51 @@ components:
             - afternoon
             - night
             - unknown
-        worldName:
+        NetTime:
+          description: |-
+            Live, in-game elapsed seconds (`ZNet`'s own network time). Finer-grained
+            than `DayNumber` -- use this to render an actual time-of-day clock rather
+            than just a day count (`DayNumber` is `NetTime` divided by the day length).
+          type: number
+          format: double
+          example: 187452.3
+        WorldName:
           description: Name of the game world.
           type: string
           minLength: 1
           example: Dedicated
-        seedName:
+        SeedName:
           description: Name of the game world seed.
           type: string
           minLength: 1
           example: 3BdkT6jHFn
-        worldKeys:
-          description: List of world keys.
+        WorldKeys:
+          description: The world's starting global keys.
           type: array
           items:
             type: string
             minLength: 1
-        globalKeys:
-          description: List of global keys.
+        GlobalKeys:
+          description: |-
+            Every global key the world currently has, whatever set it -- boss
+            defeats, active random events, the world's difficulty preset (see
+            `GET /worldModifiers`), and anything a future game update adds. Not a
+            fixed set: treat unrecognized names as normal, forward-compatible data.
           type: array
           items:
             $ref: '#/components/schemas/GlobalKey'
     GlobalKey:
       description: Represents a global key.
       properties:
-        name: 
-          description: Name of the global key.
+        Name:
+          description: |-
+            Name of the global key, e.g. `activebosses`, `defeated_gdking`,
+            `killedtroll`, or `preset`.
           type: string
           minLength: 1
-          enum:
-            - activebosses
-            - defeated_eikthyr
-            - defeated_gdking
-            - defeated_bonemass
-            - defeated_dragon
-            - defeated_goblinking
-            - defeated_queen
-            - killedtroll
-        value: 
+          example: defeated_gdking
+        Value:
           description: |-
-            Value of the global key. For the majority of keys, the value will be an empty string.
-            If the key name matches `activebosses`, the corresponding value will be an integer, such as `"1"` 
+            Value of the global key. For most keys this is an empty string; a
+            handful (e.g. `activebosses`, `preset`) carry real data.
           type: string

@@ -1,0 +1,228 @@
+---
+id: show-a-hud-banner-to-one-connected-player
+title: "Show a HUD banner to one connected player"
+description: "Shows a brief message centered on screen to exactly one currently"
+sidebar_label: "Show a HUD banner to one connected player"
+hide_title: true
+hide_table_of_contents: true
+api: eJztVU1v2zgQ/SuzvLQN/JGkWWejWzct0KAfCZy0PcQBQktjixuKVEnKjiD4v++MRMeCE+wh542BgOQMZ4Zv3jw1IsilF8mtKLWs0Ym7gcjQp06VQVkjEnGd27UHCXOncAEFei+XCCmagA4zsAbIG9FAsICPMg26pkPyqJwjJ13PTGqNwTSQd5dkAJVXZgk/pc5RFW882LWB+29d7M9Vdg+zNm88mQlwtqL7MzO9OofhEEKuPKyte/CwsA4ODnCFrj44eEqwzjHk6ICMxgbyxxpyucKZucyU+VTj6FwrKg+U8UFqjdkIri6vb4bW6Dphf4dUl7FA5oD8OIcyg7lMH0ZiIErpZIEEAWPXCEMbwsoHlMVFRnbF0JUy5LR2+LtShJVIgqtwH9+bnKJLt8QQi6e01xwHLj7C28nJcK7CADK1VIFwourecX6f5lhIkTQi1GWX2hGkZKEeFKXmo9PJn5Ojo7PTs8nh8V+nZ+8PxWZz15WDPvxts5rv71dHzQoEDJtkWWqVSi50/I/napte4tLZEl1Q6HkXW8XLF96Hj4Eh9NTTEXyrfIA5ErhmiEUZapAmAxmgsGQ4PjyENCd4U0aX37r/wkKZr2iWhG1yRDv5uN3R1f77f6FObYFtz/6gt1MkFVrLdxvUop52QJCFbQ59aY3vXkORnr/k8ot4NTwf0hTLwCg/dWxurUZp+i3jDvTr3N6axtpiqScvVXcfyXcPyps3AYjUkTUDnoLtdLEZWtTH61wFCixTHGtrljQtIZfmWQPahCfPE363kbCwViHnu2FHXEryJADwNP+jtgs0N7nNeD6o3+0scfPEuIvmx018yWZs2j4x3dGttrNWOU3eeQhlMqbCUxIRipMcn0zOBPObWzHdcfzTFtweR/epwfO6sG1vIvJRJeDD1YXYn9ieDa5LTNUisoA8ucrOa3XEcfmJhWypETWCdY3k9POPj5SdcHE8GK1g7qnkft5mx73/RflFUY6DxWrDZCINpg60dGkiybafOU/eyU6tI8+IPEwldmuaufT4w+nNho+JTY7U8paWK+mUnDNJiIuZ8rwmMi+k9vva3u/Y22nU2XfwOsV/8XHxUBoekpXUFe9o+YB173O0uSPXnJAiUnHVnfW8q214wzF2t5+p2mawvdHJ0X/63vXGm1tHzvP4oSlsxnecXPM3kf4nYkY/2tgWr1Yn2/NGaGmWVTeqXVz++xeB0/xe
+sidebar_class_name: "post api-method"
+info_path: docs/api-reference/odineye-api
+custom_edit_url: null
+---
+
+import ApiTabs from "@theme/ApiTabs";
+import DiscriminatorTabs from "@theme/DiscriminatorTabs";
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import SecuritySchemes from "@theme/ApiExplorer/SecuritySchemes";
+import MimeTabs from "@theme/MimeTabs";
+import ParamsItem from "@theme/ParamsItem";
+import ResponseSamples from "@theme/ResponseSamples";
+import SchemaItem from "@theme/SchemaItem";
+import SchemaTabs from "@theme/SchemaTabs";
+import Markdown from "@theme/Markdown";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+
+<h1
+  className={"openapi__heading"}
+>
+  Show a HUD banner to one connected player
+</h1>
+
+<MethodEndpoint
+  method={"post"}
+  path={"/players/{steamId}/notify"}
+>
+  
+</MethodEndpoint>
+
+
+
+Shows a brief message centered on screen to exactly one currently
+connected player, using Valheim's own `MessageHud` "ShowMessage" routed
+RPC -- this works for **every** player, whether or not they have
+OdinEye.Client installed. POST-only: there's no state to read back.
+
+## Request
+
+<details
+  style={{"marginBottom":"1rem"}}
+  className={"openapi-markdown__details"}
+  data-collapsed={false}
+  open={true}
+>
+  <summary
+    style={{}}
+  >
+    <h3
+      className={"openapi-markdown__details-summary-header-params"}
+    >
+      Path Parameters
+    </h3>
+  </summary><div>
+    <ul>
+      <ParamsItem
+        className={"paramsItem"}
+        param={{"name":"steamId","in":"path","required":true,"description":"The target player's Steam ID (64-bit, digits only).","schema":{"type":"string","example":"76561197960287930"}}}
+      >
+        
+      </ParamsItem>
+    </ul>
+  </div>
+</details><MimeTabs
+  className={"openapi-tabs__mime"}
+>
+  <TabItem
+    label={"application/json"}
+    value={"application/json-schema"}
+  >
+    <details
+      style={{}}
+      className={"openapi-markdown__details mime"}
+      data-collapsed={false}
+      open={true}
+    >
+      <summary
+        style={{}}
+        className={"openapi-markdown__details-summary-mime"}
+      >
+        <h3
+          className={"openapi-markdown__details-summary-header-body"}
+        >
+          Body
+        </h3><strong
+          className={"openapi-schema__required"}
+        >
+          required
+        </strong>
+      </summary><div
+        style={{"textAlign":"left","marginLeft":"1rem"}}
+      >
+        
+      </div><ul
+        style={{"marginLeft":"1rem"}}
+      >
+        <SchemaItem
+          collapsible={false}
+          name={"Message"}
+          required={false}
+          schemaName={"string"}
+          qualifierMessage={"**Possible values:** `non-empty` and `<= 200 characters`"}
+          schema={{"description":"The text to show. Must be non-empty and at most 200 characters.","type":"string","minLength":1,"maxLength":200,"example":"Welcome back!"}}
+        >
+          
+        </SchemaItem>
+      </ul>
+    </details>
+  </TabItem>
+</MimeTabs><div>
+  <div>
+    <ApiTabs
+      label={undefined}
+      id={undefined}
+    >
+      <TabItem
+        label={"200"}
+        value={"200"}
+      >
+        <div>
+          
+          
+          OK
+          
+          
+        </div><div>
+          <MimeTabs
+            className={"openapi-tabs__mime"}
+            schemaType={"response"}
+          >
+            <TabItem
+              label={"application/json"}
+              value={"application/json"}
+            >
+              <SchemaTabs
+                className={"openapi-tabs__schema"}
+              >
+                <TabItem
+                  label={"Schema"}
+                  value={"Schema"}
+                >
+                  <details
+                    style={{}}
+                    className={"openapi-markdown__details response"}
+                    data-collapsed={false}
+                    open={true}
+                  >
+                    <summary
+                      style={{}}
+                      className={"openapi-markdown__details-summary-response"}
+                    >
+                      <strong>
+                        Schema
+                      </strong>
+                    </summary><div
+                      style={{"textAlign":"left","marginLeft":"1rem"}}
+                    >
+                      
+                    </div><ul
+                      style={{"marginLeft":"1rem"}}
+                    >
+                      <SchemaItem
+                        collapsible={false}
+                        name={"Accepted"}
+                        required={false}
+                        schemaName={"boolean"}
+                        qualifierMessage={undefined}
+                        schema={{"type":"boolean","example":true}}
+                      >
+                        
+                      </SchemaItem>
+                    </ul>
+                  </details>
+                </TabItem><TabItem
+                  label={"Example (from schema)"}
+                  value={"Example (from schema)"}
+                >
+                  <ResponseSamples
+                    responseExample={"{\n  \"Accepted\": true\n}"}
+                    language={"json"}
+                  >
+                    
+                  </ResponseSamples>
+                </TabItem>
+              </SchemaTabs>
+            </TabItem>
+          </MimeTabs>
+        </div>
+      </TabItem><TabItem
+        label={"400"}
+        value={"400"}
+      >
+        <div>
+          
+          
+          `steamId` isn't all digits, or `Message` is empty/whitespace/longer than 200 characters.
+          
+          
+        </div><div>
+          
+        </div>
+      </TabItem><TabItem
+        label={"404"}
+        value={"404"}
+      >
+        <div>
+          
+          
+          No player with that Steam ID is currently connected.
+          
+          
+        </div><div>
+          
+        </div>
+      </TabItem>
+    </ApiTabs>
+  </div>
+</div>
+      

@@ -1,0 +1,164 @@
+---
+id: retrieve-every-characters-submitted-stats
+title: "Retrieve every character's submitted stats"
+description: "Returns every character's stats last submitted by their OdinEye.Client,"
+sidebar_label: "Retrieve every character's submitted stats"
+hide_title: true
+hide_table_of_contents: true
+api: eJztVE1v2zAM/SuCMKAb4Hw27dLcgrTbih5arC12aIpFlplYnSx5lJzWMPLfRybu54YBu88XW+Qj+Ug9upFRrYKc3EidK1Q6Al5GFYO8TWQGQaMpo/FOTuRXiBW6IGANWIsn9F4QgQOEVSGKUKWFiREykdYi5mBQnGfGndTQnVkDLiZz9wPqnb+0qgYUp8fifQAQi4vtuXuaLUTlMvIsPp9cid4OFhYfuuLUiQIKj/XceWdr0ekIbUEh5fNOIBATjF0xfaZHJFQUuQrCMXGBlZu7N5SER0a4vZf8g3EauIVdY23uhOxFSZUJP3fOC4rHuisTSYDSuwA0y0YO+31+vR7g+RnBtHeRYtirytIardjbuwsMaWTQORSKv2JdAgX59A50pECVZYahyl6gLwGj2ZX6R5yrihSQcEuPhSIecmk9vTebRMKDot6A0Ud6fDCGUdoZ6H3VOVgOVWe8/Jh1RumhGsAw29ejJePOjLWUfjQYJvIYVMzpsJ/ITybkM1Wtciow6I8TyVd7ZQq4BBpARqDB0ehgSEFnzt+7bx5tFma+4sGQ8cRBUXPqyRV6a+XkkDIY0EBpNGSTdyUfvt97/JGC0zkR4PJo1uRk+VL/53hdrlBlbQxVHCRyVoXoi8kU0d9/MTFsC1HJUX+zexJZQMw9weUKeJwl9USHRxH2tlonewAkOfHiNLJCoijzGMtJr2e9Vjb3IVLWwyO5oT0ybum3V2AiT1e28hPTi1P5dste+MRlCdosW4kQkgvuUOuBJKolVSnUVjdOFbDbUTSk8z8t6bOy2xZeFW6elfl/0/++6e0mRXiIzNg4voutBppWLjey7YSF8vg3ZU2wq2lSFeAa7WbD5p8VDZns9LlWaFTKErm5pZQ5kHpxqzAaJFWcag0li3KtbMUUfvuDsNqeBEwjpbX+BQXMCZ8=
+sidebar_class_name: "get api-method"
+info_path: docs/api-reference/odineye-api
+custom_edit_url: null
+---
+
+import ApiTabs from "@theme/ApiTabs";
+import DiscriminatorTabs from "@theme/DiscriminatorTabs";
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import SecuritySchemes from "@theme/ApiExplorer/SecuritySchemes";
+import MimeTabs from "@theme/MimeTabs";
+import ParamsItem from "@theme/ParamsItem";
+import ResponseSamples from "@theme/ResponseSamples";
+import SchemaItem from "@theme/SchemaItem";
+import SchemaTabs from "@theme/SchemaTabs";
+import Markdown from "@theme/Markdown";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+
+<h1
+  className={"openapi__heading"}
+>
+  Retrieve every character's submitted stats
+</h1>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/players/stats"}
+>
+  
+</MethodEndpoint>
+
+
+
+Returns every character's stats last submitted by their OdinEye.Client,
+keyed by player ID (see `Player.Id` under `GET /players`). In memory
+only -- cleared on restart. A character that has never run
+OdinEye.Client, or hasn't submitted since the last restart, simply has
+no entry.
+
+## Request
+
+<div>
+  <div>
+    <ApiTabs
+      label={undefined}
+      id={undefined}
+    >
+      <TabItem
+        label={"200"}
+        value={"200"}
+      >
+        <div>
+          
+          
+          OK
+          
+          
+        </div><div>
+          <MimeTabs
+            className={"openapi-tabs__mime"}
+            schemaType={"response"}
+          >
+            <TabItem
+              label={"application/json"}
+              value={"application/json"}
+            >
+              <SchemaTabs
+                className={"openapi-tabs__schema"}
+              >
+                <TabItem
+                  label={"Schema"}
+                  value={"Schema"}
+                >
+                  <details
+                    style={{}}
+                    className={"openapi-markdown__details response"}
+                    data-collapsed={false}
+                    open={true}
+                  >
+                    <summary
+                      style={{}}
+                      className={"openapi-markdown__details-summary-response"}
+                    >
+                      <strong>
+                        Schema
+                      </strong>
+                    </summary><div
+                      style={{"textAlign":"left","marginLeft":"1rem"}}
+                    >
+                      
+                    </div><ul
+                      style={{"marginLeft":"1rem"}}
+                    >
+                      <SchemaItem
+                        collapsible={true}
+                        className={"schemaItem"}
+                      >
+                        <details
+                          style={{}}
+                          className={"openapi-markdown__details"}
+                        >
+                          <summary
+                            style={{}}
+                          >
+                            <span
+                              className={"openapi-schema__container"}
+                            >
+                              <strong
+                                className={"openapi-schema__property"}
+                              >
+                                property name*
+                              </strong><span
+                                className={"openapi-schema__name"}
+                              >
+                                 object
+                              </span>
+                            </span>
+                          </summary><div
+                            style={{"marginLeft":"1rem"}}
+                          >
+                            <SchemaItem
+                              name={"property name*"}
+                              required={false}
+                              schemaName={"float"}
+                              qualifierMessage={undefined}
+                              schema={{"type":"number","format":"float"}}
+                              collapsible={false}
+                              discriminator={false}
+                            >
+                              
+                            </SchemaItem>
+                          </div>
+                        </details>
+                      </SchemaItem>
+                    </ul>
+                  </details>
+                </TabItem><TabItem
+                  label={"Example (from schema)"}
+                  value={"Example (from schema)"}
+                >
+                  <ResponseSamples
+                    responseExample={"{\n  \"9c858e4b-1c3a-5f2a-8f7d-4b6a1e2d3c4f\": {\n    \"Kills\": 412,\n    \"Deaths\": 3,\n    \"FishCaught\": 108,\n    \"PlayTimeSeconds\": 194522,\n    \"KnownWorldsCount\": 2,\n    \"EnemyKill:Troll\": 6,\n    \"PiecePlaced:$piece_workbench\": 4,\n    \"Derived:StationOrUpgradePlaced\": 11,\n    \"Custom:ArrowHitsEnemy\": 240\n  }\n}"}
+                    language={"json"}
+                  >
+                    
+                  </ResponseSamples>
+                </TabItem>
+              </SchemaTabs>
+            </TabItem>
+          </MimeTabs>
+        </div>
+      </TabItem>
+    </ApiTabs>
+  </div>
+</div>
+      

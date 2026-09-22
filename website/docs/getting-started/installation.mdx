@@ -7,18 +7,24 @@ import TabItem from '@theme/TabItem';
 
 # Installation
 
-OdinEye is a <b>server side</b> plugin that can be installed on Valheim dedicated servers.
+OdinEye is a <b>server side</b> plugin, installed once on the Valheim dedicated server. A separate, optional <b>client side</b> mod, **OdinEye.Client**, can be installed by individual players on their own PC -- see [OdinEye.Client](#odineyeclient-optional-player-side) below. Installing OdinEye.Client does not require reinstalling or reconfiguring OdinEye itself.
 
 ## Requirements
 
-- An instance of Valheim dedicated game server up and running (under Windows or Linux)
-- [BepInEx](https://github.com/BepInEx/BepInEx) installed on the game server (version [5.4.22](https://github.com/BepInEx/BepInEx/releases/tag/v5.4.22) is recommended)
-- Access to the server file system (with a `FTP` client or similar tools provided by hosting services)
+- An instance of the Valheim dedicated server up and running (Windows or Linux)
+- [BepInEx](https://github.com/BepInEx/BepInEx) installed on the server (the [denikson BepInExPack_Valheim](https://valheim.thunderstore.io/package/denikson/BepInExPack_Valheim/) build, version 5.4.2350 or newer)
+- Access to the server's file system (an `FTP`/`SFTP` client, or whatever your hosting provider gives you)
 
 ## Deploying plugin files
 
-Download the plugins files from the latest release.  
-Copy all the `*.dll` files into the server's BepInEx plugins folder located at `Valheim/BepInEx/plugins`
+<Tabs>
+  <TabItem value="thunderstore" label="Thunderstore (recommended)" default>
+    OdinEye is published on Thunderstore as [`SeasonedProfessionals-OdinEye`](https://thunderstore.io/c/valheim/p/SeasonedProfessionals/OdinEye/). If your host uses a mod manager that installs from Thunderstore (r2modman, Thunderstore Mod Manager, or your hosting provider's own mod panel), search for `OdinEye` under the `SeasonedProfessionals` team and install it -- BepInExPack_Valheim is declared as a dependency and gets installed alongside it automatically.
+  </TabItem>
+  <TabItem value="manual" label="Manual (GitHub release)">
+    Download `OdinEye-<version>.zip` from the [latest release](https://github.com/js-ferguson/odin-eye/releases/latest) and copy every `.dll` inside it into the server's BepInEx plugins folder, `Valheim/BepInEx/plugins/OdinEye/` (any folder name works -- BepInEx scans the whole `plugins/` tree).
+  </TabItem>
+</Tabs>
 
 ## Dry run and configuration
 
@@ -26,7 +32,7 @@ Start the dedicated server instance.
 OdinEye will generate a configuration file at `Valheim/BepInEx/config` named `org.bepinex.plugins.odineye.cfg`, with a default `HttpServerAddress` that works out of the box for a server and its API consumers running on the same machine — no editing required to get started:
 
 ```cfg title="/Valheim/BepInEx/config/org.bepinex.plugins.odineye.cfg"
-## Settings file was created by plugin odineye v0.0.1.0
+## Settings file was created by plugin odineye v1.0.0.0
 ## Plugin GUID: org.bepinex.plugins.odineye
 
 [Hosting]
@@ -49,7 +55,7 @@ Only change `HttpServerAddress` if you need the API reachable from somewhere oth
     - Server hosted on a external provider (online hosting service)
     - Server hosted on local/own infrastructure, reachable from other machines on the network
 
-    If you point it at anything other than `localhost`, make sure you actually want the API exposed there — restrict access at the firewall level since the API itself doesn't authenticate requests.
+    If you point it at anything other than `localhost`, make sure you actually want the API exposed there — restrict access at the firewall level since the API itself doesn't authenticate requests. If you need it reachable by an OdinEye.Client running on a player's own PC without opening it to the whole internet, put it behind something that adds authentication (a reverse proxy, a VPN/tunnel) rather than exposing it directly.
 
     :warning: This property is experimental and is likely to be deprecated in future releases.
   </TabItem>
@@ -67,21 +73,30 @@ Save the changes made to the configuration file and restart the dedicated server
 Upon restarting, check the BepInEx logs for the presence of the following lines:  
 
 ```shell
-[Message:   BepInEx] Preloader started
-[Info   :   BepInEx] Loaded 1 patcher method from [BepInEx.Preloader 5.4.22.0]
-[Info   :   BepInEx] 1 patcher plugin loaded
-[Info   :   BepInEx] Patching [UnityEngine.CoreModule] with [BepInEx.Chainloader]
-[Message:   BepInEx] Preloader finished
-[Message:   BepInEx] Chainloader ready
-[Message:   BepInEx] Chainloader started
-[Info   :   BepInEx] 1 plugin to load
+[Message:   BepInEx] Preloader started
+[Info   :   BepInEx] Loaded 1 patcher method from [BepInEx.Preloader 5.4.22.0]
+[Info   :   BepInEx] 1 patcher plugin loaded
+[Info   :   BepInEx] Patching [UnityEngine.CoreModule] with [BepInEx.Chainloader]
+[Message:   BepInEx] Preloader finished
+[Message:   BepInEx] Chainloader ready
+[Message:   BepInEx] Chainloader started
+[Info   :   BepInEx] 1 plugin to load
 // highlight-start
-[Info   :   BepInEx] Loading [odineye 0.0.1.0]
-[Info   :   odineye] OdinEye starting!
-[Info   :   odineye] Starting Http Server at ...
-[Info   :   odineye] OdinEye running!
+[Info   :   BepInEx] Loading [odineye 1.0.0.0]
+[Info   :   odineye] OdinEye starting!
+[Info   :   odineye] Starting Http Server at ...
+[Info   :   odineye] OdinEye running!
 // highlight-end
-[Message:   BepInEx] Chainloader startup complete
+[Message:   BepInEx] Chainloader startup complete
 ```
 
-Locating these lines confirms successful installation of the plugin.
+Locating these lines confirms successful installation of the plugin. You can also confirm it directly, from the same machine as the server: `curl http://localhost:2469/serverDetails` should return a small JSON document describing the server.
+
+## OdinEye.Client (optional, player-side)
+
+OdinEye.Client is a separate mod each player installs on their **own** PC, not the server. It reads the local player's own full lifetime character stats (only ever fully available client-side -- the server never sees a character's complete history) and submits them to your server's OdinEye instance, and reports the couple of events only a player's own machine can observe.
+
+- Published on Thunderstore as [`SeasonedProfessionals-OdinEyeClient`](https://thunderstore.io/c/valheim/p/SeasonedProfessionals/OdinEyeClient/) -- install it the same way as any other Thunderstore mod for the Valheim **client** (not the dedicated server).
+- It also needs BepInEx installed on the player's own Valheim, same as the server -- a mod manager (r2modman, Thunderstore Mod Manager) sets this up automatically and gives you a "Modded" launch button.
+- After it's installed, open its generated config (`BepInEx/config/org.bepinex.plugins.odineye.client.cfg`) and set `ServerUrl` under `[Server]` to your server's OdinEye address (the same `HttpServerAddress` from the server-side config above, reachable from the player's own machine). It ships **disabled** by default -- leaving `ServerUrl` empty reads nothing from the character and sends nothing anywhere.
+- A small in-game clock (below the minimap) is on by default regardless of `ServerUrl` -- it's purely local and doesn't need a server at all.

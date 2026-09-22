@@ -3,74 +3,74 @@ info:
   title: OdinEye API
   description: OdinEye API Specification
   version: v1
+servers:
+  - url: http://localhost:2469
 tags:
   - name: player
     description: Player related resources
     x-displayName: Players
 
 paths:
-  /v1/players:
+  /players:
     get:
       tags:
         - player
-      summary: List all players
-      description: Returns a list of in-game players.
+      summary: List all connected players
+      description: |-
+        Returns a bare JSON array (not wrapped in an envelope) of every currently
+        connected player, with their live health/stamina.
       responses:
         '200':
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PlayersResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/Player'
 
 components:
   schemas:
-    PlayersResponse:
-      description: Represents a players response.
-      type: object
-      properties:
-        entries:
-          type: array
-          items:
-            $ref: '#/components/schemas/Player'
-          description: List of players.
     Player:
-      description: Represents a player.
+      description: Represents a connected player.
       properties:
-        id: 
-          description: Unique identifier of the player.
+        Id:
+          description: |-
+            OdinEye's own stable identifier for this player: a v5 UUID derived
+            from the character's Steam ID and character name (the same
+            derivation valheim_server's own agent reproduces independently to
+            match records without calling OdinEye -- see `NameBasedGuid`).
           type: string
           format: uuid
-        characterId:
-          description: Unique identifier of the character.
+        CharacterId:
+          description: The game's own live character/ZDO identifier (changes across sessions).
           type: string
-          example: 34512
-        name:
-          description: Name of the player.
+          example: "34512:8821"
+        Name:
+          description: Name of the player's character.
           type: string
           minLength: 1
           example: Thor
-        steamId:
+        SteamId:
           description: Steam identifier (64 bits) of the player.
           type: string
           minLength: 1
-          example: 76561197960287930
-        health:
-          description: Health value of the player.
+          example: "76561197960287930"
+        Health:
+          description: Current health value.
           type: number
           format: float
           minimum: 0.00
           example: 60.00
-        maxHealth:
-          description: Maximum health value of the player.
+        MaxHealth:
+          description: Maximum health value.
           type: number
           format: float
           minimum: 0.00
           example: 100.00
-        stamina:
-          description: Stamina value of the player.
+        Stamina:
+          description: Current stamina value.
           type: number
           format: float
           minimum: 0.00
           example: 30.00
-      

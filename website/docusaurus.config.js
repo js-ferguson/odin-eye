@@ -5,11 +5,11 @@ import {themes as prismThemes} from 'prism-react-renderer';
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'OdinEye',
-  tagline: 'OdinEye yea',
+  tagline: 'A Valheim dedicated-server plugin: REST API and game events',
   favicon: 'img/favicon.ico',
-  url: 'https://sparcopt.github.io/',
+  url: 'https://js-ferguson.github.io/',
   baseUrl: '/odin-eye/',
-  organizationName: 'sparcopt',
+  organizationName: 'js-ferguson',
   projectName: 'odin-eye',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -50,7 +50,7 @@ const config = {
       navbar: {
         title: 'OdinEye',
         logo: {
-          alt: 'My Site Logo',
+          alt: 'OdinEye logo',
           src: 'img/odineye.png',
         },
         items: [
@@ -61,7 +61,7 @@ const config = {
             label: 'Docs',
           },
           {
-            href: 'https://github.com/sparcopt/odin-eye',
+            href: 'https://github.com/js-ferguson/odin-eye',
             className: "header-github-link",
             position: 'right',
             "aria-label": "GitHub repository",
@@ -102,7 +102,7 @@ const config = {
             items: [
               {
                 label: 'GitHub',
-                href: 'https://github.com/sparcopt/odin-eye',
+                href: 'https://github.com/js-ferguson/odin-eye',
               },
             ],
           },
@@ -122,7 +122,7 @@ const config = {
           id: "openapi",
           docsPluginId: "classic",
           config: {
-            petstore: {
+            odineye: {
               specPath: "specs/",
               outputDir: "docs/api-reference",
               sidebarOptions: {

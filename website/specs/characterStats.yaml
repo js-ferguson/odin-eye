@@ -1,0 +1,122 @@
+openapi: 3.0.0
+info:
+  title: OdinEye API
+  description: OdinEye API Specification
+  version: v1
+servers:
+  - url: http://localhost:2469
+tags:
+  - name: characterStats
+    description: Character stats, submitted by an installed OdinEye.Client
+    x-displayName: Character Stats
+
+paths:
+  /players/stats:
+    get:
+      tags:
+        - characterStats
+      summary: Retrieve every character's submitted stats
+      description: |-
+        Returns every character's stats last submitted by their OdinEye.Client,
+        keyed by player ID (see `Player.Id` under `GET /players`). In memory
+        only -- cleared on restart. A character that has never run
+        OdinEye.Client, or hasn't submitted since the last restart, simply has
+        no entry.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: object
+                  additionalProperties:
+                    type: number
+                    format: float
+                example:
+                  9c858e4b-1c3a-5f2a-8f7d-4b6a1e2d3c4f:
+                    Kills: 412
+                    Deaths: 3
+                    FishCaught: 108
+                    PlayTimeSeconds: 194522
+                    KnownWorldsCount: 2
+                    "EnemyKill:Troll": 6
+                    "PiecePlaced:$piece_workbench": 4
+                    "Derived:StationOrUpgradePlaced": 11
+                    "Custom:ArrowHitsEnemy": 240
+    post:
+      tags:
+        - characterStats
+      summary: Submit a character's stats
+      description: |-
+        Accepted only from a currently connected player (`{id}`, see
+        `Player.Id` under `GET /players`). Every value must be non-negative,
+        finite, plausible for elapsed real time since Valheim's release, and
+        **no lower than the value already held for that same key** -- the
+        whole submission is rejected (nothing is applied) if even one value
+        fails any of these checks. `Stats` is an open, arbitrary key set on
+        purpose: whatever the submitting OdinEye.Client reports is stored as
+        given, with no fixed schema, so a new stat key (including ones a future
+        Valheim version adds) needs no change here.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The player's OdinEye ID (a UUID).
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CharacterStatsSubmission'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedResponse'
+        '400':
+          description: |-
+            `{id}` is not a valid UUID, the body is missing/malformed/empty, or
+            any single value is negative, non-finite, implausibly large, or
+            lower than the previously stored value for that key.
+        '404':
+          description: No player with that ID is currently connected.
+
+components:
+  schemas:
+    CharacterStatsSubmission:
+      properties:
+        Stats:
+          description: Stat key -> value. See `GET /players/stats` for real key examples.
+          type: object
+          additionalProperties:
+            type: number
+            format: float
+        Meta:
+          description: Optional. Ignored by an older server; simply omitted by an older client.
+          allOf:
+            - $ref: '#/components/schemas/SubmissionMeta'
+    SubmissionMeta:
+      properties:
+        PlayerId:
+          description: |-
+            The game's own long-integer player ID (`PlayerProfile.GetPlayerID()`),
+            as a string. This is what a claimed bed records as its owner, and
+            what `POST /players/{id}/events`' `BedRemoved` event names.
+          type: string
+          example: "-8234659128341902847"
+        ClientVersion:
+          description: The submitting OdinEye.Client's assembly version.
+          type: string
+          example: 1.2.20.0
+    AcceptedResponse:
+      properties:
+        Accepted:
+          type: boolean
+          example: true

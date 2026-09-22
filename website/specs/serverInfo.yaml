@@ -3,13 +3,15 @@ info:
   title: OdinEye API
   description: OdinEye API Specification
   version: v1
+servers:
+  - url: http://localhost:2469
 tags:
   - name: server
     description: Server related resources
     x-displayName: Server
 
 paths:
-  /v1/serverInfo:
+  /serverDetails:
     get:
       tags:
         - server
@@ -21,25 +23,25 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ServerInfo'
+                $ref: '#/components/schemas/ServerDetails'
 
 components:
   schemas:
-    ServerInfo:
+    ServerDetails:
       properties:
-        maxNumberOfPlayers: 
+        MaxNumberOfPlayers:
           type: integer
           description: Maximum number of players permitted on the server.
           format: int32
           minimum: 1
           example: 10
-        gameVersion:
+        GameVersion:
           description: Version of the game server.
           type: string
           minLength: 1
-          example: 0.217.14
-        steamAppId:
+          example: 0.220.2
+        SteamAppId:
           description: Steam application identifier of the game server.
           type: string
           minLength: 1
-          example: 892970
+          example: "892970"
