@@ -33,6 +33,25 @@ namespace OdinEye.Client.Patches
     // "already have this status effect/category" case, so a true result
     // here really does mean the effect was freshly applied); Player.
     // GetFoods() (public) returns the live active-food list.
+    //
+    // SECOND BUG FIX (confirmed live 2026-09-23: balgore re-tested on the
+    // real v1.2.24 build -- confirmed installed via Thunderstore Mod
+    // Manager itself, not any in-game/log version string, all of which are
+    // hardcoded to 1.0.0.0 -- see ODINEYE-43 -- and Custom:VomitBombs still
+    // never moved): item.m_shared.m_name is NOT the item's name -- it is a
+    // localization TOKEN ("$item_pukeberries"), confirmed via
+    // Character.ShowPickupMessage's own IL, which concatenates
+    // "$msg_added " directly with m_shared.m_name and hands the result to
+    // Character.Message -- a string only worth localizing if it's built out
+    // of tokens. VomitBombItemName ("Pukeberries") could therefore never
+    // equal item.m_shared.m_name, regardless of the hook point -- this
+    // achievement has never been able to fire, on any build. The correct
+    // field is item.m_dropPrefab.name (the item's actual prefab asset,
+    // confirmed "Pukeberries.prefab" -> GameObject name "Pukeberries" from
+    // the game's own asset manifest) -- the same GameObject.name-based
+    // convention CookingStationPatches.cs already uses successfully for
+    // Bread/chicken/lox-pie identification. DwarfEyePatch.cs had this same
+    // bug -- fixed alongside this one, unconfirmed live until re-tested.
     [HarmonyPatch(typeof(Player), "ConsumeItem")]
     public static class VomitBombPatch
     {
@@ -60,7 +79,7 @@ namespace OdinEye.Client.Patches
                     return;
                 }
 
-                if (CounterRules.CountsAsVomitBomb(__result, item?.m_shared?.m_name, foodsBeforeEating))
+                if (CounterRules.CountsAsVomitBomb(__result, item?.m_dropPrefab?.name, foodsBeforeEating))
                 {
                     ClientRuntime.Counters.Increment(CounterRules.VomitBombsKey);
                 }

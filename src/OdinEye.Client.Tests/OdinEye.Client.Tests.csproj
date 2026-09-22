@@ -62,6 +62,7 @@
     <ItemGroup>
         <Compile Include="CharacterStatsPayloadBuilderTests.cs" />
         <Compile Include="ClientPipelineTests.cs" />
+        <Compile Include="CounterRulesTests.cs" />
         <Compile Include="CustomCounterStoreTests.cs" />
         <Compile Include="OutpostAnchorStoreTests.cs" />
         <Compile Include="PieceStatsAndPolicyTests.cs" />
@@ -76,12 +77,13 @@
     </ItemGroup>
     <ItemGroup>
       <!-- Only the pure/testable classes (Stats/CharacterStatsPayloadBuilder,
-      Submission/SubmissionScheduler) are exercised here. Referencing the
-      whole OdinEye.Client assembly is still safe even though this test
-      project never loads BepInEx/Unity/Valheim: the CLR resolves an
-      assembly lazily, only when a type from it is actually touched, and
-      these tests never touch OdinEyeClientPlugin, PlayerProfileStatsSource
-      or HttpStatsSubmitter. -->
+      Submission/SubmissionScheduler, Counters/CounterRules) are exercised
+      here. Referencing the whole OdinEye.Client assembly is still safe
+      even though this test project never loads BepInEx/Unity/Valheim: the
+      CLR resolves an assembly lazily, only when a type from it is actually
+      touched, and these tests never touch OdinEyeClientPlugin,
+      PlayerProfileStatsSource, HttpStatsSubmitter, or any of the Harmony
+      patch classes (which do reference game types directly). -->
       <ProjectReference Include="..\OdinEye.Client\OdinEye.Client.csproj">
         <Project>{9a2d6f3b-8c1e-4f5a-b0d7-3e2c1a9b6d4f}</Project>
         <Name>OdinEye.Client</Name>

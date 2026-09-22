@@ -45,20 +45,30 @@ namespace OdinEye.Client.Counters
         public const string BreadItemName = "Bread";
 
         // Dead-Eye Dick. The crafting material Greydwarfs (and the bushes
-        // near them) drop. Like BreadItemName above, the exact shared item
-        // name needs live confirmation (ODINEYE-34) before this is trusted.
+        // near them) drop -- this is the item's PREFAB name (confirmed
+        // "GreydwarfEye.prefab" in the game's own asset manifest), matched
+        // against ItemData.m_dropPrefab.name, NOT ItemData.m_shared.m_name
+        // (a localization token, "$item_greydwarfeye" -- see
+        // DwarfEyePatch.cs's header, fixed 2026-09-23 alongside the same
+        // bug in Vomit Bomb; unconfirmed live until re-tested).
         public const string DwarfEyeItemName = "GreydwarfEye";
 
         // Vomit Bomb. The brief said "Bukeperries" -- the real item's
-        // internal name is "Pukeberries" (confirmed live, eip.gg). It is
-        // not a normal food: eating it attaches the SE_Puke status effect
-        // (SharedData.m_consumeStatusEffect), which removes one active food
-        // buff per second for its duration -- it never becomes a tracked
-        // food itself. The status effect is applied in Player.ConsumeItem,
-        // NOT Player.EatFood -- confirmed live 2026-09-23 that the original
+        // prefab name is "Pukeberries" (confirmed "Pukeberries.prefab" in
+        // the game's own asset manifest). It is not a normal food: eating
+        // it attaches the SE_Puke status effect (SharedData.
+        // m_consumeStatusEffect), which removes one active food buff per
+        // second for its duration -- it never becomes a tracked food
+        // itself. The status effect is applied in Player.ConsumeItem, NOT
+        // Player.EatFood -- confirmed live 2026-09-23 that the original
         // EatFood hook never fired for Pukeberries at all (see
         // VomitBombPatch.cs's own header for the full story: EatFood only
         // runs when the item's m_food > 0, which Pukeberries never has).
+        // SECOND bug, found the same day on re-test: this is matched
+        // against ItemData.m_dropPrefab.name, NOT ItemData.m_shared.m_name
+        // -- the latter is a localization token ("$item_pukeberries"), so
+        // the achievement could never fire even once the hook was fixed
+        // (see VomitBombPatch.cs's header for the full IL evidence).
         public const string VomitBombItemName = "Pukeberries";
 
         // KFC - The Colonel. What a cooking station produces from raw
