@@ -15,6 +15,7 @@ namespace OdinEye.Client.Counters
         public const string SwordKillsKey = "Custom:SwordKills"; // Mushashi Master of Blades
         public const string ChickenMeatCookedKey = "Custom:ChickenMeatCooked"; // KFC - The Colonel
         public const string LoxPiesCookedKey = "Custom:LoxPiesCooked"; // Baked as Bro
+        public const string MeadsMadeKey = "Custom:MeadsMade"; // Punky Brewster
 
         // Farmer Joe. One counter per tameable species this live build
         // actually has (confirmed via IL class search: no Asksvin or Moose
@@ -116,6 +117,19 @@ namespace OdinEye.Client.Counters
                 default: return null;
             }
         }
+
+        // Punky Brewster. Fermenter.RPC_Tap (owner-gated, private) computes
+        // the actual spawned amount only on the ZDO owner's machine and
+        // never broadcasts it, so the collecting client credits itself
+        // BEFORE tapping instead: producedItems is read off the matching
+        // Fermenter.ItemConversion entry's own public m_producedItems field
+        // (6 for most mead bases, 3 for Berserkir -- confirmed via web
+        // research, and this reads the live recipe table directly rather
+        // than hardcoding either number), only when the fermenter's own
+        // GetStatus() says Ready -- anything else means there is nothing to
+        // credit yet (or the recipe couldn't be resolved).
+        public static int MeadsToCount(bool statusIsReady, int producedItems) =>
+            statusIsReady && producedItems > 0 ? producedItems : 0;
 
         // Dead-Eye Dick counts the local player's own successful pickups of
         // a Greydwarf eye, by the stack size actually picked up (a bush or a

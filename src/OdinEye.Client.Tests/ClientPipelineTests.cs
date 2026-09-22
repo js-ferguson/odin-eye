@@ -134,6 +134,23 @@ namespace OdinEye.Client.Tests
             Assert.That(CounterRules.TamedSpeciesCounterKey(prefabName), Is.Null);
         }
 
+        // --- Punky Brewster ---------------------------------------------------------------
+
+        [Test]
+        public void ReadyFermenter_CountsTheRecipesOwnYield()
+        {
+            Assert.That(CounterRules.MeadsToCount(true, 6), Is.EqualTo(6));
+            Assert.That(CounterRules.MeadsToCount(true, 3), Is.EqualTo(3), "Berserkir mead's own smaller batch");
+        }
+
+        [TestCase(false, 6, TestName = "not ready yet")]
+        [TestCase(true, 0, TestName = "recipe could not be resolved")]
+        [TestCase(true, -1, TestName = "nonsense yield")]
+        public void AnythingElse_CountsNoMeads(bool statusIsReady, int producedItems)
+        {
+            Assert.That(CounterRules.MeadsToCount(statusIsReady, producedItems), Is.EqualTo(0));
+        }
+
         // --- Dead-Eye Dick ------------------------------------------------------------------
 
         [Test]
