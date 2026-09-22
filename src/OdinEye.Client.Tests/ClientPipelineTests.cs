@@ -94,6 +94,26 @@ namespace OdinEye.Client.Tests
             Assert.That(CounterRules.CookedChickenMeatToCount(done, produced, amount), Is.EqualTo(0));
         }
 
+        // --- Baked as Bro ---------------------------------------------------------------------
+
+        [Test]
+        public void FinishedLoxPie_CountsTheWholeAmountIncludingBonus()
+        {
+            Assert.That(CounterRules.LoxPieToCount(true, "LoxMeatPie", 1), Is.EqualTo(1));
+            Assert.That(CounterRules.LoxPieToCount(true, "LoxMeatPie", 2), Is.EqualTo(2));
+        }
+
+        [TestCase(false, "LoxMeatPie", 1, TestName = "not finished")]
+        [TestCase(true, "Coal", 1, TestName = "burnt pie turns to coal")]
+        [TestCase(true, "Bread", 1, TestName = "other food")]
+        [TestCase(true, null, 1, TestName = "unknown product")]
+        [TestCase(true, "LoxMeatPie", 0, TestName = "nothing taken")]
+        [TestCase(true, "LoxMeatPie", -3, TestName = "nonsense amount")]
+        public void ThingsThatAreNotFinishedLoxPie_CountNothing(bool done, string produced, int amount)
+        {
+            Assert.That(CounterRules.LoxPieToCount(done, produced, amount), Is.EqualTo(0));
+        }
+
         // --- Dead-Eye Dick ------------------------------------------------------------------
 
         [Test]

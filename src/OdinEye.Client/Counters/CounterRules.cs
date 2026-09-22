@@ -14,6 +14,7 @@ namespace OdinEye.Client.Counters
         public const string FistKillsKey = "Custom:FistKills"; // Mike Tyson
         public const string SwordKillsKey = "Custom:SwordKills"; // Mushashi Master of Blades
         public const string ChickenMeatCookedKey = "Custom:ChickenMeatCooked"; // KFC - The Colonel
+        public const string LoxPiesCookedKey = "Custom:LoxPiesCooked"; // Baked as Bro
 
         // Peter North. World +Z is north (confirmed via the live game's own
         // world-generation constants: Ashlands sits at large negative Z,
@@ -47,6 +48,11 @@ namespace OdinEye.Client.Counters
         // Pukeberries fix was about.
         public const string CookedChickenItemName = "CookedChickenMeat";
 
+        // Baked as Bro. What a cooking station produces from an unbaked lox
+        // pie. Like CookedChickenItemName, needs live confirmation
+        // (ODINEYE-34) before this is trusted.
+        public const string LoxMeatPieItemName = "LoxMeatPie";
+
         // Marksman counts an arrow that this player fired hitting a live
         // enemy. Not other players, not tamed animals, not something already
         // dead, and not an arrow someone else fired.
@@ -77,6 +83,11 @@ namespace OdinEye.Client.Counters
         // size actually taken (bonus yield included).
         public static int CookedChickenMeatToCount(bool itemIsDone, string producedItemName, int amountTaken) =>
             itemIsDone && producedItemName == CookedChickenItemName && amountTaken > 0 ? amountTaken : 0;
+
+        // Baked as Bro. Same shape as BreadToCount/CookedChickenMeatToCount:
+        // only counts when the item taken out is actually a baked lox pie.
+        public static int LoxPieToCount(bool itemIsDone, string producedItemName, int amountTaken) =>
+            itemIsDone && producedItemName == LoxMeatPieItemName && amountTaken > 0 ? amountTaken : 0;
 
         // Dead-Eye Dick counts the local player's own successful pickups of
         // a Greydwarf eye, by the stack size actually picked up (a bush or a
