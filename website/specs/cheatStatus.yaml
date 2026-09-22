@@ -1,0 +1,92 @@
+openapi: 3.0.0
+info:
+  title: OdinEye API
+  description: OdinEye API Specification
+  version: v1
+servers:
+  - url: http://localhost:2469
+tags:
+  - name: player
+    description: Player related resources
+    x-displayName: Players
+
+paths:
+  /players/cheatStatus:
+    get:
+      tags:
+        - player
+      summary: Retrieve live cheat-detection status
+      description: |-
+        Returns every character's last-reported cheat status, keyed by their
+        player ID (see `Player.Id` under `GET /players`). In memory only, like
+        every other live-state endpoint here -- cleared on restart. Reported by
+        an installed OdinEye.Client; a character running without it simply has
+        no entry.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/CheatStatusSubmission'
+                example:
+                  9c858e4b-1c3a-5f2a-8f7d-4b6a1e2d3c4f:
+                    Cheated: false
+                    BypassEnabled: false
+    post:
+      tags:
+        - player
+      summary: Submit a character's cheat-detection status
+      description: |-
+        Overwrites the stored status for `{id}` with exactly what's submitted --
+        unlike `POST /players/{id}/stats`, there is no "never lower than before"
+        validation, since this flag must be able to flip back to `false` the
+        instant a player drops a flagged item. `{id}` must currently be
+        connected (see `Player.Id` under `GET /players`).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The player's OdinEye ID (a UUID).
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheatStatusSubmission'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptedResponse'
+        '400':
+          description: "`{id}` is not a valid UUID, or the request body is missing/malformed."
+        '404':
+          description: No player with that ID is currently connected.
+
+components:
+  schemas:
+    CheatStatusSubmission:
+      properties:
+        Cheated:
+          description: Whether this character currently holds a flagged/cheated item, or the world itself is modded.
+          type: boolean
+        BypassEnabled:
+          description: |-
+            Whether this character has run Valheim's own
+            `yesiuseddevcommandsbutiwantmyachievementsanyway 1` console command.
+            Independent of `Cheated` -- a character can be `Cheated: true` while
+            also having their own permanent bypass flag cleared.
+          type: boolean
+    AcceptedResponse:
+      properties:
+        Accepted:
+          type: boolean
+          example: true

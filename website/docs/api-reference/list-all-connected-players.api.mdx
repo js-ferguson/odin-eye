@@ -1,0 +1,196 @@
+---
+id: list-all-connected-players
+title: "List all connected players"
+description: "Returns a bare JSON array (not wrapped in an envelope) of every currently"
+sidebar_label: "List all connected players"
+hide_title: true
+hide_table_of_contents: true
+api: eJzFVdtu2zgQ/ZUBX5oAaS07iZP4rTd001uKJnnZTbGlpbHFrkSqJOXEMPzvPUMpqZu4D0UXqF4kkcM558yNKxX1PKjJP6qp9JK9+rSnCg65N000zqqJ+six9TaQpqn2TK/Pz96T9l4vace6SNdeNw0XZCxpS2wXXLmGd8nNiBfsl5S33rON1fLK5s5aziOsO7A9ujaxpFiy8VSZBVPJuorlIERdG6ufqD3lOTTOBgbHlRplmbx+JHj2BmZwHYEiu+BTmVzL7uBLEJOVCnnJtZavuGwYh5ICnDOR6/DQ50duAAyHovs+baHVeKj00XS8TosttApjXy75USB3bQmKphWTKeDTzAx7mjkP5Sb0TicAWhzS5eXpCyrYIxjFlZ15V0t4KC+116Dg4e48sq4JZtoW3zfI6pppR4wDvq5scpKiQAtdIcT1v4H9IrkQRnoOKuQh1BVtzgEZLLhhW6RkUXRXttYxL2GSO1+ElCvXRsp1VRk7p14gPX5MgZk+vwfsMx24eNWa4vOuRKkPdogeB/APzfCJlRYmar2nnt/S3xbBC2iZw2lPOBXInd7B3y/ONsO5gx07hwydexcCKIUAN2ErD77RdVPJ0v7B4XA0OT4eDYWOSHjIQ1alniW2XbLA6I7INv8o3rds57FUk+Em2kXpvOCkFG6T3OV2U9b4gKYmht0fCfwK6NH4cDwcnhydjLPR8dHJfiYM/kqN9pDA865b+0aUyml5A8y29RRDYiOTs8rhndBN3dZqkm1gjzNAvdM3P0PDlhz6n9CGWZZim2bHz6X1w+V30fazNdCiiSnIH7rpuU4PTjB6BflVcxYHjRb1atAlL2Cla0UZvCvV+gqbZYzNZDCoHPqrdCFORgfjE7XGPDZ25tLo6rFuG+/ph1N1f1pv7NF5wzmqqBuFsBTAzmqRqr0BSq3TfLSp8NVbEyKhvR+MvHAfaPV94v7pG6JPX+SbKAE2VrSlmK76wN9ebkFuN4mtLK1WUwyrS1+t17L8tQUVrONzob2RaS1/cAVEzNKUqf8YJuppnnMjaU0VJJfJ/RtHsnZXAq9eXqAuvgHqAItZ
+sidebar_class_name: "get api-method"
+info_path: docs/api-reference/odineye-api
+custom_edit_url: null
+---
+
+import ApiTabs from "@theme/ApiTabs";
+import DiscriminatorTabs from "@theme/DiscriminatorTabs";
+import MethodEndpoint from "@theme/ApiExplorer/MethodEndpoint";
+import SecuritySchemes from "@theme/ApiExplorer/SecuritySchemes";
+import MimeTabs from "@theme/MimeTabs";
+import ParamsItem from "@theme/ParamsItem";
+import ResponseSamples from "@theme/ResponseSamples";
+import SchemaItem from "@theme/SchemaItem";
+import SchemaTabs from "@theme/SchemaTabs";
+import Markdown from "@theme/Markdown";
+import OperationTabs from "@theme/OperationTabs";
+import TabItem from "@theme/TabItem";
+
+<h1
+  className={"openapi__heading"}
+>
+  List all connected players
+</h1>
+
+<MethodEndpoint
+  method={"get"}
+  path={"/players"}
+>
+  
+</MethodEndpoint>
+
+
+
+Returns a bare JSON array (not wrapped in an envelope) of every currently
+connected player, with their live health/stamina.
+
+## Request
+
+<div>
+  <div>
+    <ApiTabs
+      label={undefined}
+      id={undefined}
+    >
+      <TabItem
+        label={"200"}
+        value={"200"}
+      >
+        <div>
+          
+          
+          OK
+          
+          
+        </div><div>
+          <MimeTabs
+            className={"openapi-tabs__mime"}
+            schemaType={"response"}
+          >
+            <TabItem
+              label={"application/json"}
+              value={"application/json"}
+            >
+              <SchemaTabs
+                className={"openapi-tabs__schema"}
+              >
+                <TabItem
+                  label={"Schema"}
+                  value={"Schema"}
+                >
+                  <details
+                    style={{}}
+                    className={"openapi-markdown__details response"}
+                    data-collapsed={false}
+                    open={true}
+                  >
+                    <summary
+                      style={{}}
+                      className={"openapi-markdown__details-summary-response"}
+                    >
+                      <strong>
+                        Schema
+                      </strong>
+                    </summary><div
+                      style={{"textAlign":"left","marginLeft":"1rem"}}
+                    >
+                      
+                    </div><ul
+                      style={{"marginLeft":"1rem"}}
+                    >
+                      <li>
+                        <div
+                          style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem","paddingBottom":".5rem"}}
+                        >
+                          Array [
+                        </div>
+                      </li><SchemaItem
+                        collapsible={false}
+                        name={"Id"}
+                        required={false}
+                        schemaName={"uuid"}
+                        qualifierMessage={undefined}
+                        schema={{"description":"OdinEye's own stable identifier for this player: a v5 UUID derived\nfrom the character's Steam ID and character name (the same\nderivation valheim_server's own agent reproduces independently to\nmatch records without calling OdinEye -- see `NameBasedGuid`).","type":"string","format":"uuid"}}
+                      >
+                        
+                      </SchemaItem><SchemaItem
+                        collapsible={false}
+                        name={"CharacterId"}
+                        required={false}
+                        schemaName={"string"}
+                        qualifierMessage={undefined}
+                        schema={{"description":"The game's own live character/ZDO identifier (changes across sessions).","type":"string","example":"34512:8821"}}
+                      >
+                        
+                      </SchemaItem><SchemaItem
+                        collapsible={false}
+                        name={"Name"}
+                        required={false}
+                        schemaName={"string"}
+                        qualifierMessage={"**Possible values:** `non-empty`"}
+                        schema={{"description":"Name of the player's character.","type":"string","minLength":1,"example":"Thor"}}
+                      >
+                        
+                      </SchemaItem><SchemaItem
+                        collapsible={false}
+                        name={"SteamId"}
+                        required={false}
+                        schemaName={"string"}
+                        qualifierMessage={"**Possible values:** `non-empty`"}
+                        schema={{"description":"Steam identifier (64 bits) of the player.","type":"string","minLength":1,"example":"76561197960287930"}}
+                      >
+                        
+                      </SchemaItem><SchemaItem
+                        collapsible={false}
+                        name={"Health"}
+                        required={false}
+                        schemaName={"float"}
+                        qualifierMessage={undefined}
+                        schema={{"description":"Current health value.","type":"number","format":"float","minimum":0,"example":60}}
+                      >
+                        
+                      </SchemaItem><SchemaItem
+                        collapsible={false}
+                        name={"MaxHealth"}
+                        required={false}
+                        schemaName={"float"}
+                        qualifierMessage={undefined}
+                        schema={{"description":"Maximum health value.","type":"number","format":"float","minimum":0,"example":100}}
+                      >
+                        
+                      </SchemaItem><SchemaItem
+                        collapsible={false}
+                        name={"Stamina"}
+                        required={false}
+                        schemaName={"float"}
+                        qualifierMessage={undefined}
+                        schema={{"description":"Current stamina value.","type":"number","format":"float","minimum":0,"example":30}}
+                      >
+                        
+                      </SchemaItem><li>
+                        <div
+                          style={{"fontSize":"var(--ifm-code-font-size)","opacity":"0.6","marginLeft":"-.5rem"}}
+                        >
+                          ]
+                        </div>
+                      </li>
+                    </ul>
+                  </details>
+                </TabItem><TabItem
+                  label={"Example (from schema)"}
+                  value={"Example (from schema)"}
+                >
+                  <ResponseSamples
+                    responseExample={"[\n  {\n    \"Id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n    \"CharacterId\": \"34512:8821\",\n    \"Name\": \"Thor\",\n    \"SteamId\": \"76561197960287930\",\n    \"Health\": 60,\n    \"MaxHealth\": 100,\n    \"Stamina\": 30\n  }\n]"}
+                    language={"json"}
+                  >
+                    
+                  </ResponseSamples>
+                </TabItem>
+              </SchemaTabs>
+            </TabItem>
+          </MimeTabs>
+        </div>
+      </TabItem>
+    </ApiTabs>
+  </div>
+</div>
+      

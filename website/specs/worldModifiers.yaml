@@ -1,0 +1,66 @@
+openapi: 3.0.0
+info:
+  title: OdinEye API
+  description: OdinEye API Specification
+  version: v1
+servers:
+  - url: http://localhost:2469
+tags:
+  - name: world
+    description: World related resources
+    x-displayName: World
+
+paths:
+  /worldModifiers:
+    get:
+      tags:
+        - world
+      summary: Retrieve the world's current difficulty modifiers
+      description: |-
+        Returns the world's current difficulty settings (combat, death penalty,
+        resources, raids, portals) -- read-only. OdinEye does not accept writes to
+        these; use a separate RCON-capable mod (e.g. Tristan/ValheimRcon) to change
+        them via Valheim's own `setworldmodifier`/`setworldpreset` console commands.
+
+        A category reports `"default"` when nothing has ever customized it,
+        `"unknown"` when the world's raw settings don't parse into individual
+        categories (this happens right after a *named preset*, e.g. `hardcore`, was
+        applied with `setworldpreset` -- in that case `Summary` names the preset
+        instead), or the real value otherwise.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorldModifiersDetails'
+
+components:
+  schemas:
+    WorldModifiersDetails:
+      properties:
+        Modifiers:
+          description: Always all five categories, in this order.
+          type: array
+          items:
+            $ref: '#/components/schemas/WorldModifierValue'
+        Summary:
+          description: |-
+            A short human-readable line built from `Modifiers` (e.g.
+            `"portals: casual"`), `"Default"` when every category is untouched, or
+            `"Preset: <name>"` when a named preset is active.
+          type: string
+          example: "portals: casual"
+    WorldModifierValue:
+      properties:
+        Category:
+          type: string
+          enum:
+            - combat
+            - deathpenalty
+            - resources
+            - raids
+            - portals
+        Value:
+          type: string
+          example: casual

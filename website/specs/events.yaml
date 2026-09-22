@@ -1,0 +1,108 @@
+openapi: 3.0.0
+info:
+  title: OdinEye API
+  description: OdinEye API Specification
+  version: v1
+servers:
+  - url: http://localhost:2469
+tags:
+  - name: events
+    description: The durable, pollable event feed
+    x-displayName: Events
+
+paths:
+  /events:
+    get:
+      tags:
+        - events
+      summary: Poll the durable event feed
+      description: |-
+        Returns events with a sequence number greater than `after`, oldest
+        first, up to `limit`. See [Events > GET /events](/docs/events/intro)
+        for the full explanation of `BootId`/`Seq`/`Gap` and how this relates
+        to the WebSocket stream. Chat messages are never included.
+      parameters:
+        - name: after
+          in: query
+          description: Return only events with `Seq` greater than this. Negative or unparseable values are treated as `0`.
+          schema:
+            type: integer
+            format: int64
+            default: 0
+        - name: limit
+          in: query
+          description: Maximum number of events to return. Clamped to between 1 and 1000; unparseable values fall back to the default.
+          schema:
+            type: integer
+            default: 500
+            minimum: 1
+            maximum: 1000
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EventFeedResult'
+
+components:
+  schemas:
+    EventFeedResult:
+      properties:
+        BootId:
+          description: A GUID generated when OdinEye started. Changes every restart; `Seq` restarts at 1 under a new `BootId`.
+          type: string
+          format: uuid
+        NextSeq:
+          description: The `Seq` the next appended event will get. Poll again with `after=NextSeq` (from your last response) to continue from where you left off.
+          type: integer
+          format: int64
+          example: 1042
+        Gap:
+          description: True when some events after `after` were already pushed out of the buffer before this request, so this response cannot be complete.
+          type: boolean
+        Events:
+          type: array
+          items:
+            $ref: '#/components/schemas/EventFeedEntry'
+    EventFeedEntry:
+      description: |-
+        Note the PascalCase field names here, which differ from the WebSocket
+        stream's lowercase `GameEvent` fields -- see
+        [Event types](/docs/events/event-types) for the full explanation and
+        the current `Data` payload for each `Type`.
+      properties:
+        Seq:
+          description: Monotonic within this `BootId`, starting at 1.
+          type: integer
+          format: int64
+        Ts:
+          description: When the event occurred (ISO 8601, UTC).
+          type: string
+          format: date-time
+        Type:
+          description: The event's type name, e.g. `EnemyKilled`, `BedRemoved`, `PlayerJoin`.
+          type: string
+          example: EnemyKilled
+        Message:
+          type: string
+          example: "Thor killed Troll (level 1, boss: False)"
+        Player:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/EventFeedPlayer'
+        Data:
+          description: Type-specific structured details, or empty if this event type carries none. See [Event types](/docs/events/event-types).
+          type: object
+          additionalProperties: true
+    EventFeedPlayer:
+      properties:
+        Id:
+          type: string
+          format: uuid
+        Name:
+          type: string
+          example: Thor
+        SteamId:
+          type: string
+          example: "76561197960287930"

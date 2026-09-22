@@ -1,11 +1,11 @@
 ---
-id: list-all-players
-title: "List all players"
-description: "Returns a list of in-game players."
-sidebar_label: "List all players"
+id: retrieve-the-worlds-current-difficulty-modifiers
+title: "Retrieve the world's current difficulty modifiers"
+description: "Returns the world's current difficulty settings (combat, death penalty,"
+sidebar_label: "Retrieve the world's current difficulty modifiers"
 hide_title: true
 hide_table_of_contents: true
-api: eJy1VE1P20AQ/SurObXSFuwAAXzjgAoqLYiPU5TDxJ7ES73rZXccJbL836u1DZgkqLRqfbG1M/Pem1nPq4Fx4SGZgC1wTQ6mEjLyqVOWVWkggVviyhkvUBTKsyjnQpkvC9Qkugq/BxIceVsaTx6SGkZRFF5vYa6/gYS0NEyGQxStLVSKIbr/6ENKDT7NSeN27S1ZR54MBxU9q3imDPS8tgQJlLNHShkkWFdacqw6PWTY9Z99IjqHa5CgmLT/EN/eFqrKtgsfjHqqSKiMDKu5IhfGxTkNQHoFnp0yC5AwL51GhgSqSmXQSEhzdJgyucs/IXip2sVBK9S2IEgODo/iUSPBoKZt8B/hUn8rWCtzRWbBOSTxABru89IF/Z4J9S7tdyEwlP5pfChmiv3nvyY9Hh+N4/j0+HQcjU6OTw+jRkJOWIS8TfqL9lwssaje79JUekZueC3zokTuFChdaUiiAf84EGpcXbzD+R1XoUjk/4E7jqJ22qiV2bEzd13g33IeRE0jgRW3N37TOUaz6RhXvU+8+MN2kb/ttxea8EjQxHmZQQILahcYwzhhfxnv9yhhW828bJe4h7rOlDlfkzi7uYRNDYOYuLOUqnlvNiBhSc53Wcs4qLelZ42tA3WL0XWARSFeyd/A169O9jF/7MfNtOLQkDKBt3JFgOp6nQQxEp4JpxLy0nM4r+sZenpwRdOE46eK3BqSyVTCEp3CWZjFZNr9+Rk5SCY1/KQ1JHCWpmTDONufIPjepuk208Hov57fQ9P8AupcD0o=
+api: eJztVk2P2zYQ/SsDXrIbyHYaFAXiBAUWSRAURbvBJk0P6wDiSmOLCUWq5MiKYvi/51FSbO9H0WMv8UUSOZyPN+8NvVOiN1Etr1Xngy3Vx0yVHItgGjHeqaW6YmmDiyQV02DyKFLRhsBOqDTrtSlaKz1FFjFuE+ms8PWNloxK1lJRw05jP1u5wNG3oeCYUdCmxKPxQbSN5zSbUWBdzryz/ZwuS+Ne90yl50jOC+mi4EaoC0awIn7lkEzk59RGJo3QjQ5amK5eXv45K3SjbyxT7Us64/lmTu+DiaLd4oO2FZv6qvDuHF6oqLTb8OCspq3RNBmgQN85ylHSUDA8mbXhkC8OSw2KYckJrqJHMNRca1fG+cqt3AUVyGbjQ4+qUo2R8hVQXWsgtVI5dRW7VFgFwKjSkXjLAaBG8bX5yiUZAV4407rPDqkczpz2IOjuCHrp3SMhwABAjENtxpVma8pW25WbsjHA7gwxI0I2aAtcmE0FdNeC6JoeO10j9lja44wG7PJKh7LwgfOMOh1XDketgVln0Nx7eKCRJqWpBRggl/xdC2BCn1NyPpJotF0546Kg6ecZ+TBsgAKWttq2TMCGQ2ciz1WmYN8AZwZLd+rpkyfpcZujl7/DDL0QkDLtDkmibOwuPsVkslOxQJt1emuCbziIGR3+MXU33nd7YTvdR9LW0tpsmY5AZmOZwNKHkkPKUvqGcUaHoHt8gqp1vB/t5cSM9D6diBLQQxxh19ZJiKOAVBIiFDQJaMRhFFB6TwrCc5KQ+rjP1IcE3YOOv+i6sWkJTQEl1B7WYmRY+jv17zsIo4u0PTXuAVAoVghKVQvGz5JsB7lZ45huWmOF1sHXlB9wzUcZDoSe0l3SmAiIjfZj/dUdcSRB9EcZAecWrG7RwjLRZfD1duDRkl4kav16OKrplMfpqC4E3Tvp0QPA3Ens3xGKr1i0AeL79MtUzVL5ElYbTi1r0DF8LLpbZ7AROWwHkl3vVBssbCqRZrlYWF9g7Pgoy6c///JM7TGAjVv7oY9TAt8H4sXb39Td8XyyR+8aLhBwJD4sU8DRavuT2ieyREHTkuuE0TjcQWdQ+z+me31Sya34u6PsftwUP26K//mmmPQt/EUWjdXGJdYPattNypz+5hyVCbkl8aWd3e4GmfwV7H6flv9pOc2/a7xudTCJKukLHiskw2GQ8mfu00wcaJcUN47g+xdQkvVhVLx5/R7j4xs84mEh
 sidebar_class_name: "get api-method"
 info_path: docs/api-reference/odineye-api
 custom_edit_url: null
@@ -27,19 +27,28 @@ import TabItem from "@theme/TabItem";
 <h1
   className={"openapi__heading"}
 >
-  List all players
+  Retrieve the world's current difficulty modifiers
 </h1>
 
 <MethodEndpoint
   method={"get"}
-  path={"/v1/players"}
+  path={"/worldModifiers"}
 >
   
 </MethodEndpoint>
 
 
 
-Returns a list of in-game players.
+Returns the world's current difficulty settings (combat, death penalty,
+resources, raids, portals) -- read-only. OdinEye does not accept writes to
+these; use a separate RCON-capable mod (e.g. Tristan/ValheimRcon) to change
+them via Valheim's own `setworldmodifier`/`setworldpreset` console commands.
+
+A category reports `"default"` when nothing has ever customized it,
+`"unknown"` when the world's raw settings don't parse into individual
+categories (this happens right after a *named preset*, e.g. `hardcore`, was
+applied with `setworldpreset` -- in that case `Summary` names the preset
+instead), or the real value otherwise.
 
 ## Request
 
@@ -112,11 +121,11 @@ Returns a list of in-game players.
                               <strong
                                 className={"openapi-schema__property"}
                               >
-                                entries
+                                Modifiers
                               </strong><span
                                 className={"openapi-schema__name"}
                               >
-                                 Player[]
+                                 WorldModifierValue[]
                               </span>
                             </span>
                           </summary><div
@@ -127,7 +136,7 @@ Returns a list of in-game players.
                             >
                               
                               
-                              List of players.
+                              Always all five categories, in this order.
                               
                               
                             </div><li>
@@ -138,65 +147,20 @@ Returns a list of in-game players.
                               </div>
                             </li><SchemaItem
                               collapsible={false}
-                              name={"id"}
+                              name={"Category"}
                               required={false}
-                              schemaName={"uuid"}
-                              qualifierMessage={undefined}
-                              schema={{"description":"Unique identifier of the player.","type":"string","format":"uuid"}}
+                              schemaName={"string"}
+                              qualifierMessage={"**Possible values:** [`combat`, `deathpenalty`, `resources`, `raids`, `portals`]"}
+                              schema={{"type":"string","enum":["combat","deathpenalty","resources","raids","portals"]}}
                             >
                               
                             </SchemaItem><SchemaItem
                               collapsible={false}
-                              name={"characterId"}
+                              name={"Value"}
                               required={false}
                               schemaName={"string"}
                               qualifierMessage={undefined}
-                              schema={{"description":"Unique identifier of the character.","type":"string","example":34512}}
-                            >
-                              
-                            </SchemaItem><SchemaItem
-                              collapsible={false}
-                              name={"name"}
-                              required={false}
-                              schemaName={"string"}
-                              qualifierMessage={"**Possible values:** `non-empty`"}
-                              schema={{"description":"Name of the player.","type":"string","minLength":1,"example":"Thor"}}
-                            >
-                              
-                            </SchemaItem><SchemaItem
-                              collapsible={false}
-                              name={"steamId"}
-                              required={false}
-                              schemaName={"string"}
-                              qualifierMessage={"**Possible values:** `non-empty`"}
-                              schema={{"description":"Steam identifier (64 bits) of the player.","type":"string","minLength":1,"example":76561197960287940}}
-                            >
-                              
-                            </SchemaItem><SchemaItem
-                              collapsible={false}
-                              name={"health"}
-                              required={false}
-                              schemaName={"float"}
-                              qualifierMessage={undefined}
-                              schema={{"description":"Health value of the player.","type":"number","format":"float","minimum":0,"example":60}}
-                            >
-                              
-                            </SchemaItem><SchemaItem
-                              collapsible={false}
-                              name={"maxHealth"}
-                              required={false}
-                              schemaName={"float"}
-                              qualifierMessage={undefined}
-                              schema={{"description":"Maximum health value of the player.","type":"number","format":"float","minimum":0,"example":100}}
-                            >
-                              
-                            </SchemaItem><SchemaItem
-                              collapsible={false}
-                              name={"stamina"}
-                              required={false}
-                              schemaName={"float"}
-                              qualifierMessage={undefined}
-                              schema={{"description":"Stamina value of the player.","type":"number","format":"float","minimum":0,"example":30}}
+                              schema={{"type":"string","example":"casual"}}
                             >
                               
                             </SchemaItem><li>
@@ -208,6 +172,15 @@ Returns a list of in-game players.
                             </li>
                           </div>
                         </details>
+                      </SchemaItem><SchemaItem
+                        collapsible={false}
+                        name={"Summary"}
+                        required={false}
+                        schemaName={"string"}
+                        qualifierMessage={undefined}
+                        schema={{"description":"A short human-readable line built from `Modifiers` (e.g.\n`\"portals: casual\"`), `\"Default\"` when every category is untouched, or\n`\"Preset: <name>\"` when a named preset is active.","type":"string","example":"portals: casual"}}
+                      >
+                        
                       </SchemaItem>
                     </ul>
                   </details>
@@ -216,7 +189,7 @@ Returns a list of in-game players.
                   value={"Example (from schema)"}
                 >
                   <ResponseSamples
-                    responseExample={"{\n  \"entries\": [\n    {\n      \"id\": \"3fa85f64-5717-4562-b3fc-2c963f66afa6\",\n      \"characterId\": 34512,\n      \"name\": \"Thor\",\n      \"steamId\": 76561197960287940,\n      \"health\": 60,\n      \"maxHealth\": 100,\n      \"stamina\": 30\n    }\n  ]\n}"}
+                    responseExample={"{\n  \"Modifiers\": [\n    {\n      \"Category\": \"combat\",\n      \"Value\": \"casual\"\n    }\n  ],\n  \"Summary\": \"portals: casual\"\n}"}
                     language={"json"}
                   >
                     

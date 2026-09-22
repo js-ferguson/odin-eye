@@ -1,0 +1,50 @@
+openapi: 3.0.0
+info:
+  title: OdinEye API
+  description: OdinEye API Specification
+  version: v1
+servers:
+  - url: http://localhost:2469
+tags:
+  - name: characterStats
+    description: Character stats, submitted by an installed OdinEye.Client
+    x-displayName: Character Stats
+
+paths:
+  /players/meta:
+    get:
+      tags:
+        - characterStats
+      summary: Retrieve what each character's OdinEye.Client has reported about itself
+      description: |-
+        Returns the `Meta` (`PlayerId`, `ClientVersion`) last submitted alongside
+        each character's stats (see `POST /players/{id}/stats`), keyed by
+        player ID (see `Player.Id` under `GET /players`). A separate endpoint
+        from `GET /players/stats` so that one's own response shape never
+        changes. In memory only -- cleared on restart.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/SubmissionMeta'
+                example:
+                  9c858e4b-1c3a-5f2a-8f7d-4b6a1e2d3c4f:
+                    PlayerId: "-8234659128341902847"
+                    ClientVersion: 1.2.20.0
+
+components:
+  schemas:
+    SubmissionMeta:
+      properties:
+        PlayerId:
+          description: The game's own long-integer player ID (`PlayerProfile.GetPlayerID()`), as a string.
+          type: string
+          example: "-8234659128341902847"
+        ClientVersion:
+          description: The submitting OdinEye.Client's assembly version.
+          type: string
+          example: 1.2.20.0
