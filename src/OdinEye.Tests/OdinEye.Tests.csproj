@@ -67,6 +67,9 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="CharacterStatsControllerValidationTests.cs" />
+        <Compile Include="ClientEventCleanerTests.cs" />
+        <Compile Include="EventFeedTests.cs" />
+        <Compile Include="EnemyKillDetailsAndMetaTests.cs" />
         <Compile Include="NameBasedGuidTests.cs" />
         <Compile Include="PeerExtensionsTests.cs" />
         <Compile Include="PlayerNotifyControllerValidationTests.cs" />

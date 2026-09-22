@@ -35,6 +35,11 @@ namespace OdinEye.Http.Api.Controllers
         private static readonly ConcurrentDictionary<string, ConcurrentDictionary<string, float>> StatsByPlayerId =
             new ConcurrentDictionary<string, ConcurrentDictionary<string, float>>();
 
+        // ODINEYE-36: what each character's OdinEye.Client says about itself
+        // (player ID, client version). In memory only, like the stats.
+        internal static readonly ConcurrentDictionary<string, SubmissionMeta> MetaByPlayerId =
+            new ConcurrentDictionary<string, SubmissionMeta>();
+
         public string Route => "/players/stats";
 
         public string RoutePrefix => "/players/";
@@ -103,6 +108,14 @@ namespace OdinEye.Http.Api.Controllers
                 existingStats[stat.Key] = stat.Value;
             }
 
+            // Meta is optional and never blocks the stats above: a malformed
+            // one is simply ignored rather than rejecting a whole valid
+            // submission over metadata.
+            if (TryCleanMeta(submission.Meta, out var cleanMeta))
+            {
+                MetaByPlayerId[playerIdKey] = cleanMeta;
+            }
+
             requestArguments.Response.Ok(new AcceptedResponse());
         }
 
@@ -127,6 +140,28 @@ namespace OdinEye.Http.Api.Controllers
         // entirely (ODINEYE-25).
         private static bool IsConnectedPlayer(Guid playerId) =>
             ZNet.instance.m_peers.Any(peer => peer.ToPlayer().Id == playerId);
+
+        // Player IDs are the game's own long (possibly negative); versions are
+        // short dotted strings. Anything else is dropped, so nothing
+        // client-supplied that is not one of those two shapes is ever stored
+        // or echoed back.
+        internal static bool TryCleanMeta(SubmissionMeta meta, out SubmissionMeta clean)
+        {
+            clean = null;
+            if (meta == null || string.IsNullOrEmpty(meta.PlayerId) || !long.TryParse(meta.PlayerId, out var playerId))
+            {
+                return false;
+            }
+
+            var version = meta.ClientVersion;
+            if (version != null && (version.Length > 32 || !version.All(c => char.IsLetterOrDigit(c) || c == '.' || c == '-' || c == '+')))
+            {
+                version = null;
+            }
+
+            clean = new SubmissionMeta { PlayerId = playerId.ToString(), ClientVersion = version };
+            return true;
+        }
 
         // internal (not private) + InternalsVisibleTo (OdinEye.csproj's
         // AssemblyInfo.cs) so OdinEye.Tests can exercise this pure

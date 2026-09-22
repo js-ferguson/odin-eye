@@ -28,8 +28,9 @@ namespace OdinEye.Client.Submission
             httpClient = new HttpClient();
         }
 
-        public async void Submit(Guid playerId, CharacterStatsSubmission submission)
+        public async void Submit(Guid playerId, CharacterStatsSubmission submission, Action<bool> onComplete = null)
         {
+            var accepted = false;
             try
             {
                 var json = JsonSerializer.Serialize(submission);
@@ -40,7 +41,8 @@ namespace OdinEye.Client.Submission
                     content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = Encoding.UTF8.WebName };
 
                     var response = await httpClient.PostAsync(requestUri, content).ConfigureAwait(false);
-                    if (!response.IsSuccessStatusCode)
+                    accepted = response.IsSuccessStatusCode;
+                    if (!accepted)
                     {
                         logWarning($"OdinEye server rejected character-stats submission: {(int)response.StatusCode} {response.ReasonPhrase}");
                     }
@@ -52,6 +54,15 @@ namespace OdinEye.Client.Submission
                 // the next scheduled tick (SubmissionScheduler) just tries
                 // again.
                 logWarning($"Failed to submit character stats to OdinEye server: {ex.Message}");
+            }
+
+            try
+            {
+                onComplete?.Invoke(accepted);
+            }
+            catch
+            {
+                // a misbehaving callback must not surface past this boundary either
             }
         }
 

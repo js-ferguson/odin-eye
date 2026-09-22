@@ -212,6 +212,25 @@ namespace OdinEye.Client.Stats
                 }
             }
 
+            // ODINEYE-38: the game's own exact count of every piece this
+            // character has ever placed, keyed by Piece.m_name -- the source
+            // of Benched / Fully Benched, and it covers what was built
+            // before this mod ever ran. A plain dictionary (not an array of
+            // per-difficulty variants like m_enemyStats).
+            if (GetFieldValue(rawPlayerStats, "m_piecesPlacedStats") is IDictionary piecesPlaced)
+            {
+                var placed = new Dictionary<string, float>();
+                foreach (DictionaryEntry entry in piecesPlaced)
+                {
+                    placed[entry.Key.ToString()] = Convert.ToSingle(entry.Value);
+                }
+
+                foreach (var kv in PieceStats.Prefix(placed))
+                {
+                    stats[kv.Key] = kv.Value;
+                }
+            }
+
             return stats;
         }
     }

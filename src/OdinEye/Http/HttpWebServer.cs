@@ -34,7 +34,10 @@
             new WorldModifiersController(),
             new CharacterStatsController(),
             new CheatStatusController(),
-            new PlayerNotifyController()
+            new PlayerNotifyController(),
+            new EventsController(),
+            new PlayersMetaController(),
+            new PlayerEventsController()
         };
 
         public HttpWebServer(string address, ILogger logger)
@@ -59,7 +62,7 @@
                         continue;
                     }
 
-                    if (string.Equals(getController.Route, args.Request.RawUrl))
+                    if (string.Equals(getController.Route, RoutePath(args.Request.RawUrl)))
                     {
                         try
                         {
@@ -113,6 +116,15 @@
             };
         }
         
+        // The request path without its query string, so a route like "/events"
+        // still matches "/events?after=12&limit=500". Existing routes take no
+        // query, so they are unaffected.
+        internal static string RoutePath(string rawUrl)
+        {
+            var queryStart = rawUrl?.IndexOf('?') ?? -1;
+            return queryStart < 0 ? rawUrl : rawUrl.Substring(0, queryStart);
+        }
+
         private void ConfigureWebSocketServices()
         {
             httpServer.AddWebSocketService<ActivityWebSocketService>(DefaultWebSocketPath);

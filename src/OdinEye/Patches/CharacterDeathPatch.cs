@@ -94,7 +94,13 @@ namespace OdinEye.Patches
 
             var message = $"{string.Join(", ", attackerNames)} killed {__instance.m_name} " +
                           $"(level {__instance.GetLevel()}, boss: {__instance.IsBoss()})";
-            OdinEyePlugin.Instance.EventHandler.Handle(GameEvent.New(EventType.EnemyKilled, message));
+
+            // ODINEYE-31: the same facts as structured data for the event
+            // feed (GET /events), so "solo troll" and "2-star" can be counted
+            // without parsing the message above.
+            var details = Events.EnemyKillDetails.Build(
+                __instance.m_name, __instance.GetLevel(), __instance.IsBoss(), attackerNames);
+            OdinEyePlugin.Instance.EventHandler.Handle(GameEvent.New(EventType.EnemyKilled, message, null, details));
         }
     }
 }

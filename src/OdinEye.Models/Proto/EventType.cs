@@ -32,6 +32,21 @@
         // now (logged + WebSocket-broadcast, same as every other event
         // here), not yet persisted/aggregated anywhere -- see that
         // ticket for the staged plan and why.
-        EnemyKilled = 300
+        EnemyKilled = 300,
+
+        // ACHIEVEMENTS (VALSER-55): reported by OdinEye.Client over
+        // POST /players/{id}/events (ODINEYE-39/40), never observed by the
+        // server itself, because a hammer removal and a respawn are only
+        // visible on the players' own machines.
+        //
+        // BedRemoved: reported by the REMOVER's client -- a claimed bed was
+        // taken apart with the hammer. Details: OwnerPlayerId,
+        // RemoverPlayerId, SpawnX/Y/Z.
+        BedRemoved = 400,
+
+        // BedMissingAtRespawn: reported by the VICTIM's client -- the game
+        // found no bed at their custom spawn point and put them at the
+        // circle. Details: LostSpawnX/Y/Z.
+        BedMissingAtRespawn = 401
     }
 }

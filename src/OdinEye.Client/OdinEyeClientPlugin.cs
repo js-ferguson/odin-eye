@@ -2,11 +2,17 @@ namespace OdinEye.Client
 {
     using BepInEx;
     using BepInEx.Configuration;
+    using HarmonyLib;
+    using OdinEye.Client.Counters;
     using OdinEye.Client.Hud;
+    using OdinEye.Client.Patches;
     using OdinEye.Client.Stats;
     using OdinEye.Client.Submission;
     using OdinEye.Models;
     using System;
+    using System.IO;
+    using System.Net.Http;
+    using System.Threading.Tasks;
 
     // Optional companion to the server-side OdinEye plugin (ODINEYE-20).
     // A player who never installs this changes nothing about the server or
@@ -19,8 +25,22 @@ namespace OdinEye.Client
     [BepInPlugin("org.bepinex.plugins.odineye.client", "odineye.client", "1.0.0.0")]
     public class OdinEyeClientPlugin : BaseUnityPlugin
     {
-        // Decision 4 (ODINEYE-16): submit on login, then every 5 minutes.
-        private static readonly TimeSpan SubmissionInterval = TimeSpan.FromMinutes(5);
+        // ODINEYE-36 (supersedes Decision 4 of ODINEYE-16's "every 5
+        // minutes"): achievements are awarded the moment they are earned, so
+        // look for a change every 30 seconds and submit if there is one. A
+        // heartbeat still goes out every 5 minutes with no change, because
+        // OdinEye's server holds stats only in memory and a restart empties it.
+        private static readonly TimeSpan CheckInterval = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan HeartbeatInterval = TimeSpan.FromMinutes(5);
+
+        // Queued events (a bed removed, a respawn at the circle) are sent a
+        // little sooner than stats: the two halves of Homeless come from
+        // different players' machines.
+        private static readonly TimeSpan EventFlushInterval = TimeSpan.FromSeconds(5);
+
+        // How long a login waits for the server to say which counters it
+        // already holds before submitting anyway (ODINEYE-36).
+        private static readonly TimeSpan SeedTimeout = TimeSpan.FromSeconds(10);
 
         // ODINEYE-32: cheap enough to recompute every frame (it's just a
         // few float ops + string formatting), but there's no reason to
@@ -30,8 +50,23 @@ namespace OdinEye.Client
         private IPlayerStatsSource statsSource;
         private IStatsSubmitter statsSubmitter;
         private ICheatStatusSubmitter cheatStatusSubmitter;
-        private SubmissionScheduler scheduler;
+        private ChangeDrivenPolicy policy;
         private Guid? currentPlayerId;
+
+        // ODINEYE-36/38/39: per-login state.
+        private Uri serverBaseUri;
+        private HttpClient seedClient;
+        private HttpEventSubmitter eventSubmitter;
+        private CustomCounterStore counters;
+        private IPlayerStatsSource fullStatsSource;
+        private volatile bool seeded;
+        private DateTime seedDeadlineUtc;
+        private bool loginSubmitted;
+        private DateTime nextEventFlushUtc;
+
+        // The stats last accepted by the server; null forces the next check
+        // to count as "changed" (first submission, or the last one failed).
+        private volatile System.Collections.Generic.IReadOnlyDictionary<string, float> lastSubmittedStats;
 
         private ConfigEntry<bool> showClock;
         private ClockHudElement clockHud;
@@ -69,6 +104,7 @@ namespace OdinEye.Client
                 return;
             }
 
+            serverBaseUri = baseUri;
             statsSource = new PlayerProfileStatsSource();
             statsSubmitter = new HttpStatsSubmitter(baseUri, message => Logger.LogWarning(message));
             // VALSER-50: same ServerUrl, same submission cadence as the
@@ -78,15 +114,59 @@ namespace OdinEye.Client
             // CheatStatusReader's header comment for why this can't reuse
             // the stats pipe.
             cheatStatusSubmitter = new HttpCheatStatusSubmitter(baseUri, message => Logger.LogWarning(message));
-            scheduler = new SubmissionScheduler(SubmissionInterval);
+            policy = new ChangeDrivenPolicy(CheckInterval, HeartbeatInterval);
+            seedClient = new HttpClient();
+            eventSubmitter = new HttpEventSubmitter(baseUri, message => Logger.LogWarning(message));
+            ClientRuntime.LogWarning = message => Logger.LogWarning(message);
+            ApplyPatches();
 
             Logger.LogInfo($"OdinEye client: character-stats submission enabled, reporting to {baseUri}");
         }
 
+        // Each patch is applied on its own: the game is updated often, and a
+        // patch whose target moved must cost only that one feature (it logs
+        // and the rest carry on), never the whole client.
+        private void ApplyPatches()
+        {
+            var harmony = new Harmony("org.bepinex.plugins.odineye.client");
+            foreach (var type in typeof(OdinEyeClientPlugin).Assembly.GetTypes())
+            {
+                if (!type.IsDefined(typeof(HarmonyPatch), false))
+                {
+                    continue;
+                }
+
+                try
+                {
+                    harmony.CreateClassProcessor(type).Patch();
+                }
+                catch (Exception ex)
+                {
+                    Logger.LogWarning($"OdinEye client: could not apply {type.Name} ({ex.Message}); the achievement it feeds will not progress until this is updated for the current game version.");
+                }
+            }
+        }
+
         private void OnDestroy()
         {
+            EndSession();
             (statsSubmitter as IDisposable)?.Dispose();
             (cheatStatusSubmitter as IDisposable)?.Dispose();
+            eventSubmitter?.Dispose();
+            seedClient?.Dispose();
+        }
+
+        // Character unloaded (logout, quit): stop recording, save what was
+        // counted. Safe to call when there is nothing to end.
+        private void EndSession()
+        {
+            ClientRuntime.Counters = null;
+            counters?.Flush();
+            counters = null;
+            fullStatsSource = null;
+            currentPlayerId = null;
+            loginSubmitted = false;
+            lastSubmittedStats = null;
         }
 
         private void Update()
@@ -100,14 +180,13 @@ namespace OdinEye.Client
 
             if (Player.m_localPlayer == null)
             {
-                currentPlayerId = null; // reset so the next login is detected fresh
+                EndSession(); // reset so the next login is detected fresh
                 return;
             }
 
             var nowUtc = DateTime.UtcNow;
-            var justLoggedIn = currentPlayerId == null;
 
-            if (justLoggedIn)
+            if (currentPlayerId == null)
             {
                 currentPlayerId = ComputeLocalPlayerId();
                 if (currentPlayerId == null)
@@ -115,15 +194,82 @@ namespace OdinEye.Client
                     return; // profile not ready yet this frame -- try again next Update
                 }
 
-                scheduler.OnLogin(nowUtc);
+                BeginSession(currentPlayerId.Value, nowUtc);
             }
-            else if (!scheduler.IsDue(nowUtc))
+
+            var playerId = currentPlayerId.Value;
+
+            // Events go out on their own, shorter timer.
+            if (nowUtc >= nextEventFlushUtc)
+            {
+                nextEventFlushUtc = nowUtc + EventFlushInterval;
+                eventSubmitter.Flush(playerId, ClientRuntime.Events);
+            }
+
+            if (!loginSubmitted)
+            {
+                // The login submission waits for the server's answer about
+                // counters it already holds (or gives up waiting), so a lost
+                // counter file can never make the first submission go DOWN.
+                if (!seeded && nowUtc < seedDeadlineUtc)
+                {
+                    return;
+                }
+
+                loginSubmitted = true;
+                policy.OnLogin(nowUtc);
+                SubmitAll(playerId, nowUtc);
+                return;
+            }
+
+            if (!policy.IsCheckDue(nowUtc))
             {
                 return;
             }
 
-            SubmitCurrentStats(currentPlayerId.Value);
-            SubmitCheatStatus(currentPlayerId.Value);
+            counters?.Flush();
+            var current = fullStatsSource.GetStats();
+            if (policy.ShouldSubmit(nowUtc, StatsChange.HasChanged(lastSubmittedStats, current)))
+            {
+                SubmitAll(playerId, nowUtc);
+            }
+        }
+
+        // One login: this character's counter file, then a look at what the
+        // server already knows so the counters never start below it.
+        private void BeginSession(Guid playerId, DateTime nowUtc)
+        {
+            counters = new CustomCounterStore(
+                Path.Combine(Paths.ConfigPath, $"odineye.client.counters.{playerId:N}.json"),
+                message => Logger.LogWarning(message));
+            fullStatsSource = new CounterAugmentedStatsSource(statsSource, counters, StationNames.Get);
+            seeded = false;
+            seedDeadlineUtc = nowUtc + SeedTimeout;
+            loginSubmitted = false;
+            lastSubmittedStats = null;
+            nextEventFlushUtc = nowUtc + EventFlushInterval;
+
+            var store = counters;
+            Task.Run(async () =>
+            {
+                var existing = await StatsSeeder.FetchAsync(seedClient, serverBaseUri, playerId, SeedTimeout, message => Logger.LogWarning(message)).ConfigureAwait(false);
+                store.SeedFrom(existing);
+                if (ReferenceEquals(counters, store))
+                {
+                    seeded = true;
+                }
+            });
+
+            // Counting starts now; anything counted before the seed lands is
+            // simply added to the higher of (file, server) afterwards.
+            ClientRuntime.Counters = counters;
+        }
+
+        private void SubmitAll(Guid playerId, DateTime nowUtc)
+        {
+            SubmitCurrentStats(playerId);
+            SubmitCheatStatus(playerId);
+            policy.MarkSubmitted(nowUtc);
         }
 
         // ODINEYE-32: entirely independent of the stats/cheat-status
@@ -156,19 +302,33 @@ namespace OdinEye.Client
 
         private void SubmitCurrentStats(Guid playerId)
         {
-            var rawStats = statsSource.GetStats();
+            var rawStats = fullStatsSource.GetStats();
             if (rawStats.Count == 0)
             {
                 return;
             }
 
-            var submission = CharacterStatsPayloadBuilder.Build(rawStats);
+            var meta = new OdinEye.Models.Api.SubmissionMeta
+            {
+                PlayerId = ClientRuntime.LocalPlayerId().ToString(),
+                ClientVersion = typeof(OdinEyeClientPlugin).Assembly.GetName().Version.ToString()
+            };
+            var submission = CharacterStatsPayloadBuilder.Build(rawStats, meta);
             if (submission.Stats.Count == 0)
             {
                 return;
             }
 
-            statsSubmitter.Submit(playerId, submission);
+            // Assume it will be accepted; if it is not, forget it so the
+            // next check counts as "changed" and sends it again.
+            lastSubmittedStats = rawStats;
+            statsSubmitter.Submit(playerId, submission, accepted =>
+            {
+                if (!accepted)
+                {
+                    lastSubmittedStats = null;
+                }
+            });
         }
 
         // VALSER-50: null means CheatStatusReader couldn't resolve the
