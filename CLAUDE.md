@@ -50,7 +50,13 @@ Client mod (`OdinEye.Client`):
   died from that exact hit), `Custom:ChickenMeatCooked`,
   `Custom:LoxPiesCooked` (both via `CookingStationPatches`, same "Done" slot
   read as `Custom:BreadCollected` but matched against `CookedChickenMeat`/
-  `LoxMeatPie` instead of `Bread`), and `Meta` (player ID, version).
+  `LoxMeatPie` instead of `Bread`),
+  `Custom:TamedBoar`/`Custom:TamedWolf`/`Custom:TamedLox` (via
+  `TameablePatch`, a postfix on `Tameable.Tame()` keyed on the tamed
+  Character's prefab name -- `assembly_utils`' `Utils.GetPrefabName`, now
+  referenced by the client project for this), and `Meta` (player ID,
+  version). This live build has no `Asksvin`/`Moose` classes, so Farmer Joe
+  is scoped to those three species only -- see its own ticket.
   `Derived:FurthestNorthZ`/`Custom:ReachedDeepNorth` feed valheim_server's
   "Peter North" achievement, and the panel also derives a "most achievements
   held" title (The All-Fathers Finest) from its own awards table with no

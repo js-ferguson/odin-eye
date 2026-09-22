@@ -16,6 +16,18 @@ namespace OdinEye.Client.Counters
         public const string ChickenMeatCookedKey = "Custom:ChickenMeatCooked"; // KFC - The Colonel
         public const string LoxPiesCookedKey = "Custom:LoxPiesCooked"; // Baked as Bro
 
+        // Farmer Joe. One counter per tameable species this live build
+        // actually has (confirmed via IL class search: no Asksvin or Moose
+        // class exists in this build, so those two are out of scope until
+        // the server updates to a build that adds them). Keyed on the
+        // ZDO's prefab name -- the same raw token the game's own
+        // EnemyKill:<name> stat already uses (Fuck the Police/Mangey Dog
+        // key off "Boar"/"Wolf" directly) -- rather than any display name,
+        // to sidestep localization entirely.
+        public const string TamedBoarKey = "Custom:TamedBoar";
+        public const string TamedWolfKey = "Custom:TamedWolf";
+        public const string TamedLoxKey = "Custom:TamedLox";
+
         // Peter North. World +Z is north (confirmed via the live game's own
         // world-generation constants: Ashlands sits at large negative Z,
         // Deep North at large positive Z) -- see NorthTracking for where
@@ -88,6 +100,22 @@ namespace OdinEye.Client.Counters
         // only counts when the item taken out is actually a baked lox pie.
         public static int LoxPieToCount(bool itemIsDone, string producedItemName, int amountTaken) =>
             itemIsDone && producedItemName == LoxMeatPieItemName && amountTaken > 0 ? amountTaken : 0;
+
+        // Farmer Joe. Which counter (if any) a freshly-tamed creature's
+        // prefab name should credit -- null for anything outside the
+        // three species this build supports (including Hen, which is
+        // never tamed through Tameable.Tame() to begin with, so it would
+        // never reach here anyway).
+        public static string TamedSpeciesCounterKey(string prefabName)
+        {
+            switch (prefabName)
+            {
+                case "Boar": return TamedBoarKey;
+                case "Wolf": return TamedWolfKey;
+                case "Lox": return TamedLoxKey;
+                default: return null;
+            }
+        }
 
         // Dead-Eye Dick counts the local player's own successful pickups of
         // a Greydwarf eye, by the stack size actually picked up (a bush or a

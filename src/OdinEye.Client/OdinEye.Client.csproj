@@ -48,6 +48,9 @@
         <Reference Include="assembly_valheim, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
           <HintPath>..\..\packages\ValheimGameLibs.0.221.4\lib\assembly_valheim.dll</HintPath>
         </Reference>
+        <Reference Include="assembly_utils, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+          <HintPath>..\..\packages\ValheimGameLibs.0.221.4\lib\assembly_utils.dll</HintPath>
+        </Reference>
         <Reference Include="BepInEx, Version=5.4.20.0, Culture=neutral, processorArchitecture=MSIL">
           <HintPath>..\..\packages\BepInEx.BaseLib.5.4.20\lib\net35\BepInEx.dll</HintPath>
         </Reference>
@@ -111,6 +114,7 @@
         <Compile Include="Patches\ClientRuntime.cs" />
         <Compile Include="Patches\CookingStationPatches.cs" />
         <Compile Include="Patches\DwarfEyePatch.cs" />
+        <Compile Include="Patches\TameablePatch.cs" />
         <Compile Include="Patches\VomitBombPatch.cs" />
         <Compile Include="Patches\WeaponKillPatch.cs" />
         <Compile Include="Stats\BoatTracking.cs" />

@@ -114,6 +114,26 @@ namespace OdinEye.Client.Tests
             Assert.That(CounterRules.LoxPieToCount(done, produced, amount), Is.EqualTo(0));
         }
 
+        // --- Farmer Joe -------------------------------------------------------------------
+
+        [TestCase("Boar", CounterRules.TamedBoarKey)]
+        [TestCase("Wolf", CounterRules.TamedWolfKey)]
+        [TestCase("Lox", CounterRules.TamedLoxKey)]
+        public void TamingASupportedSpecies_CreditsItsOwnCounter(string prefabName, string expectedKey)
+        {
+            Assert.That(CounterRules.TamedSpeciesCounterKey(prefabName), Is.EqualTo(expectedKey));
+        }
+
+        [TestCase("Hen", TestName = "already tame from hatching, never goes through Tame()")]
+        [TestCase("Asksvin", TestName = "not present in this build")]
+        [TestCase("Moose", TestName = "not present in this build")]
+        [TestCase("Deer", TestName = "not tameable at all")]
+        [TestCase(null, TestName = "no prefab name resolved")]
+        public void AnythingElse_CreditsNoTamingCounter(string prefabName)
+        {
+            Assert.That(CounterRules.TamedSpeciesCounterKey(prefabName), Is.Null);
+        }
+
         // --- Dead-Eye Dick ------------------------------------------------------------------
 
         [Test]
