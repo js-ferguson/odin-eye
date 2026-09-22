@@ -7,19 +7,24 @@ namespace OdinEye.Client.Stats
 
     // ODINEYE-36/38: adds what this mod keeps to what the game reports --
     // the "Custom:" counters and the "Derived:" totals -- so they travel in
-    // the same submission. Pure apart from the inner source, so it is
-    // testable with a fake one.
+    // the same submission. Pure apart from the inner source and the two
+    // live-state readers, all three injected, so it is testable with fakes.
     public sealed class CounterAugmentedStatsSource : IPlayerStatsSource
     {
         private readonly IPlayerStatsSource inner;
         private readonly CustomCounterStore store;
         private readonly Func<ISet<string>> stationNames;
+        private readonly Func<float?> currentNorthZ;
+        private readonly Func<bool> isInDeepNorth;
 
-        public CounterAugmentedStatsSource(IPlayerStatsSource inner, CustomCounterStore store, Func<ISet<string>> stationNames)
+        public CounterAugmentedStatsSource(IPlayerStatsSource inner, CustomCounterStore store, Func<ISet<string>> stationNames,
+            Func<float?> currentNorthZ = null, Func<bool> isInDeepNorth = null)
         {
             this.inner = inner ?? throw new ArgumentNullException(nameof(inner));
             this.store = store ?? throw new ArgumentNullException(nameof(store));
             this.stationNames = stationNames ?? (() => null);
+            this.currentNorthZ = currentNorthZ ?? (() => null);
+            this.isInDeepNorth = isInDeepNorth ?? (() => false);
         }
 
         public IReadOnlyDictionary<string, float> GetStats()
@@ -47,6 +52,21 @@ namespace OdinEye.Client.Stats
             if (total > 0f)
             {
                 store.RaiseTo(PieceStats.StationTotalKey, total);
+            }
+
+            // Peter North: a high-water mark of how far north this
+            // character has ever been, and a once-ever flag for having
+            // reached the Deep North biome. Both only ever grow, same
+            // reasoning as the station total above.
+            var z = currentNorthZ();
+            if (z.HasValue)
+            {
+                store.RaiseTo(CounterRules.FurthestNorthZKey, CounterRules.NorthDistanceToRaise(z.Value));
+            }
+
+            if (isInDeepNorth())
+            {
+                store.RaiseTo(CounterRules.ReachedDeepNorthKey, 1f);
             }
 
             foreach (var kv in store.Snapshot())

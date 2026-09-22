@@ -42,7 +42,12 @@ Client mod (`OdinEye.Client`):
 * Sends `PiecePlaced:*` (the game's `m_piecesPlacedStats`),
   `Derived:StationOrUpgradePlaced` (high-water), `Custom:ArrowHitsEnemy`,
   `Custom:BreadCollected`, `Custom:DwarfEyesTouched`, `Custom:FoodBurntToCoal`,
-  and `Meta` (player ID, version).
+  `Derived:FurthestNorthZ` (high-water, +Z is north), `Custom:ReachedDeepNorth`
+  (once-ever flag, via `Player.GetCurrentBiome()`), and `Meta` (player ID,
+  version). The last two feed valheim_server's "Peter North" achievement --
+  the one achievement in that whole system that gets taken away from one
+  player and given to another, so it lives on a rule type of its own
+  (`leaderboard`) rather than the usual plain threshold.
 * `Counters/CustomCounterStore` keeps counters per character in BepInEx's
   config folder and is seeded from the server at login, because the server
   rejects a whole submission if any value goes DOWN.
