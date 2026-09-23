@@ -6,13 +6,14 @@ namespace OdinEye.Client.Patches
     using UnityEngine;
 
     // ODINEYE-38's Dead-Eye Dick, plus VALSER-81's Guck guck 9000/Vlad the
-    // impaler/Barking up the wrong tree: four achievements, all "MY
-    // successful pickup of item X, by the stack size picked up" -- the same
-    // shape CookingStationPatches.cs already uses for its own four
-    // achievements sharing one hook (RemoveDoneItemPatch calls
-    // BreadToCount/CookedChickenMeatToCount/LoxPieToCount all against the
-    // same captured item), so the three new ones were added here rather
-    // than as three near-duplicate patch classes.
+    // impaler/Barking up the wrong tree, plus VALSER-82's Got a woody: five
+    // achievements, all "MY successful pickup of item X (or, for wood, ANY
+    // of a set), by the stack size picked up" -- the same shape
+    // CookingStationPatches.cs already uses for its own four achievements
+    // sharing one hook (RemoveDoneItemPatch calls BreadToCount/
+    // CookedChickenMeatToCount/LoxPieToCount all against the same captured
+    // item), so each new one was added here rather than as its own
+    // near-duplicate patch class.
     //
     // Humanoid.Pickup(GameObject, ...) is where the game actually adds an
     // item to an inventory -- ItemDrop.Pickup (the interact target) just
@@ -96,6 +97,12 @@ namespace OdinEye.Client.Patches
                 if (elderBark > 0)
                 {
                     counters?.Increment(CounterRules.ElderBarkCollectedKey, elderBark);
+                }
+
+                var wood = CounterRules.WoodToCount(true, true, prefabName, stack);
+                if (wood > 0)
+                {
+                    counters?.Increment(CounterRules.WoodCollectedKey, wood);
                 }
             });
     }

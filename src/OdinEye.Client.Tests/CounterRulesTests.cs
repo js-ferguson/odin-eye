@@ -275,5 +275,71 @@ namespace OdinEye.Client.Tests
             Assert.That(CounterRules.IronToProcess("IronScrap", 0), Is.EqualTo(0));
             Assert.That(CounterRules.IronToProcess("", 0), Is.EqualTo(0));
         }
+
+        // --- VALSER-82 batch (2026-09-23) -----------------------------------------------
+
+        // --- SwampSecondsToAdd (Stink Fish) ---
+
+        [Test]
+        public void SwampSeconds_CreditsTheGapWhileInTheSwamp()
+        {
+            Assert.That(CounterRules.SwampSecondsToAdd(true, 30f, 300f), Is.EqualTo(30f));
+        }
+
+        [Test]
+        public void SwampSeconds_CreditsNothingOutsideTheSwamp()
+        {
+            Assert.That(CounterRules.SwampSecondsToAdd(false, 30f, 300f), Is.EqualTo(0f));
+        }
+
+        [TestCase(0f)]
+        [TestCase(-5f)]
+        public void SwampSeconds_CreditsNothingForAZeroOrNegativeGap(float elapsed)
+        {
+            Assert.That(CounterRules.SwampSecondsToAdd(true, elapsed, 300f), Is.EqualTo(0f));
+        }
+
+        [Test]
+        public void SwampSeconds_DropsAGapLongerThanTheSanityCap()
+        {
+            Assert.That(CounterRules.SwampSecondsToAdd(true, 1200f, 300f), Is.EqualTo(0f));
+        }
+
+        // --- WoodToCount (Got a woody) ---
+
+        [TestCase("Wood")]
+        [TestCase("RoundLog")]
+        [TestCase("FineWood")]
+        [TestCase("Blackwood")]
+        [TestCase("Frostwood")]
+        [TestCase("YggdrasilWood")]
+        public void Wood_CountsEveryRecognizedWoodType(string prefabName)
+        {
+            Assert.That(CounterRules.WoodToCount(true, true, prefabName, 5), Is.EqualTo(5));
+        }
+
+        [Test]
+        public void Wood_DoesNotCountElderBarkOrAnUnrelatedItem()
+        {
+            // ElderBark is a real tree material but its own separate
+            // achievement's currency (Barking up the wrong tree) -- must
+            // not double-count here.
+            Assert.That(CounterRules.WoodToCount(true, true, "ElderBark", 1), Is.EqualTo(0));
+            Assert.That(CounterRules.WoodToCount(true, true, "Stone", 1), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Wood_DoesNotCountAnotherPlayersOrFailedPickup()
+        {
+            Assert.That(CounterRules.WoodToCount(false, true, "Wood", 1), Is.EqualTo(0));
+            Assert.That(CounterRules.WoodToCount(true, false, "Wood", 1), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Wood_DoesNotCountAZeroOrNegativeStack()
+        {
+            Assert.That(CounterRules.WoodToCount(true, true, "Wood", 0), Is.EqualTo(0));
+            Assert.That(CounterRules.WoodToCount(true, true, "Wood", -1), Is.EqualTo(0));
+        }
     }
 }

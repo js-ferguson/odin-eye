@@ -16,18 +16,24 @@ namespace OdinEye.Client.Stats
         // on a boat -- see CounterRules.BoatSecondsToAdd.
         private static readonly TimeSpan MaxPlausibleBoatGap = TimeSpan.FromMinutes(5);
 
+        // Stink Fish: same cap, same reasoning, for time in the Swamp --
+        // see CounterRules.SwampSecondsToAdd.
+        private static readonly TimeSpan MaxPlausibleSwampGap = TimeSpan.FromMinutes(5);
+
         private readonly IPlayerStatsSource inner;
         private readonly CustomCounterStore store;
         private readonly Func<ISet<string>> stationNames;
         private readonly Func<float?> currentNorthZ;
         private readonly Func<bool> isInDeepNorth;
         private readonly Func<bool> isOnBoat;
+        private readonly Func<bool> isInSwamp;
         private readonly Func<DateTime> nowUtc;
         private DateTime? lastBoatSampleUtc;
+        private DateTime? lastSwampSampleUtc;
 
         public CounterAugmentedStatsSource(IPlayerStatsSource inner, CustomCounterStore store, Func<ISet<string>> stationNames,
             Func<float?> currentNorthZ = null, Func<bool> isInDeepNorth = null,
-            Func<bool> isOnBoat = null, Func<DateTime> nowUtc = null)
+            Func<bool> isOnBoat = null, Func<bool> isInSwamp = null, Func<DateTime> nowUtc = null)
         {
             this.inner = inner ?? throw new ArgumentNullException(nameof(inner));
             this.store = store ?? throw new ArgumentNullException(nameof(store));
@@ -35,6 +41,7 @@ namespace OdinEye.Client.Stats
             this.currentNorthZ = currentNorthZ ?? (() => null);
             this.isInDeepNorth = isInDeepNorth ?? (() => false);
             this.isOnBoat = isOnBoat ?? (() => false);
+            this.isInSwamp = isInSwamp ?? (() => false);
             this.nowUtc = nowUtc ?? (() => DateTime.UtcNow);
         }
 
@@ -98,6 +105,20 @@ namespace OdinEye.Client.Stats
             }
 
             lastBoatSampleUtc = now;
+
+            // Stink Fish: same shape as The Admiral above, against the
+            // Swamp biome instead of a boat.
+            if (lastSwampSampleUtc.HasValue)
+            {
+                var elapsed = (float)(now - lastSwampSampleUtc.Value).TotalSeconds;
+                var toAdd = CounterRules.SwampSecondsToAdd(isInSwamp(), elapsed, (float)MaxPlausibleSwampGap.TotalSeconds);
+                if (toAdd > 0f)
+                {
+                    store.Increment(CounterRules.TimeInSwampSecondsKey, toAdd);
+                }
+            }
+
+            lastSwampSampleUtc = now;
 
             foreach (var kv in store.Snapshot())
             {

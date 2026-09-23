@@ -127,6 +127,7 @@
         <Compile Include="Stats\OutpostAnchorStore.cs" />
         <Compile Include="Stats\OutpostTracking.cs" />
         <Compile Include="Stats\StationNames.cs" />
+        <Compile Include="Stats\SwampTracking.cs" />
         <Compile Include="Submission\HttpEventSubmitter.cs" />
         <Compile Include="Submission\StatsSeeder.cs" />
         <Compile Include="Properties\AssemblyInfo.cs" />
