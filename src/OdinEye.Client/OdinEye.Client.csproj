@@ -113,8 +113,11 @@
         <Compile Include="Patches\BedPatches.cs" />
         <Compile Include="Patches\ClientRuntime.cs" />
         <Compile Include="Patches\CookingStationPatches.cs" />
-        <Compile Include="Patches\DwarfEyePatch.cs" />
         <Compile Include="Patches\FermenterTapPatch.cs" />
+        <Compile Include="Patches\IncomingHitPatch.cs" />
+        <Compile Include="Patches\ItemPickupPatch.cs" />
+        <Compile Include="Patches\MudPilePatch.cs" />
+        <Compile Include="Patches\SmelterPatches.cs" />
         <Compile Include="Patches\TameablePatch.cs" />
         <Compile Include="Patches\VomitBombPatch.cs" />
         <Compile Include="Patches\WeaponKillPatch.cs" />
