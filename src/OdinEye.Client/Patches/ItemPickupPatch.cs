@@ -7,10 +7,11 @@ namespace OdinEye.Client.Patches
 
     // ODINEYE-38's Dead-Eye Dick, plus VALSER-81's Guck guck 9000/Vlad the
     // impaler/Barking up the wrong tree, plus VALSER-82's Got a woody, plus
-    // VALSER-83's Stoned: six achievements, all "MY successful pickup of
-    // item X (or, for wood/stone, ANY of a set), by the stack size picked
-    // up" -- the same shape CookingStationPatches.cs already uses for its
-    // own four achievements sharing one hook (RemoveDoneItemPatch calls
+    // VALSER-83's Stoned, plus VALSER-85's Sticky fingers: seven
+    // achievements, all "MY successful pickup of item X (or, for
+    // wood/stone, ANY of a set), by the stack size picked up" -- the same
+    // shape CookingStationPatches.cs already uses for its own four
+    // achievements sharing one hook (RemoveDoneItemPatch calls
     // BreadToCount/CookedChickenMeatToCount/LoxPieToCount all against the
     // same captured item), so each new one was added here rather than as
     // its own near-duplicate patch class.
@@ -109,6 +110,12 @@ namespace OdinEye.Client.Patches
                 if (stone > 0)
                 {
                     counters?.Increment(CounterRules.StoneCollectedKey, stone);
+                }
+
+                var resin = CounterRules.ResinToCount(true, true, prefabName, stack);
+                if (resin > 0)
+                {
+                    counters?.Increment(CounterRules.ResinHandledKey, resin);
                 }
             });
     }

@@ -55,6 +55,9 @@ namespace OdinEye.Client.Counters
         // "stop counting once earned" mechanic exists or is needed).
         public const string TimeInBakerySecondsKey = "Custom:TimeInBakerySeconds";
 
+        // VALSER-85 (2026-09-23): Sticky fingers.
+        public const string ResinHandledKey = "Custom:ResinHandled";
+
         // Farmer Joe. One counter per tameable species this live build
         // actually has (confirmed via IL class search: no Asksvin or Moose
         // class exists in this build, so those two are out of scope until
@@ -181,6 +184,12 @@ namespace OdinEye.Client.Counters
         // named, rarer materials no player calls "stone", the same
         // reasoning WoodItemNames already excludes ElderBark for.
         public static readonly HashSet<string> StoneItemNames = new HashSet<string> { "Stone", "Flint" };
+
+        // Sticky fingers. Confirmed "materials/Resin.prefab" in the game's
+        // own asset manifest -- deliberately excludes "CharcoalResin"
+        // (also present there), a distinctly-named, later-game material,
+        // not what a player means by plain "resin".
+        public const string ResinItemName = "Resin";
 
         // Marksman counts an arrow that this player fired hitting a live
         // enemy. Not other players, not tamed animals, not something already
@@ -389,5 +398,11 @@ namespace OdinEye.Client.Counters
         // sanity cap against a suspended game/slept computer.
         public static float BakerySecondsToAdd(bool isNearOven, float elapsedSeconds, float maxPlausibleGapSeconds) =>
             isNearOven && elapsedSeconds > 0f && elapsedSeconds <= maxPlausibleGapSeconds ? elapsedSeconds : 0f;
+
+        // Sticky fingers: same shape as GuckToCount/BloodBagToCount --
+        // MY successful pickup of Resin specifically, by the stack size
+        // picked up.
+        public static int ResinToCount(bool byLocalPlayer, bool pickupSucceeded, string itemPrefabName, int stack) =>
+            byLocalPlayer && pickupSucceeded && itemPrefabName == ResinItemName && stack > 0 ? stack : 0;
     }
 }
