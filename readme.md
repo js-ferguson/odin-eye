@@ -51,7 +51,7 @@ Beyond keeping the plugin building against current Valheim/BepInEx (the original
 - `GET`/`POST /players/cheatStatus` -- live cheat-detection status per character, reported by OdinEye.Client.
 - `POST /players/{steamId}/notify` -- a short HUD banner shown to one connected player.
 - `GET /worldModifiers` -- the world's current difficulty settings, read back from the game's own state.
-- OdinEye.Client now reads the game's own per-piece placement history and submits changes within 30 seconds (was a flat 5 minutes), plus a small set of counters for things Valheim doesn't track on its own.
+- OdinEye.Client now reads the game's own per-piece placement history and submits changes within 30 seconds (was a flat 5 minutes), plus a growing library of its own counters for things Valheim doesn't track on its own -- arrow hits, items collected by type, time spent on a boat/in a biome/near a structure, and more (`OdinEye.Client/Counters/CounterRules.cs` is the current, authoritative list).
 - Both plugins are published on Thunderstore and ship a proper automated test suite (neither existed before this fork).
 
 ## 📦 Getting started
