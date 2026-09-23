@@ -7,11 +7,9 @@
 # wherever tcli is invoked from, and CI always runs from the repo root where
 # the client's built dist/OdinEye.Client/ files actually land.
 #
-# NOT verified against a real `tcli build`/`publish` run -- this environment
-# has neither a `dotnet` CLI nor a Thunderstore account/token. First real use
-# should start with a local `tcli build --config-path thunderstore-client.toml`
-# and a manual inspection of the resulting zip before trusting the automated
-# `publish` step.
+# Verified live via release.yaml's automated `tcli publish` step across
+# several real releases since (v1.2.24 onward at least) -- this comment
+# originally warned it was untested; no longer true, kept only as history.
 
 [config]
 schemaVersion = "0.0.1"
@@ -22,7 +20,10 @@ name = "OdinEyeClient"
 # Placeholder -- release.yaml overwrites this to match the release tag
 # (stripped of its leading "v") before running tcli.
 versionNumber = "0.0.0"
-description = "Optional OdinEye companion: submits your character's real lifetime stats (playtime, deaths, boss kills) to your server's OdinEye instance."
+# Thunderstore's own description field is capped at 250 characters --
+# checked against that limit by hand (228 here), since tcli/the API give
+# no useful error if it's ever exceeded.
+description = "Optional OdinEye companion: submits your character's real lifetime stats and progress toward your server's custom achievements to your server's OdinEye instance -- needed for achievements to track, not for basic server function."
 websiteUrl = "https://github.com/js-ferguson/odin-eye"
 containsNsfwContent = false
 
