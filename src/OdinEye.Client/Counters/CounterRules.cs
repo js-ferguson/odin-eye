@@ -21,6 +21,21 @@ namespace OdinEye.Client.Counters
         public const string MeadsMadeKey = "Custom:MeadsMade"; // Punky Brewster
         public const string OutpostLandmassesKey = "Custom:OutpostLandmasses"; // Gilligan's Island
 
+        // VALSER-81 batch (2026-09-23). Rooted (EnemyKill:Abomination) and
+        // Darryl Wraithway (EnemyKill:Wraith) need no counter of their own
+        // at all -- PlayerProfileStatsSource already submits a native
+        // EnemyKill:<prefab> entry for every credited kill (see that
+        // class's own ODINEYE-29 header), the same signal Fuck the
+        // Police/Mangey Dog already ride for Boar/Wolf. Only the four that
+        // need a NEW counter this mod doesn't already track are here.
+        public const string PoisonDeathsKey = "Custom:PoisonDeaths"; // Venom
+        public const string LeechHitsKey = "Custom:LeechHits"; // Suckie Suckie
+        public const string GuckCollectedKey = "Custom:GuckCollected"; // Guck guck 9000
+        public const string BloodBagsCollectedKey = "Custom:BloodBagsCollected"; // Vlad the impaler
+        public const string MuddyScrapPilesOpenedKey = "Custom:MuddyScrapPilesOpened"; // Joe dirt
+        public const string ElderBarkCollectedKey = "Custom:ElderBarkCollected"; // Barking up the wrong tree
+        public const string IronProcessedKey = "Custom:IronProcessed"; // Iron maiden
+
         // Farmer Joe. One counter per tameable species this live build
         // actually has (confirmed via IL class search: no Asksvin or Moose
         // class exists in this build, so those two are out of scope until
@@ -81,6 +96,49 @@ namespace OdinEye.Client.Counters
         // pie. Like CookedChickenItemName, needs live confirmation
         // (ODINEYE-34) before this is trusted.
         public const string LoxMeatPieItemName = "LoxMeatPie";
+
+        // VALSER-81 batch, all matched against ItemData.m_dropPrefab.name
+        // (the Vomit Bomb/Dead-Eye Dick lesson, applied from the start this
+        // time rather than found the hard way) -- every one confirmed as
+        // the item's own prefab file name in the game's own asset manifest,
+        // not yet confirmed live via an actual pickup.
+        public const string GuckItemName = "Guck"; // Guck guck 9000 ("materials/Guck.prefab")
+        public const string BloodBagItemName = "Bloodbag"; // Vlad the impaler ("materials/Bloodbag.prefab")
+        // Barking up the wrong tree. The brief said "ancient bark" -- the
+        // real dropped material (from Mistlands' Yggdrasil roots) is
+        // "Elder Bark" in game, prefab "ElderBark" ("materials/
+        // ElderBark.prefab"). "AncientBark" only exists as part of a
+        // WEAPON's name (SpearAncientbark/AncientSpear) built from it, not
+        // as its own pickup -- there is no standalone "AncientBark" item.
+        public const string ElderBarkItemName = "ElderBark";
+
+        // Suckie Suckie. Two Leech prefabs exist in this build's asset
+        // manifest -- Leech (open swamp water) and Leech_cave (sunken
+        // crypts) -- both should count as "a leech", so this is checked
+        // against a set, not a single name.
+        public static readonly HashSet<string> LeechPrefabNames = new HashSet<string> { "Leech", "Leech_cave" };
+
+        // Joe dirt. Two scene variants in this build's asset manifest
+        // (mudpile/mudpile_frac and mudpile2/mudpile2_frac -- the paired
+        // whole-mesh + fracture-mesh files are MineRock5's own signature
+        // asset shape, the same technique Copper/Meteorite/Black Marble
+        // deposits use). LEAST confirmed of this whole batch: the manifest
+        // only gives lowercase FILE names, unlike every other prefab name
+        // in this file (which all matched their file name's exact casing)
+        // -- so this is matched case-insensitively, and needs a real live
+        // hit to confirm both the component (MineRock5) and the casing.
+        public static readonly HashSet<string> MudPilePrefabNames =
+            new HashSet<string>(System.StringComparer.OrdinalIgnoreCase) { "MudPile", "MudPile2" };
+
+        // Iron maiden. What a Smelter's own s_spawnOre ZDO var holds while
+        // an Iron Scrap is being processed (Smelter.QueueProcessed/
+        // SpawnProcessed, confirmed via IL) -- the RAW ORE's prefab name,
+        // not the finished bar's. One ore always yields exactly one bar in
+        // vanilla Valheim, so counting queued ore amount IS counting bars
+        // produced; matching the ore name directly avoids a second
+        // ItemConversion lookup for the same result the game already
+        // spawns 1:1.
+        public const string IronScrapItemName = "IronScrap";
 
         // Marksman counts an arrow that this player fired hitting a live
         // enemy. Not other players, not tamed animals, not something already
@@ -216,5 +274,51 @@ namespace OdinEye.Client.Counters
             && !targetIsPlayer
             && !targetIsTamed
             && targetIsDeadNow;
+
+        // Venom: the hit that just killed ME (not one I dealt) had nonzero
+        // poison damage in it. "Just killed me" is IsDead() read AFTER
+        // Character.ApplyDamage returns, the same postfix-timing WeaponKillPatch
+        // already relies on for its own "was this hit the killing blow" check.
+        public static bool CountsAsPoisonDeath(bool targetIsLocalPlayer, bool targetIsDeadNow, float poisonDamageInHit) =>
+            targetIsLocalPlayer && targetIsDeadNow && poisonDamageInHit > 0f;
+
+        // Suckie Suckie: a hit landed ON me (any amount, doesn't need to be
+        // the killing blow, doesn't need to be poison) by something whose
+        // prefab is a leech.
+        public static bool CountsAsLeechHit(bool targetIsLocalPlayer, string attackerPrefabName) =>
+            targetIsLocalPlayer && attackerPrefabName != null && LeechPrefabNames.Contains(attackerPrefabName);
+
+        // Guck guck 9000: same shape as DwarfEyesToCount -- MY successful
+        // pickup of this specific item, by the stack size actually picked
+        // up.
+        public static int GuckToCount(bool byLocalPlayer, bool pickupSucceeded, string itemPrefabName, int stack) =>
+            byLocalPlayer && pickupSucceeded && itemPrefabName == GuckItemName && stack > 0 ? stack : 0;
+
+        // Vlad the impaler: same shape.
+        public static int BloodBagToCount(bool byLocalPlayer, bool pickupSucceeded, string itemPrefabName, int stack) =>
+            byLocalPlayer && pickupSucceeded && itemPrefabName == BloodBagItemName && stack > 0 ? stack : 0;
+
+        // Barking up the wrong tree: same shape.
+        public static int ElderBarkToCount(bool byLocalPlayer, bool pickupSucceeded, string itemPrefabName, int stack) =>
+            byLocalPlayer && pickupSucceeded && itemPrefabName == ElderBarkItemName && stack > 0 ? stack : 0;
+
+        // Joe dirt: the hit that just fully destroyed a mud pile (every hit
+        // area's health at 0 -- MineRock5.AllDestroyed(), read via its own
+        // m_allDestroyed field right after DamageArea applies a hit) was
+        // dealt by me, against a prefab this build recognizes as a mud
+        // pile. The object is removed from the scene (ZNetView.Destroy())
+        // in the same call that sets m_allDestroyed, so DamageArea can never
+        // fire again for it afterward -- no double-count risk from reading
+        // "is now fully destroyed" rather than "just transitioned".
+        public static bool CountsAsMuddyScrapPileOpened(bool byLocalPlayer, bool nowFullyDestroyed, string prefabName) =>
+            byLocalPlayer && nowFullyDestroyed && prefabName != null && MudPilePrefabNames.Contains(prefabName);
+
+        // Iron maiden: however much ore a Smelter's OnEmpty is about to
+        // collect, but only when it's Iron Scrap -- 0 for any other ore
+        // (Copper/Tin/Silver all share the same Smelter component and
+        // OnEmpty hook, distinguished only by this queued ore name) or an
+        // empty queue.
+        public static int IronToProcess(string queuedOreName, int queuedAmount) =>
+            queuedOreName == IronScrapItemName && queuedAmount > 0 ? queuedAmount : 0;
     }
 }
