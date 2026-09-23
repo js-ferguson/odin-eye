@@ -406,5 +406,38 @@ namespace OdinEye.Client.Tests
         {
             Assert.That(CounterRules.BakerySecondsToAdd(true, 1200f, 300f), Is.EqualTo(0f));
         }
+
+        // --- VALSER-85 (2026-09-23) --------------------------------------------------
+
+        // --- ResinToCount (Sticky fingers) ---
+
+        [Test]
+        public void Resin_CountsAStackedPickupByTheLocalPlayer()
+        {
+            Assert.That(CounterRules.ResinToCount(true, true, "Resin", 5), Is.EqualTo(5));
+        }
+
+        [Test]
+        public void Resin_DoesNotCountCharcoalResinOrAnUnrelatedItem()
+        {
+            // CharcoalResin is its own distinctly-named, later-game
+            // material -- not what a player means by plain "resin".
+            Assert.That(CounterRules.ResinToCount(true, true, "CharcoalResin", 1), Is.EqualTo(0));
+            Assert.That(CounterRules.ResinToCount(true, true, "Wood", 1), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Resin_DoesNotCountAnotherPlayersOrFailedPickup()
+        {
+            Assert.That(CounterRules.ResinToCount(false, true, "Resin", 1), Is.EqualTo(0));
+            Assert.That(CounterRules.ResinToCount(true, false, "Resin", 1), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Resin_DoesNotCountAZeroOrNegativeStack()
+        {
+            Assert.That(CounterRules.ResinToCount(true, true, "Resin", 0), Is.EqualTo(0));
+            Assert.That(CounterRules.ResinToCount(true, true, "Resin", -1), Is.EqualTo(0));
+        }
     }
 }
