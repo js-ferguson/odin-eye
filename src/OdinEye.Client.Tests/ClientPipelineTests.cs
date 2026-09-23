@@ -624,6 +624,98 @@ namespace OdinEye.Client.Tests
             Assert.That(stats.ContainsKey("Custom:TimeOnBoatSeconds"), Is.False);
         }
 
+        // --- Stink Fish (integration) -----------------------------------------------------
+
+        [Test]
+        public void SwampTime_CreditsNothingOnTheFirstCallOfASession()
+        {
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+
+            var stats = new CounterAugmentedStatsSource(source, NewStore(), () => null,
+                isInSwamp: () => true, nowUtc: () => T0).GetStats();
+
+            Assert.That(stats.ContainsKey("Custom:TimeInSwampSeconds"), Is.False);
+        }
+
+        [Test]
+        public void SwampTime_CreditsTheGapBetweenCallsWhileInTheSwamp()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null, isInSwamp: () => true, nowUtc: () => now);
+            augmented.GetStats();
+
+            now += TimeSpan.FromSeconds(30);
+            var stats = augmented.GetStats();
+
+            Assert.That(stats["Custom:TimeInSwampSeconds"], Is.EqualTo(30f));
+        }
+
+        [Test]
+        public void SwampTime_AccumulatesAcrossSeveralChecks()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null, isInSwamp: () => true, nowUtc: () => now);
+            augmented.GetStats();
+            now += TimeSpan.FromSeconds(30);
+            augmented.GetStats();
+            now += TimeSpan.FromSeconds(30);
+
+            var stats = augmented.GetStats();
+
+            Assert.That(stats["Custom:TimeInSwampSeconds"], Is.EqualTo(60f));
+        }
+
+        [Test]
+        public void SwampTime_CreditsNothingOutsideTheSwamp()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null, isInSwamp: () => false, nowUtc: () => now);
+            augmented.GetStats();
+
+            now += TimeSpan.FromSeconds(30);
+            var stats = augmented.GetStats();
+
+            Assert.That(stats.ContainsKey("Custom:TimeInSwampSeconds"), Is.False);
+        }
+
+        [Test]
+        public void SwampTime_DropsAGapLongerThanTheSanityCap()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null, isInSwamp: () => true, nowUtc: () => now);
+            augmented.GetStats();
+
+            now += TimeSpan.FromMinutes(20); // computer slept, or similar
+            var stats = augmented.GetStats();
+
+            Assert.That(stats.ContainsKey("Custom:TimeInSwampSeconds"), Is.False);
+        }
+
+        [Test]
+        public void BoatAndSwampTime_AreTrackedIndependently()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null,
+                isOnBoat: () => true, isInSwamp: () => false, nowUtc: () => now);
+            augmented.GetStats();
+
+            now += TimeSpan.FromSeconds(30);
+            var stats = augmented.GetStats();
+
+            Assert.That(stats["Custom:TimeOnBoatSeconds"], Is.EqualTo(30f));
+            Assert.That(stats.ContainsKey("Custom:TimeInSwampSeconds"), Is.False);
+        }
+
         [Test]
         public void TheMetaRidesInTheSubmission_AndIsOptional()
         {

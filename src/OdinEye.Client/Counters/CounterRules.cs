@@ -36,6 +36,11 @@ namespace OdinEye.Client.Counters
         public const string ElderBarkCollectedKey = "Custom:ElderBarkCollected"; // Barking up the wrong tree
         public const string IronProcessedKey = "Custom:IronProcessed"; // Iron maiden
 
+        // VALSER-82 batch (2026-09-23).
+        public const string TimeInSwampSecondsKey = "Custom:TimeInSwampSeconds"; // Stink Fish
+        public const string WoodCollectedKey = "Custom:WoodCollected"; // Got a woody
+        public const string BedsDestroyedKey = "Custom:BedsDestroyed"; // Cradle snatcher
+
         // Farmer Joe. One counter per tameable species this live build
         // actually has (confirmed via IL class search: no Asksvin or Moose
         // class exists in this build, so those two are out of scope until
@@ -139,6 +144,16 @@ namespace OdinEye.Client.Counters
         // ItemConversion lookup for the same result the game already
         // spawns 1:1.
         public const string IronScrapItemName = "IronScrap";
+
+        // Got a woody. "All types of wood" per the brief -- every raw wood
+        // material this build's asset manifest has, base Meadows wood
+        // through the two Ashlands/Mountain refined woods and Mistlands'
+        // Yggdrasil wood (each confirmed as its own "materials/*.prefab"
+        // entry). Deliberately excludes ElderBark: a real tree material,
+        // but its own separate achievement's currency (Barking up the
+        // wrong tree), and colloquially "wood" doesn't mean bark.
+        public static readonly HashSet<string> WoodItemNames =
+            new HashSet<string> { "Wood", "RoundLog", "FineWood", "Blackwood", "Frostwood", "YggdrasilWood" };
 
         // Marksman counts an arrow that this player fired hitting a live
         // enemy. Not other players, not tamed animals, not something already
@@ -320,5 +335,20 @@ namespace OdinEye.Client.Counters
         // empty queue.
         public static int IronToProcess(string queuedOreName, int queuedAmount) =>
             queuedOreName == IronScrapItemName && queuedAmount > 0 ? queuedAmount : 0;
+
+        // Stink Fish: real elapsed time since the LAST check to credit, if
+        // the player is standing in the Swamp biome right now -- exact same
+        // shape as BoatSecondsToAdd (The Admiral), including the sanity cap
+        // against a suspended game/slept computer producing one enormous
+        // bogus gap.
+        public static float SwampSecondsToAdd(bool isInSwamp, float elapsedSeconds, float maxPlausibleGapSeconds) =>
+            isInSwamp && elapsedSeconds > 0f && elapsedSeconds <= maxPlausibleGapSeconds ? elapsedSeconds : 0f;
+
+        // Got a woody: MY successful pickup of any wood-family item, by the
+        // stack size picked up -- same shape as the other pickup counters,
+        // but checks membership in WoodItemNames rather than a single name.
+        public static int WoodToCount(bool byLocalPlayer, bool pickupSucceeded, string itemPrefabName, int stack) =>
+            byLocalPlayer && pickupSucceeded && stack > 0 && itemPrefabName != null && WoodItemNames.Contains(itemPrefabName)
+                ? stack : 0;
     }
 }

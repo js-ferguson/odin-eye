@@ -263,7 +263,7 @@ namespace OdinEye.Client
                 Path.Combine(Paths.ConfigPath, $"odineye.client.outposts.{playerId:N}.json"),
                 message => Logger.LogWarning(message));
             fullStatsSource = new CounterAugmentedStatsSource(statsSource, counters, StationNames.Get,
-                NorthTracking.CurrentNorthZ, NorthTracking.IsInDeepNorth, BoatTracking.IsOnBoat);
+                NorthTracking.CurrentNorthZ, NorthTracking.IsInDeepNorth, BoatTracking.IsOnBoat, SwampTracking.IsInSwamp);
             seeded = false;
             seedDeadlineUtc = nowUtc + SeedTimeout;
             loginSubmitted = false;

@@ -1,12 +1,14 @@
 namespace OdinEye.Client.Patches
 {
     using HarmonyLib;
+    using OdinEye.Client.Counters;
     using OdinEye.Client.Events;
     using System.Reflection;
     using UnityEngine;
 
-    // ODINEYE-40: the two halves of the Homeless achievement. Neither is
-    // visible to the server, so each client reports its own half.
+    // ODINEYE-40: the two halves of the Homeless achievement, plus
+    // VALSER-82's Cradle snatcher. Neither of the first two is visible to
+    // the server, so each client reports its own half.
     public static class BedPatches
     {
         // REMOVER's half. WearNTear.Remove is what the hammer's remove action
@@ -36,6 +38,16 @@ namespace OdinEye.Client.Patches
                     {
                         return;
                     }
+
+                    // Cradle snatcher: this patch, by its own header above,
+                    // only ever runs on the local player's own client, and
+                    // only for a HAMMER removal -- so every bed reaching
+                    // here counts, no further condition to decide (unlike
+                    // BedEvents.Removed below, which only reports a
+                    // CLAIMED bed's loss for Homeless -- Cradle snatcher
+                    // has no such restriction: an unclaimed or even your
+                    // own bed still counts as "a bed destroyed").
+                    ClientRuntime.Counters.Increment(CounterRules.BedsDestroyedKey);
 
                     var spawn = bed.GetSpawnPoint();
                     var removed = BedEvents.Removed((long)GetOwner.Invoke(bed, null), ClientRuntime.LocalPlayerId(), spawn.x, spawn.y, spawn.z);
