@@ -341,5 +341,41 @@ namespace OdinEye.Client.Tests
             Assert.That(CounterRules.WoodToCount(true, true, "Wood", 0), Is.EqualTo(0));
             Assert.That(CounterRules.WoodToCount(true, true, "Wood", -1), Is.EqualTo(0));
         }
+
+        // --- VALSER-83 (2026-09-23) -------------------------------------------------
+
+        // --- StoneToCount (Stoned) ---
+
+        [TestCase("Stone")]
+        [TestCase("Flint")]
+        public void Stone_CountsEveryRecognizedStoneType(string prefabName)
+        {
+            Assert.That(CounterRules.StoneToCount(true, true, prefabName, 5), Is.EqualTo(5));
+        }
+
+        [Test]
+        public void Stone_DoesNotCountARarerNamedMaterialOrAnUnrelatedItem()
+        {
+            // Obsidian/BlackMarble/etc are their own distinctly-named,
+            // rarer materials -- not colloquially "stone" -- same
+            // reasoning WoodItemNames excludes ElderBark for.
+            Assert.That(CounterRules.StoneToCount(true, true, "Obsidian", 1), Is.EqualTo(0));
+            Assert.That(CounterRules.StoneToCount(true, true, "BlackMarble", 1), Is.EqualTo(0));
+            Assert.That(CounterRules.StoneToCount(true, true, "Wood", 1), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Stone_DoesNotCountAnotherPlayersOrFailedPickup()
+        {
+            Assert.That(CounterRules.StoneToCount(false, true, "Stone", 1), Is.EqualTo(0));
+            Assert.That(CounterRules.StoneToCount(true, false, "Stone", 1), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Stone_DoesNotCountAZeroOrNegativeStack()
+        {
+            Assert.That(CounterRules.StoneToCount(true, true, "Stone", 0), Is.EqualTo(0));
+            Assert.That(CounterRules.StoneToCount(true, true, "Stone", -1), Is.EqualTo(0));
+        }
     }
 }

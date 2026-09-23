@@ -36,10 +36,17 @@ namespace OdinEye.Client.Counters
         public const string ElderBarkCollectedKey = "Custom:ElderBarkCollected"; // Barking up the wrong tree
         public const string IronProcessedKey = "Custom:IronProcessed"; // Iron maiden
 
-        // VALSER-82 batch (2026-09-23).
+        // VALSER-82 batch (2026-09-23). Got a woody/Cradle snatcher were
+        // corrected the same day, per explicit feedback, from an invented
+        // "leaderboard" completion threshold to "sole_leader" -- a single
+        // transferable title with no finish at all (admin-panel side only;
+        // no client-side change from that correction).
         public const string TimeInSwampSecondsKey = "Custom:TimeInSwampSeconds"; // Stink Fish
         public const string WoodCollectedKey = "Custom:WoodCollected"; // Got a woody
         public const string BedsDestroyedKey = "Custom:BedsDestroyed"; // Cradle snatcher
+
+        // VALSER-83 (2026-09-23): Stoned, "same as Got a woody, but stone".
+        public const string StoneCollectedKey = "Custom:StoneCollected";
 
         // Farmer Joe. One counter per tameable species this live build
         // actually has (confirmed via IL class search: no Asksvin or Moose
@@ -154,6 +161,19 @@ namespace OdinEye.Client.Counters
         // wrong tree), and colloquially "wood" doesn't mean bark.
         public static readonly HashSet<string> WoodItemNames =
             new HashSet<string> { "Wood", "RoundLog", "FineWood", "Blackwood", "Frostwood", "YggdrasilWood" };
+
+        // Stoned. Deliberately narrower than WoodItemNames above: only
+        // Stone and Flint, the two common, unprocessed "pick it straight
+        // up" stone-family materials (each confirmed as its own
+        // "materials/*.prefab" entry, with its own distinct item icon in
+        // the game's own asset manifest, separate from "StoneRock" --
+        // unconfirmed whether that is a real second carryable stone item
+        // or something else entirely, so left out rather than guessed
+        // in). Excludes Obsidian/BlackMarble/the three gemstones/
+        // Thunderstone/SulfurStone/SharpeningStone -- all distinctly-
+        // named, rarer materials no player calls "stone", the same
+        // reasoning WoodItemNames already excludes ElderBark for.
+        public static readonly HashSet<string> StoneItemNames = new HashSet<string> { "Stone", "Flint" };
 
         // Marksman counts an arrow that this player fired hitting a live
         // enemy. Not other players, not tamed animals, not something already
@@ -349,6 +369,11 @@ namespace OdinEye.Client.Counters
         // but checks membership in WoodItemNames rather than a single name.
         public static int WoodToCount(bool byLocalPlayer, bool pickupSucceeded, string itemPrefabName, int stack) =>
             byLocalPlayer && pickupSucceeded && stack > 0 && itemPrefabName != null && WoodItemNames.Contains(itemPrefabName)
+                ? stack : 0;
+
+        // Stoned: same shape as WoodToCount, against StoneItemNames.
+        public static int StoneToCount(bool byLocalPlayer, bool pickupSucceeded, string itemPrefabName, int stack) =>
+            byLocalPlayer && pickupSucceeded && stack > 0 && itemPrefabName != null && StoneItemNames.Contains(itemPrefabName)
                 ? stack : 0;
     }
 }
