@@ -716,6 +716,99 @@ namespace OdinEye.Client.Tests
             Assert.That(stats.ContainsKey("Custom:TimeInSwampSeconds"), Is.False);
         }
 
+        // --- Baker's High (integration) ---------------------------------------------------
+
+        [Test]
+        public void BakeryTime_CreditsNothingOnTheFirstCallOfASession()
+        {
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+
+            var stats = new CounterAugmentedStatsSource(source, NewStore(), () => null,
+                isNearOven: () => true, nowUtc: () => T0).GetStats();
+
+            Assert.That(stats.ContainsKey("Custom:TimeInBakerySeconds"), Is.False);
+        }
+
+        [Test]
+        public void BakeryTime_CreditsTheGapBetweenCallsWhileNearAnOven()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null, isNearOven: () => true, nowUtc: () => now);
+            augmented.GetStats();
+
+            now += TimeSpan.FromSeconds(30);
+            var stats = augmented.GetStats();
+
+            Assert.That(stats["Custom:TimeInBakerySeconds"], Is.EqualTo(30f));
+        }
+
+        [Test]
+        public void BakeryTime_AccumulatesAcrossSeveralChecks()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null, isNearOven: () => true, nowUtc: () => now);
+            augmented.GetStats();
+            now += TimeSpan.FromSeconds(30);
+            augmented.GetStats();
+            now += TimeSpan.FromSeconds(30);
+
+            var stats = augmented.GetStats();
+
+            Assert.That(stats["Custom:TimeInBakerySeconds"], Is.EqualTo(60f));
+        }
+
+        [Test]
+        public void BakeryTime_CreditsNothingAwayFromAnOven()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null, isNearOven: () => false, nowUtc: () => now);
+            augmented.GetStats();
+
+            now += TimeSpan.FromSeconds(30);
+            var stats = augmented.GetStats();
+
+            Assert.That(stats.ContainsKey("Custom:TimeInBakerySeconds"), Is.False);
+        }
+
+        [Test]
+        public void BakeryTime_DropsAGapLongerThanTheSanityCap()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null, isNearOven: () => true, nowUtc: () => now);
+            augmented.GetStats();
+
+            now += TimeSpan.FromMinutes(20); // computer slept, or similar
+            var stats = augmented.GetStats();
+
+            Assert.That(stats.ContainsKey("Custom:TimeInBakerySeconds"), Is.False);
+        }
+
+        [Test]
+        public void BoatSwampAndBakeryTime_AreAllTrackedIndependently()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null,
+                isOnBoat: () => true, isInSwamp: () => false, isNearOven: () => false, nowUtc: () => now);
+            augmented.GetStats();
+
+            now += TimeSpan.FromSeconds(30);
+            var stats = augmented.GetStats();
+
+            Assert.That(stats["Custom:TimeOnBoatSeconds"], Is.EqualTo(30f));
+            Assert.That(stats.ContainsKey("Custom:TimeInSwampSeconds"), Is.False);
+            Assert.That(stats.ContainsKey("Custom:TimeInBakerySeconds"), Is.False);
+        }
+
         [Test]
         public void TheMetaRidesInTheSubmission_AndIsOptional()
         {

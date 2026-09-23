@@ -377,5 +377,34 @@ namespace OdinEye.Client.Tests
             Assert.That(CounterRules.StoneToCount(true, true, "Stone", 0), Is.EqualTo(0));
             Assert.That(CounterRules.StoneToCount(true, true, "Stone", -1), Is.EqualTo(0));
         }
+
+        // --- VALSER-84 (2026-09-23) -------------------------------------------------
+
+        // --- BakerySecondsToAdd (Baker's High) ---
+
+        [Test]
+        public void BakerySeconds_CreditsTheGapWhileNearAnOven()
+        {
+            Assert.That(CounterRules.BakerySecondsToAdd(true, 30f, 300f), Is.EqualTo(30f));
+        }
+
+        [Test]
+        public void BakerySeconds_CreditsNothingAwayFromAnOven()
+        {
+            Assert.That(CounterRules.BakerySecondsToAdd(false, 30f, 300f), Is.EqualTo(0f));
+        }
+
+        [TestCase(0f)]
+        [TestCase(-5f)]
+        public void BakerySeconds_CreditsNothingForAZeroOrNegativeGap(float elapsed)
+        {
+            Assert.That(CounterRules.BakerySecondsToAdd(true, elapsed, 300f), Is.EqualTo(0f));
+        }
+
+        [Test]
+        public void BakerySeconds_DropsAGapLongerThanTheSanityCap()
+        {
+            Assert.That(CounterRules.BakerySecondsToAdd(true, 1200f, 300f), Is.EqualTo(0f));
+        }
     }
 }
