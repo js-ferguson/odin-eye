@@ -7,9 +7,9 @@
     <a href="https://github.com/js-ferguson/odin-eye/releases/latest">
       <img alt="Latest release" src="https://img.shields.io/github/v/release/js-ferguson/odin-eye"></a>
     <a href="https://thunderstore.io/c/valheim/p/SeasonedProfessionals/OdinEye/">
-      <img alt="Thunderstore" src="https://img.shields.io/badge/dynamic/json?label=OdinEye&query=%24.package.version_number&url=https%3A%2F%2Fthunderstore.io%2Fapi%2Fexperimental%2Fpackage%2FSeasonedProfessionals%2FOdinEye%2F&color=00C7D4"></a>
+      <img alt="Thunderstore" src="https://img.shields.io/badge/dynamic/json?label=OdinEye&query=%24.latest.version_number&url=https%3A%2F%2Fthunderstore.io%2Fapi%2Fexperimental%2Fpackage%2FSeasonedProfessionals%2FOdinEye%2F&color=00C7D4"></a>
     <a href="https://thunderstore.io/c/valheim/p/SeasonedProfessionals/OdinEyeClient/">
-      <img alt="Thunderstore" src="https://img.shields.io/badge/dynamic/json?label=OdinEye.Client&query=%24.package.version_number&url=https%3A%2F%2Fthunderstore.io%2Fapi%2Fexperimental%2Fpackage%2FSeasonedProfessionals%2FOdinEyeClient%2F&color=00C7D4"></a>
+      <img alt="Thunderstore" src="https://img.shields.io/badge/dynamic/json?label=OdinEye.Client&query=%24.latest.version_number&url=https%3A%2F%2Fthunderstore.io%2Fapi%2Fexperimental%2Fpackage%2FSeasonedProfessionals%2FOdinEyeClient%2F&color=00C7D4"></a>
     <a href="https://github.com/js-ferguson/odin-eye/actions/workflows/build-main.yaml" >
       <img alt="GitHub Workflow Status (with event)" src="https://img.shields.io/github/actions/workflow/status/js-ferguson/odin-eye/build-main.yaml?label=main"></a>
     <a href="https://github.com/js-ferguson/odin-eye/actions/workflows/build-pr.yaml" >
