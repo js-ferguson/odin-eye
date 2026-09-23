@@ -20,6 +20,10 @@ namespace OdinEye.Client.Stats
         // see CounterRules.SwampSecondsToAdd.
         private static readonly TimeSpan MaxPlausibleSwampGap = TimeSpan.FromMinutes(5);
 
+        // Baker's High: same cap, same reasoning, for time near an oven --
+        // see CounterRules.BakerySecondsToAdd.
+        private static readonly TimeSpan MaxPlausibleBakeryGap = TimeSpan.FromMinutes(5);
+
         private readonly IPlayerStatsSource inner;
         private readonly CustomCounterStore store;
         private readonly Func<ISet<string>> stationNames;
@@ -27,13 +31,15 @@ namespace OdinEye.Client.Stats
         private readonly Func<bool> isInDeepNorth;
         private readonly Func<bool> isOnBoat;
         private readonly Func<bool> isInSwamp;
+        private readonly Func<bool> isNearOven;
         private readonly Func<DateTime> nowUtc;
         private DateTime? lastBoatSampleUtc;
         private DateTime? lastSwampSampleUtc;
+        private DateTime? lastBakerySampleUtc;
 
         public CounterAugmentedStatsSource(IPlayerStatsSource inner, CustomCounterStore store, Func<ISet<string>> stationNames,
             Func<float?> currentNorthZ = null, Func<bool> isInDeepNorth = null,
-            Func<bool> isOnBoat = null, Func<bool> isInSwamp = null, Func<DateTime> nowUtc = null)
+            Func<bool> isOnBoat = null, Func<bool> isInSwamp = null, Func<bool> isNearOven = null, Func<DateTime> nowUtc = null)
         {
             this.inner = inner ?? throw new ArgumentNullException(nameof(inner));
             this.store = store ?? throw new ArgumentNullException(nameof(store));
@@ -42,6 +48,7 @@ namespace OdinEye.Client.Stats
             this.isInDeepNorth = isInDeepNorth ?? (() => false);
             this.isOnBoat = isOnBoat ?? (() => false);
             this.isInSwamp = isInSwamp ?? (() => false);
+            this.isNearOven = isNearOven ?? (() => false);
             this.nowUtc = nowUtc ?? (() => DateTime.UtcNow);
         }
 
@@ -119,6 +126,20 @@ namespace OdinEye.Client.Stats
             }
 
             lastSwampSampleUtc = now;
+
+            // Baker's High: same shape as The Admiral/Stink Fish above,
+            // against being in the vicinity of an oven instead.
+            if (lastBakerySampleUtc.HasValue)
+            {
+                var elapsed = (float)(now - lastBakerySampleUtc.Value).TotalSeconds;
+                var toAdd = CounterRules.BakerySecondsToAdd(isNearOven(), elapsed, (float)MaxPlausibleBakeryGap.TotalSeconds);
+                if (toAdd > 0f)
+                {
+                    store.Increment(CounterRules.TimeInBakerySecondsKey, toAdd);
+                }
+            }
+
+            lastBakerySampleUtc = now;
 
             foreach (var kv in store.Snapshot())
             {

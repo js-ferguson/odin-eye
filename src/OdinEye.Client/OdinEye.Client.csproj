@@ -126,6 +126,7 @@
         <Compile Include="Stats\NorthTracking.cs" />
         <Compile Include="Stats\OutpostAnchorStore.cs" />
         <Compile Include="Stats\OutpostTracking.cs" />
+        <Compile Include="Stats\OvenTracking.cs" />
         <Compile Include="Stats\StationNames.cs" />
         <Compile Include="Stats\SwampTracking.cs" />
         <Compile Include="Submission\HttpEventSubmitter.cs" />

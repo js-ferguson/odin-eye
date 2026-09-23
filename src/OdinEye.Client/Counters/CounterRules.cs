@@ -48,6 +48,13 @@ namespace OdinEye.Client.Counters
         // VALSER-83 (2026-09-23): Stoned, "same as Got a woody, but stone".
         public const string StoneCollectedKey = "Custom:StoneCollected";
 
+        // VALSER-84 (2026-09-23): Baker's High. Ordinary counter_threshold
+        // achievement (NOT a sole-title rule) -- every player who
+        // personally reaches the threshold earns it, and the counter
+        // keeps growing afterward same as every other counter here (no
+        // "stop counting once earned" mechanic exists or is needed).
+        public const string TimeInBakerySecondsKey = "Custom:TimeInBakerySeconds";
+
         // Farmer Joe. One counter per tameable species this live build
         // actually has (confirmed via IL class search: no Asksvin or Moose
         // class exists in this build, so those two are out of scope until
@@ -375,5 +382,12 @@ namespace OdinEye.Client.Counters
         public static int StoneToCount(bool byLocalPlayer, bool pickupSucceeded, string itemPrefabName, int stack) =>
             byLocalPlayer && pickupSucceeded && stack > 0 && itemPrefabName != null && StoneItemNames.Contains(itemPrefabName)
                 ? stack : 0;
+
+        // Baker's High: real elapsed time since the LAST check to credit,
+        // if the player is in the vicinity of an oven right now -- exact
+        // same shape as BoatSecondsToAdd/SwampSecondsToAdd, including the
+        // sanity cap against a suspended game/slept computer.
+        public static float BakerySecondsToAdd(bool isNearOven, float elapsedSeconds, float maxPlausibleGapSeconds) =>
+            isNearOven && elapsedSeconds > 0f && elapsedSeconds <= maxPlausibleGapSeconds ? elapsedSeconds : 0f;
     }
 }
