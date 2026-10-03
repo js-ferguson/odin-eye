@@ -213,18 +213,23 @@ namespace OdinEye.Client.Tests
             Assert.That(CounterRules.ElderBarkToCount(true, true, "FineWood", 1), Is.EqualTo(0));
         }
 
-        // --- CountsAsMuddyScrapPileOpened (Joe dirt) ---
+        // --- IsMudPileNowFullyDestroyed (Joe dirt, VALSER-87) ---
+        // No "byLocalPlayer" cases anymore: RPC_Damage only ever runs its
+        // real logic on whichever peer owns the ZDO, not necessarily the
+        // attacker, so attribution moved to a broadcast-and-range-check
+        // instead (see WithinMudPileBroadcastRange below) rather than
+        // gating here on who dealt the hit.
 
         [Test]
-        public void MudPile_CountsWhenTheLocalPlayersHitFullyDestroysIt()
+        public void MudPile_CountsWhenFullyDestroyed()
         {
-            Assert.That(CounterRules.CountsAsMuddyScrapPileOpened(true, true, "MudPile"), Is.True);
+            Assert.That(CounterRules.IsMudPileNowFullyDestroyed(true, "MudPile"), Is.True);
         }
 
         [Test]
         public void MudPile_CountsTheSecondSceneVariant()
         {
-            Assert.That(CounterRules.CountsAsMuddyScrapPileOpened(true, true, "MudPile2"), Is.True);
+            Assert.That(CounterRules.IsMudPileNowFullyDestroyed(true, "MudPile2"), Is.True);
         }
 
         [Test]
@@ -233,25 +238,51 @@ namespace OdinEye.Client.Tests
             // The manifest only gives a lowercase FILE name for this one
             // (unlike every other prefab in this batch) -- see
             // CounterRules.MudPilePrefabNames' own header.
-            Assert.That(CounterRules.CountsAsMuddyScrapPileOpened(true, true, "mudpile"), Is.True);
+            Assert.That(CounterRules.IsMudPileNowFullyDestroyed(true, "mudpile"), Is.True);
         }
 
         [Test]
         public void MudPile_DoesNotCountBeforeItIsFullyDestroyed()
         {
-            Assert.That(CounterRules.CountsAsMuddyScrapPileOpened(true, false, "MudPile"), Is.False);
+            Assert.That(CounterRules.IsMudPileNowFullyDestroyed(false, "MudPile"), Is.False);
         }
 
         [Test]
-        public void MudPile_DoesNotCountSomeoneElsesHit()
+        public void MudPile_DoesNotCountADifferentDestructible()
         {
-            Assert.That(CounterRules.CountsAsMuddyScrapPileOpened(false, true, "MudPile"), Is.False);
+            Assert.That(CounterRules.IsMudPileNowFullyDestroyed(true, "Beech_Stub"), Is.False);
         }
 
         [Test]
-        public void MudPile_DoesNotCountADifferentMineRock5Deposit()
+        public void MudPile_DoesNotCountANullPrefabName()
         {
-            Assert.That(CounterRules.CountsAsMuddyScrapPileOpened(true, true, "Copper_deposit"), Is.False);
+            Assert.That(CounterRules.IsMudPileNowFullyDestroyed(true, null), Is.False);
+        }
+
+        // --- WithinMudPileBroadcastRange (Joe dirt, VALSER-87) ---
+        // The receiving half of the cross-client broadcast: every
+        // connected player's own client computes its own distance to the
+        // destroyed pile's position (a Vector3.Distance call, kept in
+        // MudPileRpc.cs so this rule itself stays engine-free) and runs
+        // that through this to decide whether it was close enough to
+        // credit -- see MudPileRpc.cs.
+
+        [Test]
+        public void MudPileRange_CountsAPlayerStandingOnTopOfIt()
+        {
+            Assert.That(CounterRules.WithinMudPileBroadcastRange(0f), Is.True);
+        }
+
+        [Test]
+        public void MudPileRange_CountsAPlayerExactlyAtTheRadius()
+        {
+            Assert.That(CounterRules.WithinMudPileBroadcastRange(CounterRules.MudPileBroadcastRangeMeters), Is.True);
+        }
+
+        [Test]
+        public void MudPileRange_DoesNotCountAPlayerBeyondTheRadius()
+        {
+            Assert.That(CounterRules.WithinMudPileBroadcastRange(CounterRules.MudPileBroadcastRangeMeters + 0.01f), Is.False);
         }
 
         // --- IronToProcess (Iron maiden) ---

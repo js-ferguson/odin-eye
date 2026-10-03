@@ -117,6 +117,7 @@
         <Compile Include="Patches\IncomingHitPatch.cs" />
         <Compile Include="Patches\ItemPickupPatch.cs" />
         <Compile Include="Patches\MudPilePatch.cs" />
+        <Compile Include="Patches\MudPileRpc.cs" />
         <Compile Include="Patches\SmelterPatches.cs" />
         <Compile Include="Patches\TameablePatch.cs" />
         <Compile Include="Patches\VomitBombPatch.cs" />

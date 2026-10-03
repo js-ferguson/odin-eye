@@ -140,17 +140,51 @@ namespace OdinEye.Client.Counters
         // against a set, not a single name.
         public static readonly HashSet<string> LeechPrefabNames = new HashSet<string> { "Leech", "Leech_cave" };
 
-        // Joe dirt. Two scene variants in this build's asset manifest
-        // (mudpile/mudpile_frac and mudpile2/mudpile2_frac -- the paired
-        // whole-mesh + fracture-mesh files are MineRock5's own signature
-        // asset shape, the same technique Copper/Meteorite/Black Marble
-        // deposits use). LEAST confirmed of this whole batch: the manifest
-        // only gives lowercase FILE names, unlike every other prefab name
-        // in this file (which all matched their file name's exact casing)
-        // -- so this is matched case-insensitively, and needs a real live
-        // hit to confirm both the component (MineRock5) and the casing.
+        // Joe dirt (VALSER-87 correction). Two scene variants in this
+        // build's asset manifest (mudpile/mudpile_frac and mudpile2/
+        // mudpile2_frac -- the paired whole-mesh + fracture-mesh files are
+        // a shared destructible-prop asset shape, the same technique
+        // Copper/Meteorite/Black Marble deposits use). Matched case-
+        // insensitively since the manifest only gives lowercase FILE names
+        // for this one, unlike every other prefab name in this file.
+        //
+        // The COMPONENT assumption here was wrong for a long time: this
+        // used to assume MineRock5 (copper/iron/meteorite's own component),
+        // which is why Joe dirt never once fired for anyone despite real,
+        // confirmed mining. Root-caused via direct extraction of the real
+        // game asset bundle (UnityPy against the live mudpile.prefab/
+        // mudpile2.prefab objects, not a guess): both actually carry
+        // Destructible, not MineRock5 -- confirmed live, not inferred.
         public static readonly HashSet<string> MudPilePrefabNames =
             new HashSet<string>(System.StringComparer.OrdinalIgnoreCase) { "MudPile", "MudPile2" };
+
+        // VALSER-87: Destructible.RPC_Damage only runs its real hit/destroy
+        // logic on whichever peer currently owns that object's ZDO (an
+        // early `if (!IsOwner()) return;` inside the method itself,
+        // confirmed via IL) -- NOT necessarily the attacking player, and
+        // for a dungeon room several players are mining together, every
+        // non-owning peer's own copy never sees this fire at all (their
+        // client only learns the object is gone via ZNetScene's periodic
+        // sync sweep, which bypasses Destructible entirely -- a bare
+        // UnityEngine.Object.Destroy with no game-specific signal). So the
+        // owning peer's client broadcasts a ZRoutedRpc (MudPileRpc.cs) to
+        // every connected player carrying the destroyed pile's position,
+        // and each receiving client -- including whichever one actually
+        // triggered it -- independently decides whether to credit itself
+        // using this same range check, rather than only the ZDO owner ever
+        // getting counted. A flat distance (not a biome/dungeon-instance
+        // membership check) -- simplest option that still means "I was
+        // actually there," per the user's own call on VALSER-87.
+        public const float MudPileBroadcastRangeMeters = 25f;
+
+        // Takes the already-computed distance rather than two Vector3s --
+        // every other rule in this file stays free of a UnityEngine.* type
+        // in its own signature (see this class's own header: "separated
+        // from the Harmony patches ... so they can be tested without a
+        // game"), and MudPileRpc.cs is a two-line Vector3.Distance call
+        // away from the engine already.
+        public static bool WithinMudPileBroadcastRange(float distanceToPile) =>
+            distanceToPile <= MudPileBroadcastRangeMeters;
 
         // Iron maiden. What a Smelter's own s_spawnOre ZDO var holds while
         // an Iron Scrap is being processed (Smelter.QueueProcessed/
@@ -353,16 +387,21 @@ namespace OdinEye.Client.Counters
         public static int ElderBarkToCount(bool byLocalPlayer, bool pickupSucceeded, string itemPrefabName, int stack) =>
             byLocalPlayer && pickupSucceeded && itemPrefabName == ElderBarkItemName && stack > 0 ? stack : 0;
 
-        // Joe dirt: the hit that just fully destroyed a mud pile (every hit
-        // area's health at 0 -- MineRock5.AllDestroyed(), read via its own
-        // m_allDestroyed field right after DamageArea applies a hit) was
-        // dealt by me, against a prefab this build recognizes as a mud
-        // pile. The object is removed from the scene (ZNetView.Destroy())
-        // in the same call that sets m_allDestroyed, so DamageArea can never
-        // fire again for it afterward -- no double-count risk from reading
-        // "is now fully destroyed" rather than "just transitioned".
-        public static bool CountsAsMuddyScrapPileOpened(bool byLocalPlayer, bool nowFullyDestroyed, string prefabName) =>
-            byLocalPlayer && nowFullyDestroyed && prefabName != null && MudPilePrefabNames.Contains(prefabName);
+        // Joe dirt (VALSER-87 correction): "was this hit, which just fully
+        // destroyed the object (Destructible's own m_destroyed field, read
+        // right after RPC_Damage applies a hit), against a prefab this
+        // build recognizes as a mud pile." No longer gated on "dealt by
+        // me" -- RPC_Damage only ever runs its real logic on whichever
+        // peer owns the ZDO, which isn't necessarily the attacker, so the
+        // patch broadcasts to every nearby player instead of crediting the
+        // owner alone (see MudPileBroadcastRangeMeters/MudPileRpc.cs).
+        // Same "no double-count" reasoning as the original MineRock5
+        // version this replaced: RPC_Damage early-returns immediately if
+        // m_destroyed is already true, and the object is removed from the
+        // scene in the same call that sets it, so a live hit against an
+        // already-destroyed instance doesn't happen in practice.
+        public static bool IsMudPileNowFullyDestroyed(bool nowFullyDestroyed, string prefabName) =>
+            nowFullyDestroyed && prefabName != null && MudPilePrefabNames.Contains(prefabName);
 
         // Iron maiden: however much ore a Smelter's OnEmpty is about to
         // collect, but only when it's Iron Scrap -- 0 for any other ore
