@@ -36,6 +36,17 @@ namespace OdinEye.Client.Counters
         public const string ElderBarkCollectedKey = "Custom:ElderBarkCollected"; // Barking up the wrong tree
         public const string IronProcessedKey = "Custom:IronProcessed"; // Iron maiden
 
+        // VALSER-89: Johnny Silver hands. Raw ore pickup (same generalized
+        // Humanoid.Pickup hook Wood/Stone/Resin already ride), deliberately
+        // NOT SmelterPatches.cs's "processed" pattern Iron maiden uses --
+        // this one is about mining, not smelting, per the user's own
+        // wording ("mined 100 silver"). Lower risk than most of this
+        // batch: every material tracked through ItemPickupPatch.cs is
+        // already proven live (real nonzero Custom:StoneCollected data
+        // exists), unlike a world-object-component guess (see Joe dirt/
+        // VALSER-87's own history).
+        public const string SilverOreCollectedKey = "Custom:SilverOreCollected"; // Johnny Silver hands
+
         // VALSER-82 batch (2026-09-23). Got a woody/Cradle snatcher were
         // corrected the same day, per explicit feedback, from an invented
         // "leaderboard" completion threshold to "sole_leader" -- a single
@@ -133,6 +144,13 @@ namespace OdinEye.Client.Counters
         // WEAPON's name (SpearAncientbark/AncientSpear) built from it, not
         // as its own pickup -- there is no standalone "AncientBark" item.
         public const string ElderBarkItemName = "ElderBark";
+
+        // Johnny Silver hands (VALSER-89): the raw ore item mining a
+        // silver vein drops, confirmed in the game's own asset manifest
+        // ("materials/SilverOre.prefab") -- distinct from "Silver", the
+        // smelted bar a Blast Furnace produces from it. "Mined 100
+        // silver" per the user's own wording means this one, not the bar.
+        public const string SilverOreItemName = "SilverOre";
 
         // Suckie Suckie. Two Leech prefabs exist in this build's asset
         // manifest -- Leech (open swamp water) and Leech_cave (sunken
@@ -386,6 +404,11 @@ namespace OdinEye.Client.Counters
         // Barking up the wrong tree: same shape.
         public static int ElderBarkToCount(bool byLocalPlayer, bool pickupSucceeded, string itemPrefabName, int stack) =>
             byLocalPlayer && pickupSucceeded && itemPrefabName == ElderBarkItemName && stack > 0 ? stack : 0;
+
+        // Johnny Silver hands (VALSER-89): same shape again -- raw
+        // SilverOre pickup, not the smelted bar.
+        public static int SilverOreToCount(bool byLocalPlayer, bool pickupSucceeded, string itemPrefabName, int stack) =>
+            byLocalPlayer && pickupSucceeded && itemPrefabName == SilverOreItemName && stack > 0 ? stack : 0;
 
         // Joe dirt (VALSER-87 correction): "was this hit, which just fully
         // destroyed the object (Destructible's own m_destroyed field, read

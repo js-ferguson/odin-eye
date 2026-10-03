@@ -213,6 +213,36 @@ namespace OdinEye.Client.Tests
             Assert.That(CounterRules.ElderBarkToCount(true, true, "FineWood", 1), Is.EqualTo(0));
         }
 
+        // --- SilverOreToCount (Johnny Silver hands, VALSER-89) ---
+
+        [Test]
+        public void SilverOre_CountsAStackedPickupByTheLocalPlayer()
+        {
+            Assert.That(CounterRules.SilverOreToCount(true, true, "SilverOre", 5), Is.EqualTo(5));
+        }
+
+        [Test]
+        public void SilverOre_DoesNotCountTheLocalizationTokenOrTheSmeltedBar()
+        {
+            Assert.That(CounterRules.SilverOreToCount(true, true, "$item_silverore", 1), Is.EqualTo(0));
+            // "Silver" is the smelted bar, a different item -- this
+            // achievement is about mining ore, not smelting it.
+            Assert.That(CounterRules.SilverOreToCount(true, true, "Silver", 1), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void SilverOre_DoesNotCountAnotherPlayersOrFailedPickup()
+        {
+            Assert.That(CounterRules.SilverOreToCount(false, true, "SilverOre", 1), Is.EqualTo(0));
+            Assert.That(CounterRules.SilverOreToCount(true, false, "SilverOre", 1), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void SilverOre_DoesNotCountAZeroStackPickup()
+        {
+            Assert.That(CounterRules.SilverOreToCount(true, true, "SilverOre", 0), Is.EqualTo(0));
+        }
+
         // --- IsMudPileNowFullyDestroyed (Joe dirt, VALSER-87) ---
         // No "byLocalPlayer" cases anymore: RPC_Damage only ever runs its
         // real logic on whichever peer owns the ZDO, not necessarily the
