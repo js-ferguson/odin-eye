@@ -213,7 +213,7 @@ namespace OdinEye.Client.Tests
             Assert.That(CounterRules.ElderBarkToCount(true, true, "FineWood", 1), Is.EqualTo(0));
         }
 
-        // --- SilverOreToCount (Johnny Silver hands, VALSER-89) ---
+        // --- SilverOreToCount (Johnny Silverhand, VALSER-89) ---
 
         [Test]
         public void SilverOre_CountsAStackedPickupByTheLocalPlayer()

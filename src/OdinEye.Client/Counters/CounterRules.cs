@@ -36,7 +36,7 @@ namespace OdinEye.Client.Counters
         public const string ElderBarkCollectedKey = "Custom:ElderBarkCollected"; // Barking up the wrong tree
         public const string IronProcessedKey = "Custom:IronProcessed"; // Iron maiden
 
-        // VALSER-89: Johnny Silver hands. Raw ore pickup (same generalized
+        // VALSER-89: Johnny Silverhand. Raw ore pickup (same generalized
         // Humanoid.Pickup hook Wood/Stone/Resin already ride), deliberately
         // NOT SmelterPatches.cs's "processed" pattern Iron maiden uses --
         // this one is about mining, not smelting, per the user's own
@@ -45,7 +45,7 @@ namespace OdinEye.Client.Counters
         // already proven live (real nonzero Custom:StoneCollected data
         // exists), unlike a world-object-component guess (see Joe dirt/
         // VALSER-87's own history).
-        public const string SilverOreCollectedKey = "Custom:SilverOreCollected"; // Johnny Silver hands
+        public const string SilverOreCollectedKey = "Custom:SilverOreCollected"; // Johnny Silverhand
 
         // VALSER-82 batch (2026-09-23). Got a woody/Cradle snatcher were
         // corrected the same day, per explicit feedback, from an invented
@@ -145,7 +145,7 @@ namespace OdinEye.Client.Counters
         // as its own pickup -- there is no standalone "AncientBark" item.
         public const string ElderBarkItemName = "ElderBark";
 
-        // Johnny Silver hands (VALSER-89): the raw ore item mining a
+        // Johnny Silverhand (VALSER-89): the raw ore item mining a
         // silver vein drops, confirmed in the game's own asset manifest
         // ("materials/SilverOre.prefab") -- distinct from "Silver", the
         // smelted bar a Blast Furnace produces from it. "Mined 100
@@ -405,7 +405,7 @@ namespace OdinEye.Client.Counters
         public static int ElderBarkToCount(bool byLocalPlayer, bool pickupSucceeded, string itemPrefabName, int stack) =>
             byLocalPlayer && pickupSucceeded && itemPrefabName == ElderBarkItemName && stack > 0 ? stack : 0;
 
-        // Johnny Silver hands (VALSER-89): same shape again -- raw
+        // Johnny Silverhand (VALSER-89): same shape again -- raw
         // SilverOre pickup, not the smelted bar.
         public static int SilverOreToCount(bool byLocalPlayer, bool pickupSucceeded, string itemPrefabName, int stack) =>
             byLocalPlayer && pickupSucceeded && itemPrefabName == SilverOreItemName && stack > 0 ? stack : 0;
