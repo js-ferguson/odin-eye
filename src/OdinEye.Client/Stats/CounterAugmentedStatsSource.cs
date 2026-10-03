@@ -24,6 +24,19 @@ namespace OdinEye.Client.Stats
         // see CounterRules.BakerySecondsToAdd.
         private static readonly TimeSpan MaxPlausibleBakeryGap = TimeSpan.FromMinutes(5);
 
+        // Palsy: same elapsed-gap cap as the three above, PLUS a max
+        // plausible speed -- a time-based sampler can never be fooled by a
+        // teleport (it only ever credits wall-clock time), but a
+        // distance-based one can be, if a portal hop happens to land
+        // between two samples. See CounterRules.OverburdenedDistanceToAdd.
+        // distanceMovedSinceLastSample is a plain float, not two Vector3
+        // positions -- all Vector3 math (and its own last-position state)
+        // stays inside EncumbranceTracking, since UnityEngine.Vector3's own
+        // static constructor throws outside a real Unity process and this
+        // class is exactly what the test suite exercises directly.
+        private static readonly TimeSpan MaxPlausibleOverburdenedGap = TimeSpan.FromMinutes(5);
+        private const float MaxPlausibleOverburdenedSpeedMetersPerSecond = 10f;
+
         private readonly IPlayerStatsSource inner;
         private readonly CustomCounterStore store;
         private readonly Func<ISet<string>> stationNames;
@@ -32,14 +45,18 @@ namespace OdinEye.Client.Stats
         private readonly Func<bool> isOnBoat;
         private readonly Func<bool> isInSwamp;
         private readonly Func<bool> isNearOven;
+        private readonly Func<bool> isOverburdened;
+        private readonly Func<float> overburdenedDistanceSinceLastSample;
         private readonly Func<DateTime> nowUtc;
         private DateTime? lastBoatSampleUtc;
         private DateTime? lastSwampSampleUtc;
         private DateTime? lastBakerySampleUtc;
+        private DateTime? lastOverburdenedSampleUtc;
 
         public CounterAugmentedStatsSource(IPlayerStatsSource inner, CustomCounterStore store, Func<ISet<string>> stationNames,
             Func<float?> currentNorthZ = null, Func<bool> isInDeepNorth = null,
-            Func<bool> isOnBoat = null, Func<bool> isInSwamp = null, Func<bool> isNearOven = null, Func<DateTime> nowUtc = null)
+            Func<bool> isOnBoat = null, Func<bool> isInSwamp = null, Func<bool> isNearOven = null,
+            Func<bool> isOverburdened = null, Func<float> overburdenedDistanceSinceLastSample = null, Func<DateTime> nowUtc = null)
         {
             this.inner = inner ?? throw new ArgumentNullException(nameof(inner));
             this.store = store ?? throw new ArgumentNullException(nameof(store));
@@ -49,6 +66,8 @@ namespace OdinEye.Client.Stats
             this.isOnBoat = isOnBoat ?? (() => false);
             this.isInSwamp = isInSwamp ?? (() => false);
             this.isNearOven = isNearOven ?? (() => false);
+            this.isOverburdened = isOverburdened ?? (() => false);
+            this.overburdenedDistanceSinceLastSample = overburdenedDistanceSinceLastSample ?? (() => 0f);
             this.nowUtc = nowUtc ?? (() => DateTime.UtcNow);
         }
 
@@ -140,6 +159,29 @@ namespace OdinEye.Client.Stats
             }
 
             lastBakerySampleUtc = now;
+
+            // Palsy: distance moved since the LAST check, credited only if
+            // the player was overburdened at sample time -- a position
+            // delta, not a time delta. overburdenedDistanceSinceLastSample()
+            // is called every time regardless (it has to be, to keep its
+            // own internal last-position state in lockstep with
+            // lastOverburdenedSampleUtc below), but its result is only
+            // ever CREDITED once there's a prior sample to measure a real
+            // gap from -- same "nothing on the first call" rule every
+            // other sampler here already follows.
+            var overburdenedDistance = overburdenedDistanceSinceLastSample();
+            if (lastOverburdenedSampleUtc.HasValue)
+            {
+                var elapsed = (float)(now - lastOverburdenedSampleUtc.Value).TotalSeconds;
+                var toAdd = CounterRules.OverburdenedDistanceToAdd(isOverburdened(), overburdenedDistance, elapsed,
+                    (float)MaxPlausibleOverburdenedGap.TotalSeconds, MaxPlausibleOverburdenedSpeedMetersPerSecond);
+                if (toAdd > 0f)
+                {
+                    store.Increment(CounterRules.OverburdenedDistanceMetersKey, toAdd);
+                }
+            }
+
+            lastOverburdenedSampleUtc = now;
 
             foreach (var kv in store.Snapshot())
             {

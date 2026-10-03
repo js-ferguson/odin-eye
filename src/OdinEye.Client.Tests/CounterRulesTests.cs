@@ -500,5 +500,124 @@ namespace OdinEye.Client.Tests
             Assert.That(CounterRules.ResinToCount(true, true, "Resin", 0), Is.EqualTo(0));
             Assert.That(CounterRules.ResinToCount(true, true, "Resin", -1), Is.EqualTo(0));
         }
+
+        // --- VALSER-90 batch ---------------------------------------------------------
+
+        // --- CountsAsEscapeArtistDeath (Escape Artist) ---
+
+        [Test]
+        public void EscapeArtistDeath_CountsWhenKilledByAnEnemyWithTheMenuOpen()
+        {
+            Assert.That(CounterRules.CountsAsEscapeArtistDeath(true, true, true, true), Is.True);
+        }
+
+        [Test]
+        public void EscapeArtistDeath_DoesNotCountSomeoneElseDying()
+        {
+            Assert.That(CounterRules.CountsAsEscapeArtistDeath(false, true, true, true), Is.False);
+        }
+
+        [Test]
+        public void EscapeArtistDeath_DoesNotCountANonFatalHit()
+        {
+            Assert.That(CounterRules.CountsAsEscapeArtistDeath(true, false, true, true), Is.False);
+        }
+
+        [Test]
+        public void EscapeArtistDeath_DoesNotCountAPvpOrEnvironmentalDeath()
+        {
+            // killedByEnemy is already resolved from HitData.HitType ==
+            // EnemyHit by the patch -- false covers PlayerHit, Fall,
+            // Drowning, and everything else that isn't an enemy attack.
+            Assert.That(CounterRules.CountsAsEscapeArtistDeath(true, true, false, true), Is.False);
+        }
+
+        [Test]
+        public void EscapeArtistDeath_DoesNotCountWithTheMenuClosed()
+        {
+            Assert.That(CounterRules.CountsAsEscapeArtistDeath(true, true, true, false), Is.False);
+        }
+
+        // --- CountsAsTerriblePalsyDeath (Terrible Palsy) ---
+
+        [Test]
+        public void TerriblePalsyDeath_CountsWhenKilledByAnEnemyWhileOverburdenedAndOutOfStamina()
+        {
+            Assert.That(CounterRules.CountsAsTerriblePalsyDeath(true, true, true, true, true), Is.True);
+        }
+
+        [Test]
+        public void TerriblePalsyDeath_DoesNotCountSomeoneElseDying()
+        {
+            Assert.That(CounterRules.CountsAsTerriblePalsyDeath(false, true, true, true, true), Is.False);
+        }
+
+        [Test]
+        public void TerriblePalsyDeath_DoesNotCountANonFatalHit()
+        {
+            Assert.That(CounterRules.CountsAsTerriblePalsyDeath(true, false, true, true, true), Is.False);
+        }
+
+        [Test]
+        public void TerriblePalsyDeath_DoesNotCountAPvpOrEnvironmentalDeath()
+        {
+            Assert.That(CounterRules.CountsAsTerriblePalsyDeath(true, true, false, true, true), Is.False);
+        }
+
+        [Test]
+        public void TerriblePalsyDeath_DoesNotCountWithoutBeingOverburdened()
+        {
+            Assert.That(CounterRules.CountsAsTerriblePalsyDeath(true, true, true, false, true), Is.False);
+        }
+
+        [Test]
+        public void TerriblePalsyDeath_DoesNotCountWithAnyStaminaRemaining()
+        {
+            Assert.That(CounterRules.CountsAsTerriblePalsyDeath(true, true, true, true, false), Is.False);
+        }
+
+        // --- OverburdenedDistanceToAdd (Palsy) ---
+
+        [Test]
+        public void OverburdenedDistance_CreditsTheFullDistanceWhileOverburdened()
+        {
+            Assert.That(CounterRules.OverburdenedDistanceToAdd(true, 12f, 5f, 300f, 10f), Is.EqualTo(12f));
+        }
+
+        [Test]
+        public void OverburdenedDistance_CreditsNothingWhenNotOverburdened()
+        {
+            Assert.That(CounterRules.OverburdenedDistanceToAdd(false, 12f, 5f, 300f, 10f), Is.EqualTo(0f));
+        }
+
+        [Test]
+        public void OverburdenedDistance_CreditsNothingForZeroOrNegativeDistance()
+        {
+            Assert.That(CounterRules.OverburdenedDistanceToAdd(true, 0f, 5f, 300f, 10f), Is.EqualTo(0f));
+            Assert.That(CounterRules.OverburdenedDistanceToAdd(true, -1f, 5f, 300f, 10f), Is.EqualTo(0f));
+        }
+
+        [Test]
+        public void OverburdenedDistance_CreditsNothingPastTheMaxPlausibleGap()
+        {
+            // The game was suspended/the computer slept -- same guard as
+            // Boat/Swamp/BakerySecondsToAdd.
+            Assert.That(CounterRules.OverburdenedDistanceToAdd(true, 12f, 301f, 300f, 10f), Is.EqualTo(0f));
+        }
+
+        [Test]
+        public void OverburdenedDistance_CreditsNothingForAnImplausiblySuddenJump()
+        {
+            // 100m in 5s is 20 m/s -- well past the 10 m/s cap, i.e. a
+            // portal hop between two samples, not real walking.
+            Assert.That(CounterRules.OverburdenedDistanceToAdd(true, 100f, 5f, 300f, 10f), Is.EqualTo(0f));
+        }
+
+        [Test]
+        public void OverburdenedDistance_CreditsExactlyAtTheSpeedCapBoundary()
+        {
+            // 50m in 5s is exactly 10 m/s -- the boundary itself still counts.
+            Assert.That(CounterRules.OverburdenedDistanceToAdd(true, 50f, 5f, 300f, 10f), Is.EqualTo(50f));
+        }
     }
 }

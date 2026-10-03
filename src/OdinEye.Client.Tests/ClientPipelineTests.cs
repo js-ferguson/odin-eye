@@ -809,6 +809,119 @@ namespace OdinEye.Client.Tests
             Assert.That(stats.ContainsKey("Custom:TimeInBakerySeconds"), Is.False);
         }
 
+        // --- Palsy (integration) -----------------------------------------------------
+        // overburdenedDistanceSinceLastSample is a plain Func<float> here
+        // (the real one, EncumbranceTracking.DistanceMovedSinceLastSample,
+        // does its own Vector3 diffing internally and is untested by
+        // design -- same line BoatTracking/SwampTracking already draw).
+        // These tests control exactly what it returns on each call,
+        // same as every other injected predicate here.
+
+        [Test]
+        public void OverburdenedDistance_CreditsNothingOnTheFirstCallOfASession()
+        {
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+
+            var stats = new CounterAugmentedStatsSource(source, NewStore(), () => null,
+                isOverburdened: () => true, overburdenedDistanceSinceLastSample: () => 0f, nowUtc: () => T0).GetStats();
+
+            Assert.That(stats.ContainsKey("Custom:OverburdenedDistanceMeters"), Is.False);
+        }
+
+        [Test]
+        public void OverburdenedDistance_CreditsTheDistanceWhileOverburdened()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var distance = 0f;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null,
+                isOverburdened: () => true, overburdenedDistanceSinceLastSample: () => distance, nowUtc: () => now);
+            augmented.GetStats();
+
+            now += TimeSpan.FromSeconds(5);
+            distance = 12f;
+            var stats = augmented.GetStats();
+
+            Assert.That(stats["Custom:OverburdenedDistanceMeters"], Is.EqualTo(12f));
+        }
+
+        [Test]
+        public void OverburdenedDistance_AccumulatesAcrossSeveralChecks()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var distance = 0f;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null,
+                isOverburdened: () => true, overburdenedDistanceSinceLastSample: () => distance, nowUtc: () => now);
+            augmented.GetStats();
+
+            now += TimeSpan.FromSeconds(5);
+            distance = 10f;
+            augmented.GetStats();
+
+            now += TimeSpan.FromSeconds(5);
+            distance = 10f;
+            var stats = augmented.GetStats();
+
+            Assert.That(stats["Custom:OverburdenedDistanceMeters"], Is.EqualTo(20f));
+        }
+
+        [Test]
+        public void OverburdenedDistance_CreditsNothingWhenNotOverburdened()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var distance = 0f;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null,
+                isOverburdened: () => false, overburdenedDistanceSinceLastSample: () => distance, nowUtc: () => now);
+            augmented.GetStats();
+
+            now += TimeSpan.FromSeconds(5);
+            distance = 12f;
+            var stats = augmented.GetStats();
+
+            Assert.That(stats.ContainsKey("Custom:OverburdenedDistanceMeters"), Is.False);
+        }
+
+        [Test]
+        public void OverburdenedDistance_DropsAGapLongerThanTheSanityCap()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var distance = 0f;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null,
+                isOverburdened: () => true, overburdenedDistanceSinceLastSample: () => distance, nowUtc: () => now);
+            augmented.GetStats();
+
+            now += TimeSpan.FromMinutes(20); // computer slept, or similar
+            distance = 12f;
+            var stats = augmented.GetStats();
+
+            Assert.That(stats.ContainsKey("Custom:OverburdenedDistanceMeters"), Is.False);
+        }
+
+        [Test]
+        public void OverburdenedDistance_DropsAnImplausiblySuddenJumpLikeAPortalHop()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var distance = 0f;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null,
+                isOverburdened: () => true, overburdenedDistanceSinceLastSample: () => distance, nowUtc: () => now);
+            augmented.GetStats();
+
+            now += TimeSpan.FromSeconds(5); // a real portal hop, not a long gap
+            distance = 1000f;
+            var stats = augmented.GetStats();
+
+            Assert.That(stats.ContainsKey("Custom:OverburdenedDistanceMeters"), Is.False);
+        }
+
         [Test]
         public void TheMetaRidesInTheSubmission_AndIsOptional()
         {

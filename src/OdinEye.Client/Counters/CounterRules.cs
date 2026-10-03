@@ -47,6 +47,32 @@ namespace OdinEye.Client.Counters
         // VALSER-87's own history).
         public const string SilverOreCollectedKey = "Custom:SilverOreCollected"; // Johnny Silverhand
 
+        // VALSER-90 batch. Escape Artist and Terrible Palsy both extend the
+        // EXISTING IncomingHitPatch.cs postfix (same hook Venom/Suckie
+        // Suckie already use) -- one more "the hit that just killed me"
+        // check each, no new patch class. "Died to an enemy" is
+        // hit.m_hitType == HitData.HitType.EnemyHit (confirmed via IL: a
+        // real enum value on the SAME hit object the postfix already has,
+        // distinct from PlayerHit -- so this correctly excludes PvP
+        // deaths), not an attacker-prefab-elimination guess. Menu.IsVisible()
+        // and Player.IsEncumbered()/GetStamina() are all confirmed real,
+        // callable APIs via IL, but this is the first time this codebase
+        // has ever read any of the three -- worth a deliberate live test
+        // after shipping (open the menu and die to a weak enemy; get
+        // overburdened and stamina-drained and die), same category of risk
+        // Joe dirt/VALSER-87 already taught this project not to skip.
+        public const string EscapeArtistDeathsKey = "Custom:EscapeArtistDeaths"; // Escape Artist
+        public const string TerriblePalsyDeathsKey = "Custom:TerriblePalsyDeaths"; // Terrible Palsy
+
+        // Palsy: distance walked while overburdened (Player.IsEncumbered(),
+        // confirmed via IL). A genuinely new sampler shape, not a drop-in
+        // copy of The Admiral/Stink Fish/Baker's High -- those three credit
+        // ELAPSED TIME while a predicate holds; this credits ELAPSED
+        // DISTANCE instead, which needs its own extra guard (see
+        // OverburdenedDistanceToAdd below) since a time-based sampler can
+        // never be fooled by a teleport, but a distance-based one can.
+        public const string OverburdenedDistanceMetersKey = "Custom:OverburdenedDistanceMeters"; // Palsy
+
         // VALSER-82 batch (2026-09-23). Got a woody/Cradle snatcher were
         // corrected the same day, per explicit feedback, from an invented
         // "leaderboard" completion threshold to "sole_leader" -- a single
@@ -391,6 +417,24 @@ namespace OdinEye.Client.Counters
         public static bool CountsAsLeechHit(bool targetIsLocalPlayer, string attackerPrefabName) =>
             targetIsLocalPlayer && attackerPrefabName != null && LeechPrefabNames.Contains(attackerPrefabName);
 
+        // Escape Artist (VALSER-90): the hit that just killed me came from
+        // an enemy (HitData.HitType.EnemyHit, confirmed via IL as distinct
+        // from PlayerHit -- excludes PvP deaths), and the game's own Menu
+        // was open at the moment it landed. Confirmed via IL that in real
+        // multiplayer this is reachable: opening Menu does not pause the
+        // game (Game.CanPause() requires zero connected peers), so gameplay
+        // -- and death -- continues in the background while it's open.
+        public static bool CountsAsEscapeArtistDeath(bool targetIsLocalPlayer, bool targetIsDeadNow, bool killedByEnemy, bool menuIsVisible) =>
+            targetIsLocalPlayer && targetIsDeadNow && killedByEnemy && menuIsVisible;
+
+        // Terrible Palsy (VALSER-90): same "killed by an enemy" signal as
+        // Escape Artist above, plus two more live-state reads at the same
+        // instant -- Player.IsEncumbered() (via EncumbranceTracking, shared
+        // with Palsy's own sampler) and GetStamina() <= 0f, both confirmed
+        // real via IL.
+        public static bool CountsAsTerriblePalsyDeath(bool targetIsLocalPlayer, bool targetIsDeadNow, bool killedByEnemy, bool isOverburdened, bool staminaIsZero) =>
+            targetIsLocalPlayer && targetIsDeadNow && killedByEnemy && isOverburdened && staminaIsZero;
+
         // Guck guck 9000: same shape as DwarfEyesToCount -- MY successful
         // pickup of this specific item, by the stack size actually picked
         // up.
@@ -460,6 +504,22 @@ namespace OdinEye.Client.Counters
         // sanity cap against a suspended game/slept computer.
         public static float BakerySecondsToAdd(bool isNearOven, float elapsedSeconds, float maxPlausibleGapSeconds) =>
             isNearOven && elapsedSeconds > 0f && elapsedSeconds <= maxPlausibleGapSeconds ? elapsedSeconds : 0f;
+
+        // Palsy (VALSER-90): real distance moved since the LAST check,
+        // credited only if the player was overburdened at sample time --
+        // same "sample, don't reconstruct the whole path" shape as
+        // Boat/Swamp/BakerySecondsToAdd, but for distance instead of
+        // elapsed time. The elapsed-time cap alone only guards a suspended
+        // game/slept computer -- it does NOT guard a portal/teleport jump,
+        // which happens in a SHORT elapsed time, so distanceMoved is
+        // independently capped against a max plausible speed for that same
+        // elapsed window (a judgment call, not a confirmed game constant --
+        // same caveat class as OvenTracking.OvenRadius's own picked value).
+        public static float OverburdenedDistanceToAdd(bool isOverburdened, float distanceMoved, float elapsedSeconds,
+            float maxPlausibleGapSeconds, float maxPlausibleSpeedMetersPerSecond) =>
+            isOverburdened && distanceMoved > 0f && elapsedSeconds > 0f && elapsedSeconds <= maxPlausibleGapSeconds
+                && distanceMoved <= elapsedSeconds * maxPlausibleSpeedMetersPerSecond
+                ? distanceMoved : 0f;
 
         // Sticky fingers: same shape as GuckToCount/BloodBagToCount --
         // MY successful pickup of Resin specifically, by the stack size

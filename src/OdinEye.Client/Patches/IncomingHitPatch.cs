@@ -2,6 +2,7 @@ namespace OdinEye.Client.Patches
 {
     using HarmonyLib;
     using OdinEye.Client.Counters;
+    using OdinEye.Client.Stats;
 
     // VALSER-81 batch: Venom and Suckie Suckie both need "a hit landed ON
     // me", the mirror image of WeaponKillPatch's "a hit I dealt" -- a
@@ -25,6 +26,15 @@ namespace OdinEye.Client.Patches
     // codebase's correct way to turn a live GameObject into its prefab's
     // string name (strips a "(Clone)"/space suffix a raw .name read could
     // carry -- confirmed via IL of Utils.GetPrefabName itself).
+    //
+    // VALSER-90 batch: Escape Artist and Terrible Palsy both need "the hit
+    // that just killed me came from an enemy", added as two more
+    // conditions in this SAME postfix rather than a new patch class.
+    // HitData.m_hitType (confirmed via IL: a real HitData.HitType enum
+    // field on this same hit object, EnemyHit distinct from PlayerHit) is
+    // the death-cause signal; Menu.IsVisible()/Player.IsEncumbered()/
+    // GetStamina() are the extra live-state reads each one needs,
+    // confirmed real via IL but read by this codebase for the first time.
     [HarmonyPatch(typeof(Character), "ApplyDamage")]
     public static class IncomingHitPatch
     {
@@ -53,6 +63,27 @@ namespace OdinEye.Client.Patches
                 if (CounterRules.CountsAsLeechHit(true, attackerPrefabName))
                 {
                     ClientRuntime.Counters.Increment(CounterRules.LeechHitsKey);
+                }
+
+                // VALSER-90: Escape Artist / Terrible Palsy. "Killed by an
+                // enemy" is hit.m_hitType == HitData.HitType.EnemyHit --
+                // a real enum value on this same hit object (confirmed via
+                // IL), distinct from PlayerHit, so PvP deaths correctly
+                // never count toward either achievement.
+                var killedByEnemy = hit.m_hitType == HitData.HitType.EnemyHit;
+
+                if (CounterRules.CountsAsEscapeArtistDeath(true, __instance.IsDead(), killedByEnemy, Menu.IsVisible()))
+                {
+                    ClientRuntime.Counters.Increment(CounterRules.EscapeArtistDeathsKey);
+                }
+
+                // Player.m_localPlayer is safe to dereference unchecked here --
+                // the guard above already confirmed __instance IS
+                // Player.m_localPlayer (ReferenceEquals), so it cannot be null.
+                if (CounterRules.CountsAsTerriblePalsyDeath(true, __instance.IsDead(), killedByEnemy,
+                    EncumbranceTracking.IsOverburdened(), Player.m_localPlayer.GetStamina() <= 0f))
+                {
+                    ClientRuntime.Counters.Increment(CounterRules.TerriblePalsyDeathsKey);
                 }
             });
     }

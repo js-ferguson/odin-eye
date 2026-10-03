@@ -264,7 +264,7 @@ namespace OdinEye.Client
                 message => Logger.LogWarning(message));
             fullStatsSource = new CounterAugmentedStatsSource(statsSource, counters, StationNames.Get,
                 NorthTracking.CurrentNorthZ, NorthTracking.IsInDeepNorth, BoatTracking.IsOnBoat, SwampTracking.IsInSwamp,
-                OvenTracking.IsNearOven);
+                OvenTracking.IsNearOven, EncumbranceTracking.IsOverburdened, EncumbranceTracking.DistanceMovedSinceLastSample);
             seeded = false;
             seedDeadlineUtc = nowUtc + SeedTimeout;
             loginSubmitted = false;

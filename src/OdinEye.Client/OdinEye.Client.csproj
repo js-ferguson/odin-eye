@@ -124,6 +124,7 @@
         <Compile Include="Patches\WeaponKillPatch.cs" />
         <Compile Include="Stats\BoatTracking.cs" />
         <Compile Include="Stats\CounterAugmentedStatsSource.cs" />
+        <Compile Include="Stats\EncumbranceTracking.cs" />
         <Compile Include="Stats\NorthTracking.cs" />
         <Compile Include="Stats\OutpostAnchorStore.cs" />
         <Compile Include="Stats\OutpostTracking.cs" />
