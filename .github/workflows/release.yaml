@@ -22,6 +22,18 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Stamp OdinEye.Client's self-reported version
+        # VALSER-93: must run BEFORE the build below -- this is baked into
+        # the compiled assembly, unlike the Thunderstore versionNumber
+        # stamp further down (which only ever touches a .toml, never
+        # rebuilt from). Without this, OdinEyeClientPlugin.SubmitCurrentStats
+        # keeps reporting AssemblyInfo.cs's placeholder forever, the same
+        # way it reported the never-updated AssemblyVersion for every
+        # release before this fix.
+        shell: pwsh
+        run: |
+          $version = "${{ github.event.release.tag_name }}" -replace '^v', ''
+          (Get-Content src/OdinEye.Client/Properties/AssemblyInfo.cs) -replace '0\.0\.0-dev', "$version" | Set-Content src/OdinEye.Client/Properties/AssemblyInfo.cs
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1
       - name: Setup NuGet

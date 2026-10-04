@@ -12,6 +12,7 @@ namespace OdinEye.Client
     using System;
     using System.IO;
     using System.Net.Http;
+    using System.Reflection;
     using System.Threading.Tasks;
 
     // Optional companion to the server-side OdinEye plugin (ODINEYE-20).
@@ -331,10 +332,20 @@ namespace OdinEye.Client
                 return;
             }
 
+            // VALSER-93: AssemblyVersion (GetName().Version) is the WRONG
+            // field here -- it's pinned at 1.0.0.0 and has never once been
+            // bumped since this plugin's first commit (BepInEx's own
+            // dependency-resolution bookkeeping, not the real release
+            // version). AssemblyInformationalVersion is the one
+            // release.yaml actually stamps with the real tag at build time
+            // -- see AssemblyInfo.cs's own comment on it.
+            var clientVersion = typeof(OdinEyeClientPlugin).Assembly
+                .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+
             var meta = new OdinEye.Models.Api.SubmissionMeta
             {
                 PlayerId = ClientRuntime.LocalPlayerId().ToString(),
-                ClientVersion = typeof(OdinEyeClientPlugin).Assembly.GetName().Version.ToString()
+                ClientVersion = clientVersion
             };
             var submission = CharacterStatsPayloadBuilder.Build(rawStats, meta);
             if (submission.Stats.Count == 0)
