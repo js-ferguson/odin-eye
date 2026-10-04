@@ -74,6 +74,16 @@ namespace OdinEye.Client.Counters
         public const string EscapeArtistDeathsKey = "Custom:EscapeArtistDeaths"; // Escape Artist
         public const string TerriblePalsyDeathsKey = "Custom:TerriblePalsyDeaths"; // Terrible Palsy
 
+        // VALSER-96: Dapper Fenrisian / Fenrisian Warlord. Confirmed via IL
+        // AND a direct UnityPy extraction of the real asset bundle (not
+        // guessed): the Fenring set's real m_setName/m_setSize data is
+        // "fenring_armor"/3 -- exactly 3 pieces, no 4th/cape (the claw
+        // weapon is a separate, non-armor item) -- and m_maxQuality is 4 on
+        // all three. Both are one-shot "did this ever happen" counters,
+        // same shape as Vomit Bomb/Escape Artist, not a running tally.
+        public const string DapperFenrisianEquippedKey = "Custom:DapperFenrisianEquipped"; // Dapper Fenrisian
+        public const string FenrisianWarlordEquippedKey = "Custom:FenrisianWarlordEquipped"; // Fenrisian Warlord
+
         // Palsy: distance walked while overburdened (Player.IsEncumbered(),
         // confirmed via IL). A genuinely new sampler shape, not a drop-in
         // copy of The Admiral/Stink Fish/Baker's High -- those three credit
@@ -195,6 +205,16 @@ namespace OdinEye.Client.Counters
         // and Mangey Dog already cover.
         public const string ButcherKnifeItemName = "KnifeButcher"; // Raw Dog -- the weapon
         public const string WolfPrefabName = "Wolf"; // Raw Dog -- the target species
+
+        // Dapper Fenrisian / Fenrisian Warlord: the Fenring armor set's 3
+        // real piece prefabs, confirmed via a direct UnityPy read of the
+        // live asset bundle's GameObject names (not the icon filenames,
+        // which are inconsistently "Fenris"-spelled on a couple of these --
+        // a real trap if read by eye instead of the actual prefab/GameObject
+        // name).
+        public const string HelmetFenringItemName = "HelmetFenring";
+        public const string ArmorFenringChestItemName = "ArmorFenringChest";
+        public const string ArmorFenringLegsItemName = "ArmorFenringLegs";
 
         // Suckie Suckie. Two Leech prefabs exist in this build's asset
         // manifest -- Leech (open swamp water) and Leech_cave (sunken
@@ -442,6 +462,38 @@ namespace OdinEye.Client.Counters
             && !targetIsPlayer
             && !targetIsTamed
             && targetIsDeadNow;
+
+        // Confirmed via a direct UnityPy read of the live asset bundle --
+        // all three Fenring armor pieces cap at this value today, not
+        // guessed. A hardcoded literal (matching this file's existing
+        // style elsewhere, e.g. CountsAsWeaponKill's own hardcoded skill
+        // names) rather than threading each item's own live m_maxQuality
+        // through as extra parameters -- if Iron Gate ever rebalances
+        // this, re-verify against the real asset data again, the same way
+        // this value was confirmed, rather than guess a new one.
+        public const int FenringMaxQuality = 4;
+
+        // Dapper Fenrisian: all three slots currently equipped with
+        // exactly these three specific prefabs -- missing any one of them,
+        // or a different item occupying one of these three slots (e.g. a
+        // different helmet), does not count. byLocalPlayer guards against
+        // this ever firing for an NPC Humanoid equipping its own gear.
+        public static bool CountsAsDapperFenrisianEquip(bool byLocalPlayer, string helmetPrefabName, string chestPrefabName, string legsPrefabName) =>
+            byLocalPlayer
+            && helmetPrefabName == HelmetFenringItemName
+            && chestPrefabName == ArmorFenringChestItemName
+            && legsPrefabName == ArmorFenringLegsItemName;
+
+        // Fenrisian Warlord: the same three pieces, each ALSO upgraded to
+        // FenringMaxQuality. Strictly stricter than Dapper Fenrisian --
+        // every equip that completes this also completes that one, in the
+        // same patch, the same instant -- so there's no ordering/sequencing
+        // concern between the two despite them being named as a pair.
+        public static bool CountsAsFenrisianWarlordEquip(bool byLocalPlayer, string helmetPrefabName, int helmetQuality, string chestPrefabName, int chestQuality, string legsPrefabName, int legsQuality) =>
+            CountsAsDapperFenrisianEquip(byLocalPlayer, helmetPrefabName, chestPrefabName, legsPrefabName)
+            && helmetQuality >= FenringMaxQuality
+            && chestQuality >= FenringMaxQuality
+            && legsQuality >= FenringMaxQuality;
 
         // Venom: the hit that just killed ME (not one I dealt) had nonzero
         // poison damage in it. "Just killed me" is IsDead() read AFTER

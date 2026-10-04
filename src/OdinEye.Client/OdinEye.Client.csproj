@@ -113,6 +113,7 @@
         <Compile Include="Patches\BedPatches.cs" />
         <Compile Include="Patches\ClientRuntime.cs" />
         <Compile Include="Patches\CookingStationPatches.cs" />
+        <Compile Include="Patches\FenringSetPatch.cs" />
         <Compile Include="Patches\FermenterTapPatch.cs" />
         <Compile Include="Patches\IncomingHitPatch.cs" />
         <Compile Include="Patches\ItemPickupPatch.cs" />

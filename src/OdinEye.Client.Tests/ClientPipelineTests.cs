@@ -282,6 +282,42 @@ namespace OdinEye.Client.Tests
             Assert.That(CounterRules.CountsAsRawDogKill(mine, skill, weapon, target, isCharacter, isPlayer, isTamed, isDeadNow), Is.False);
         }
 
+        // --- Dapper Fenrisian / Fenrisian Warlord -------------------------------------------
+
+        [Test]
+        public void AllThreeFenringPieces_Equipped_CountsAsDapperFenrisian()
+        {
+            Assert.That(CounterRules.CountsAsDapperFenrisianEquip(true, "HelmetFenring", "ArmorFenringChest", "ArmorFenringLegs"), Is.True);
+        }
+
+        [TestCase(false, "HelmetFenring", "ArmorFenringChest", "ArmorFenringLegs", TestName = "someone else's equip")]
+        [TestCase(true, null, "ArmorFenringChest", "ArmorFenringLegs", TestName = "no helmet equipped")]
+        [TestCase(true, "HelmetFenring", null, "ArmorFenringLegs", TestName = "no chest equipped")]
+        [TestCase(true, "HelmetFenring", "ArmorFenringChest", null, TestName = "no legs equipped")]
+        [TestCase(true, "HelmetIron", "ArmorFenringChest", "ArmorFenringLegs", TestName = "a different helmet entirely")]
+        [TestCase(true, "HelmetFenring", "ArmorRootChest", "ArmorFenringLegs", TestName = "a different chest entirely")]
+        [TestCase(true, "HelmetFenring", "ArmorFenringChest", "ArmorRootLegs", TestName = "a different legs entirely")]
+        public void AnythingElse_IsNotACountedDapperFenrisianEquip(bool mine, string helmet, string chest, string legs)
+        {
+            Assert.That(CounterRules.CountsAsDapperFenrisianEquip(mine, helmet, chest, legs), Is.False);
+        }
+
+        [Test]
+        public void AllThreeFenringPieces_AtMaxQuality_CountsAsFenrisianWarlord()
+        {
+            Assert.That(CounterRules.CountsAsFenrisianWarlordEquip(true, "HelmetFenring", 4, "ArmorFenringChest", 4, "ArmorFenringLegs", 4), Is.True);
+        }
+
+        [TestCase(false, "HelmetFenring", 4, "ArmorFenringChest", 4, "ArmorFenringLegs", 4, TestName = "someone else's equip")]
+        [TestCase(true, "HelmetFenring", 3, "ArmorFenringChest", 4, "ArmorFenringLegs", 4, TestName = "helmet below max quality")]
+        [TestCase(true, "HelmetFenring", 4, "ArmorFenringChest", 3, "ArmorFenringLegs", 4, TestName = "chest below max quality")]
+        [TestCase(true, "HelmetFenring", 4, "ArmorFenringChest", 4, "ArmorFenringLegs", 3, TestName = "legs below max quality")]
+        [TestCase(true, null, 4, "ArmorFenringChest", 4, "ArmorFenringLegs", 4, TestName = "no helmet equipped, even at a plausible default quality")]
+        public void AnythingElse_IsNotACountedFenrisianWarlordEquip(bool mine, string helmet, int helmetQuality, string chest, int chestQuality, string legs, int legsQuality)
+        {
+            Assert.That(CounterRules.CountsAsFenrisianWarlordEquip(mine, helmet, helmetQuality, chest, chestQuality, legs, legsQuality), Is.False);
+        }
+
         // --- Homeless -------------------------------------------------------------------
 
         [Test]
