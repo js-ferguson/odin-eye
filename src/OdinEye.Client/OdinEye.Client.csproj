@@ -123,6 +123,7 @@
         <Compile Include="Patches\TameablePatch.cs" />
         <Compile Include="Patches\VomitBombPatch.cs" />
         <Compile Include="Patches\WeaponKillPatch.cs" />
+        <Compile Include="Stats\AltitudeTracking.cs" />
         <Compile Include="Stats\BoatTracking.cs" />
         <Compile Include="Stats\CounterAugmentedStatsSource.cs" />
         <Compile Include="Stats\EncumbranceTracking.cs" />

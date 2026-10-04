@@ -605,6 +605,66 @@ namespace OdinEye.Client.Tests
             Assert.That(CounterRules.NorthDistanceToRaise(positionZ), Is.EqualTo(expected));
         }
 
+        // --- Captain Robert Falcon Scott -------------------------------------------------
+
+        [Test]
+        public void HighestAltitude_TracksTheHighWaterMarkOfTheLivePosition()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var altitude = 100f;
+
+            var first = new CounterAugmentedStatsSource(source, store, () => null, currentAltitude: () => altitude).GetStats();
+            altitude = 250f;
+            var risen = new CounterAugmentedStatsSource(source, store, () => null, currentAltitude: () => altitude).GetStats();
+            altitude = 40f; // climbed back down -- must not lower it
+            var afterDescending = new CounterAugmentedStatsSource(source, store, () => null, currentAltitude: () => altitude).GetStats();
+
+            Assert.That(first["Derived:HighestAltitude"], Is.EqualTo(100f));
+            Assert.That(risen["Derived:HighestAltitude"], Is.EqualTo(250f));
+            Assert.That(afterDescending["Derived:HighestAltitude"], Is.EqualTo(250f));
+        }
+
+        [Test]
+        public void HighestAltitude_BelowSeaLevelIsFlooredAtZero_NeverSentNegative()
+        {
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+
+            var stats = new CounterAugmentedStatsSource(source, NewStore(), () => null, currentAltitude: () => -500f).GetStats();
+
+            Assert.That(stats["Derived:HighestAltitude"], Is.EqualTo(0f));
+        }
+
+        [Test]
+        public void HighestAltitude_IsAbsentWithoutACharacterLoaded()
+        {
+            var stats = new CounterAugmentedStatsSource(new FakeSource(), NewStore(), () => null, currentAltitude: () => 999f).GetStats();
+
+            Assert.That(stats, Is.Empty);
+        }
+
+        [Test]
+        public void HighestAltitude_IsAbsentWhenNoPositionIsAvailable()
+        {
+            // Covers both "no local player" and "inside a dungeon/cave
+            // interior" -- AltitudeTracking.CurrentAltitude() returns null
+            // for either, and this class treats both identically.
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+
+            var stats = new CounterAugmentedStatsSource(source, NewStore(), () => null, currentAltitude: () => null).GetStats();
+
+            Assert.That(stats.ContainsKey("Derived:HighestAltitude"), Is.False);
+        }
+
+        [TestCase(100f, 100f)]
+        [TestCase(0f, 0f)]
+        [TestCase(-1f, 0f)]
+        [TestCase(-9999f, 0f)]
+        public void AltitudeToRaise_FloorsAtZero(float altitudeAboveSeaLevel, float expected)
+        {
+            Assert.That(CounterRules.AltitudeToRaise(altitudeAboveSeaLevel), Is.EqualTo(expected));
+        }
+
         // --- The Admiral (integration) -------------------------------------------------------
 
         private static readonly DateTime T0 = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);

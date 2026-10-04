@@ -47,6 +47,7 @@ namespace OdinEye.Client.Stats
         private readonly Func<bool> isNearOven;
         private readonly Func<bool> isOverburdened;
         private readonly Func<float> overburdenedDistanceSinceLastSample;
+        private readonly Func<float?> currentAltitude;
         private readonly Func<DateTime> nowUtc;
         private DateTime? lastBoatSampleUtc;
         private DateTime? lastSwampSampleUtc;
@@ -56,7 +57,8 @@ namespace OdinEye.Client.Stats
         public CounterAugmentedStatsSource(IPlayerStatsSource inner, CustomCounterStore store, Func<ISet<string>> stationNames,
             Func<float?> currentNorthZ = null, Func<bool> isInDeepNorth = null,
             Func<bool> isOnBoat = null, Func<bool> isInSwamp = null, Func<bool> isNearOven = null,
-            Func<bool> isOverburdened = null, Func<float> overburdenedDistanceSinceLastSample = null, Func<DateTime> nowUtc = null)
+            Func<bool> isOverburdened = null, Func<float> overburdenedDistanceSinceLastSample = null,
+            Func<float?> currentAltitude = null, Func<DateTime> nowUtc = null)
         {
             this.inner = inner ?? throw new ArgumentNullException(nameof(inner));
             this.store = store ?? throw new ArgumentNullException(nameof(store));
@@ -68,6 +70,7 @@ namespace OdinEye.Client.Stats
             this.isNearOven = isNearOven ?? (() => false);
             this.isOverburdened = isOverburdened ?? (() => false);
             this.overburdenedDistanceSinceLastSample = overburdenedDistanceSinceLastSample ?? (() => 0f);
+            this.currentAltitude = currentAltitude ?? (() => null);
             this.nowUtc = nowUtc ?? (() => DateTime.UtcNow);
         }
 
@@ -106,6 +109,18 @@ namespace OdinEye.Client.Stats
             if (z.HasValue)
             {
                 store.RaiseTo(CounterRules.FurthestNorthZKey, CounterRules.NorthDistanceToRaise(z.Value));
+            }
+
+            // Captain Robert Falcon Scott: a high-water mark of the
+            // highest altitude above sea level this character has ever
+            // reached, same reasoning as the station total/Peter North
+            // above. currentAltitude() already comes back null while
+            // inside a dungeon/cave interior (see AltitudeTracking), so
+            // there is nothing extra to filter here.
+            var altitude = currentAltitude();
+            if (altitude.HasValue)
+            {
+                store.RaiseTo(CounterRules.HighestAltitudeKey, CounterRules.AltitudeToRaise(altitude.Value));
             }
 
             if (isInDeepNorth())

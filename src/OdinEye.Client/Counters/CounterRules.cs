@@ -134,6 +134,13 @@ namespace OdinEye.Client.Counters
         public const string FurthestNorthZKey = "Derived:FurthestNorthZ";
         public const string ReachedDeepNorthKey = "Custom:ReachedDeepNorth";
 
+        // Captain Robert Falcon Scott: height above sea level, confirmed via
+        // IL against the real ZoneSystem.c_WaterLevel constant (= 30) --
+        // see AltitudeTracking for where this is actually read from the
+        // local player, including the real (and critical) exclusion of
+        // dungeon/cave interiors.
+        public const string HighestAltitudeKey = "Derived:HighestAltitude";
+
         // The item a stone oven produces from bread dough. Burnt bread is a
         // different item (coal), so it can never match.
         public const string BreadItemName = "Bread";
@@ -386,6 +393,13 @@ namespace OdinEye.Client.Counters
         // indistinguishable from "never left spawn," which is the correct
         // starting point either way.
         public static float NorthDistanceToRaise(float positionZ) => positionZ > 0f ? positionZ : 0f;
+
+        // Captain Robert Falcon Scott. Same floor-at-zero reasoning as
+        // Peter North just above -- a submitted stat can never be negative,
+        // and being below sea level (caves excepted -- those are already
+        // filtered out before this is ever called, see AltitudeTracking)
+        // is never a contender for "highest altitude" anyway.
+        public static float AltitudeToRaise(float altitudeAboveSeaLevel) => altitudeAboveSeaLevel > 0f ? altitudeAboveSeaLevel : 0f;
 
         // The Admiral. How much of the elapsed time since the last check to
         // credit toward time on a boat: all of it if the player was on a
