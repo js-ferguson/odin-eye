@@ -16,6 +16,16 @@ namespace OdinEye.Client.Counters
         public const string VomitBombsKey = "Custom:VomitBombs"; // Vomit Bomb
         public const string FistKillsKey = "Custom:FistKills"; // Mike Tyson
         public const string SwordKillsKey = "Custom:SwordKills"; // Mushashi Master of Blades
+
+        // VALSER-92: Raw Dog. Unlike Mike Tyson/Mushashi (any weapon of a
+        // given SKILL CATEGORY), this needs a SPECIFIC item -- the Butcher
+        // Knife, not any knife -- confirmed as a real, distinct weapon
+        // prefab ("KnifeButcher.prefab", with its own recipe/icon) via the
+        // real asset manifest, not guessed. There is no separate
+        // "butchering" mechanic in this game at all (confirmed via IL: zero
+        // "Butcher" class/method anywhere) -- it can only mean landing the
+        // kill with this specific item.
+        public const string RawDogWolfKillsKey = "Custom:RawDogWolfKills"; // Raw Dog
         public const string ChickenMeatCookedKey = "Custom:ChickenMeatCooked"; // KFC - The Colonel
         public const string LoxPiesCookedKey = "Custom:LoxPiesCooked"; // Baked as Bro
         public const string MeadsMadeKey = "Custom:MeadsMade"; // Punky Brewster
@@ -177,6 +187,14 @@ namespace OdinEye.Client.Counters
         // smelted bar a Blast Furnace produces from it. "Mined 100
         // silver" per the user's own wording means this one, not the bar.
         public const string SilverOreItemName = "SilverOre";
+
+        // Raw Dog: the specific weapon and the specific target species,
+        // both confirmed as real, distinct prefab names via the asset
+        // manifest ("weapons/KnifeButcher.prefab", "Wolf") -- not the
+        // generic "any knife" or "any weapon" case Mike Tyson/Mushashi
+        // and Mangey Dog already cover.
+        public const string ButcherKnifeItemName = "KnifeButcher"; // Raw Dog -- the weapon
+        public const string WolfPrefabName = "Wolf"; // Raw Dog -- the target species
 
         // Suckie Suckie. Two Leech prefabs exist in this build's asset
         // manifest -- Leech (open swamp water) and Leech_cave (sunken
@@ -399,6 +417,27 @@ namespace OdinEye.Client.Counters
         public static bool CountsAsWeaponKill(bool byLocalPlayer, string skillName, string wantSkillName, bool targetIsCharacter, bool targetIsPlayer, bool targetIsTamed, bool targetIsDeadNow) =>
             byLocalPlayer
             && skillName == wantSkillName
+            && targetIsCharacter
+            && !targetIsPlayer
+            && !targetIsTamed
+            && targetIsDeadNow;
+
+        // Raw Dog: butcher 100 wolves with the Butcher Knife specifically --
+        // NOT Mangey Dog's "any weapon" EnemyKill:$enemy_wolf, and not any
+        // other knife (e.g. KnifeChitin). "Butcher" has no dedicated game
+        // mechanic (confirmed via IL: no "Butcher" class/method exists
+        // anywhere) -- it can only mean landing the kill with the
+        // KnifeButcher item itself.
+        //
+        // Defense-in-depth double-gate: skillName == "Knives" is checked
+        // ALONGSIDE the exact weaponPrefabName == "KnifeButcher" check, not
+        // instead of it -- see WeaponKillPatch.cs's own header for the
+        // same-frame weapon-swap risk this mitigates (but doesn't eliminate).
+        public static bool CountsAsRawDogKill(bool byLocalPlayer, string skillName, string weaponPrefabName, string targetPrefabName, bool targetIsCharacter, bool targetIsPlayer, bool targetIsTamed, bool targetIsDeadNow) =>
+            byLocalPlayer
+            && skillName == "Knives"
+            && weaponPrefabName == ButcherKnifeItemName
+            && targetPrefabName == WolfPrefabName
             && targetIsCharacter
             && !targetIsPlayer
             && !targetIsTamed

@@ -260,6 +260,28 @@ namespace OdinEye.Client.Tests
             Assert.That(CounterRules.CountsAsWeaponKill(mine, skill, wantSkill, isCharacter, isPlayer, isTamed, isDeadNow), Is.False);
         }
 
+        // --- Raw Dog -----------------------------------------------------------------------
+
+        [Test]
+        public void MyKillingBlow_OnAWolf_WithTheButcherKnife_Counts()
+        {
+            Assert.That(CounterRules.CountsAsRawDogKill(true, "Knives", "KnifeButcher", "Wolf", true, false, false, true), Is.True);
+        }
+
+        [TestCase(false, "Knives", "KnifeButcher", "Wolf", true, false, false, true, TestName = "someone else's kill")]
+        [TestCase(true, "Swords", "KnifeButcher", "Wolf", true, false, false, true, TestName = "right weapon item, wrong skill type")]
+        [TestCase(true, "Knives", "KnifeChitin", "Wolf", true, false, false, true, TestName = "right skill type, wrong specific knife")]
+        [TestCase(true, "Knives", "KnifeButcher", "Boar", true, false, false, true, TestName = "wrong target species")]
+        [TestCase(true, "Knives", "KnifeButcher", "Wolf", true, false, false, false, TestName = "not a killing blow")]
+        [TestCase(true, "Knives", "KnifeButcher", "Wolf", true, true, false, true, TestName = "the target is a player")]
+        [TestCase(true, "Knives", "KnifeButcher", "Wolf", true, false, true, true, TestName = "the target is tamed")]
+        [TestCase(true, "Knives", "KnifeButcher", null, true, false, false, true, TestName = "no target prefab name resolved")]
+        [TestCase(true, "Knives", null, "Wolf", true, false, false, true, TestName = "no weapon equipped when it landed")]
+        public void AnythingElse_IsNotACountedRawDogKill(bool mine, string skill, string weapon, string target, bool isCharacter, bool isPlayer, bool isTamed, bool isDeadNow)
+        {
+            Assert.That(CounterRules.CountsAsRawDogKill(mine, skill, weapon, target, isCharacter, isPlayer, isTamed, isDeadNow), Is.False);
+        }
+
         // --- Homeless -------------------------------------------------------------------
 
         [Test]
