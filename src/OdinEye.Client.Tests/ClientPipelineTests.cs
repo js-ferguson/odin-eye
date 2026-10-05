@@ -1040,6 +1040,122 @@ namespace OdinEye.Client.Tests
             Assert.That(stats.ContainsKey("Custom:OverburdenedDistanceMeters"), Is.False);
         }
 
+        // --- All in vein / Mist Goat (integration) ----------------------------------------
+
+        [Test]
+        public void MountainTime_CreditsNothingOnTheFirstCallOfASession()
+        {
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+
+            var stats = new CounterAugmentedStatsSource(source, NewStore(), () => null,
+                isInMountain: () => true, nowUtc: () => T0).GetStats();
+
+            Assert.That(stats.ContainsKey("Custom:TimeInMountainSeconds"), Is.False);
+        }
+
+        [Test]
+        public void MountainTime_CreditsTheGapBetweenCallsWhileInTheMountain()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null, isInMountain: () => true, nowUtc: () => now);
+            augmented.GetStats();
+
+            now += TimeSpan.FromSeconds(30);
+            var stats = augmented.GetStats();
+
+            Assert.That(stats["Custom:TimeInMountainSeconds"], Is.EqualTo(30f));
+        }
+
+        [Test]
+        public void MountainTime_CreditsNothingOutsideTheMountain()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null, isInMountain: () => false, nowUtc: () => now);
+            augmented.GetStats();
+
+            now += TimeSpan.FromSeconds(30);
+            var stats = augmented.GetStats();
+
+            Assert.That(stats.ContainsKey("Custom:TimeInMountainSeconds"), Is.False);
+        }
+
+        [Test]
+        public void MountainTime_DropsAGapLongerThanTheSanityCap()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null, isInMountain: () => true, nowUtc: () => now);
+            augmented.GetStats();
+
+            now += TimeSpan.FromMinutes(20); // computer slept, or similar
+            var stats = augmented.GetStats();
+
+            Assert.That(stats.ContainsKey("Custom:TimeInMountainSeconds"), Is.False);
+        }
+
+        [Test]
+        public void MistlandsTime_CreditsNothingOnTheFirstCallOfASession()
+        {
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+
+            var stats = new CounterAugmentedStatsSource(source, NewStore(), () => null,
+                isInMistlands: () => true, nowUtc: () => T0).GetStats();
+
+            Assert.That(stats.ContainsKey("Custom:TimeInMistlandsSeconds"), Is.False);
+        }
+
+        [Test]
+        public void MistlandsTime_CreditsTheGapBetweenCallsWhileInTheMistlands()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null, isInMistlands: () => true, nowUtc: () => now);
+            augmented.GetStats();
+
+            now += TimeSpan.FromSeconds(30);
+            var stats = augmented.GetStats();
+
+            Assert.That(stats["Custom:TimeInMistlandsSeconds"], Is.EqualTo(30f));
+        }
+
+        [Test]
+        public void MistlandsTime_CreditsNothingOutsideTheMistlands()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null, isInMistlands: () => false, nowUtc: () => now);
+            augmented.GetStats();
+
+            now += TimeSpan.FromSeconds(30);
+            var stats = augmented.GetStats();
+
+            Assert.That(stats.ContainsKey("Custom:TimeInMistlandsSeconds"), Is.False);
+        }
+
+        [Test]
+        public void MountainAndMistlandsTime_AreTrackedIndependently()
+        {
+            var store = NewStore();
+            var source = new FakeSource { Stats = { ["FishCaught"] = 1f } };
+            var now = T0;
+            var augmented = new CounterAugmentedStatsSource(source, store, () => null,
+                isInMountain: () => true, isInMistlands: () => false, nowUtc: () => now);
+            augmented.GetStats();
+
+            now += TimeSpan.FromSeconds(30);
+            var stats = augmented.GetStats();
+
+            Assert.That(stats["Custom:TimeInMountainSeconds"], Is.EqualTo(30f));
+            Assert.That(stats.ContainsKey("Custom:TimeInMistlandsSeconds"), Is.False);
+        }
+
         [Test]
         public void TheMetaRidesInTheSubmission_AndIsOptional()
         {

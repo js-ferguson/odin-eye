@@ -24,6 +24,12 @@ namespace OdinEye.Client.Stats
         // see CounterRules.BakerySecondsToAdd.
         private static readonly TimeSpan MaxPlausibleBakeryGap = TimeSpan.FromMinutes(5);
 
+        // All in vein / Mist Goat: same cap, same reasoning, for time in
+        // the Mountain/Mistlands biomes -- see CounterRules.
+        // MountainSecondsToAdd/MistlandsSecondsToAdd.
+        private static readonly TimeSpan MaxPlausibleMountainGap = TimeSpan.FromMinutes(5);
+        private static readonly TimeSpan MaxPlausibleMistlandsGap = TimeSpan.FromMinutes(5);
+
         // Palsy: same elapsed-gap cap as the three above, PLUS a max
         // plausible speed -- a time-based sampler can never be fooled by a
         // teleport (it only ever credits wall-clock time), but a
@@ -48,17 +54,22 @@ namespace OdinEye.Client.Stats
         private readonly Func<bool> isOverburdened;
         private readonly Func<float> overburdenedDistanceSinceLastSample;
         private readonly Func<float?> currentAltitude;
+        private readonly Func<bool> isInMountain;
+        private readonly Func<bool> isInMistlands;
         private readonly Func<DateTime> nowUtc;
         private DateTime? lastBoatSampleUtc;
         private DateTime? lastSwampSampleUtc;
         private DateTime? lastBakerySampleUtc;
         private DateTime? lastOverburdenedSampleUtc;
+        private DateTime? lastMountainSampleUtc;
+        private DateTime? lastMistlandsSampleUtc;
 
         public CounterAugmentedStatsSource(IPlayerStatsSource inner, CustomCounterStore store, Func<ISet<string>> stationNames,
             Func<float?> currentNorthZ = null, Func<bool> isInDeepNorth = null,
             Func<bool> isOnBoat = null, Func<bool> isInSwamp = null, Func<bool> isNearOven = null,
             Func<bool> isOverburdened = null, Func<float> overburdenedDistanceSinceLastSample = null,
-            Func<float?> currentAltitude = null, Func<DateTime> nowUtc = null)
+            Func<float?> currentAltitude = null, Func<bool> isInMountain = null, Func<bool> isInMistlands = null,
+            Func<DateTime> nowUtc = null)
         {
             this.inner = inner ?? throw new ArgumentNullException(nameof(inner));
             this.store = store ?? throw new ArgumentNullException(nameof(store));
@@ -71,6 +82,8 @@ namespace OdinEye.Client.Stats
             this.isOverburdened = isOverburdened ?? (() => false);
             this.overburdenedDistanceSinceLastSample = overburdenedDistanceSinceLastSample ?? (() => 0f);
             this.currentAltitude = currentAltitude ?? (() => null);
+            this.isInMountain = isInMountain ?? (() => false);
+            this.isInMistlands = isInMistlands ?? (() => false);
             this.nowUtc = nowUtc ?? (() => DateTime.UtcNow);
         }
 
@@ -197,6 +210,33 @@ namespace OdinEye.Client.Stats
             }
 
             lastOverburdenedSampleUtc = now;
+
+            // All in vein: same shape as Stink Fish/Baker's High above,
+            // against the Mountain biome instead.
+            if (lastMountainSampleUtc.HasValue)
+            {
+                var elapsed = (float)(now - lastMountainSampleUtc.Value).TotalSeconds;
+                var toAdd = CounterRules.MountainSecondsToAdd(isInMountain(), elapsed, (float)MaxPlausibleMountainGap.TotalSeconds);
+                if (toAdd > 0f)
+                {
+                    store.Increment(CounterRules.TimeInMountainSecondsKey, toAdd);
+                }
+            }
+
+            lastMountainSampleUtc = now;
+
+            // Mist Goat: same shape again, against the Mistlands biome.
+            if (lastMistlandsSampleUtc.HasValue)
+            {
+                var elapsed = (float)(now - lastMistlandsSampleUtc.Value).TotalSeconds;
+                var toAdd = CounterRules.MistlandsSecondsToAdd(isInMistlands(), elapsed, (float)MaxPlausibleMistlandsGap.TotalSeconds);
+                if (toAdd > 0f)
+                {
+                    store.Increment(CounterRules.TimeInMistlandsSecondsKey, toAdd);
+                }
+            }
+
+            lastMistlandsSampleUtc = now;
 
             foreach (var kv in store.Snapshot())
             {

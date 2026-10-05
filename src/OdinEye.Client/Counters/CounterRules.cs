@@ -112,6 +112,14 @@ namespace OdinEye.Client.Counters
         // "stop counting once earned" mechanic exists or is needed).
         public const string TimeInBakerySecondsKey = "Custom:TimeInBakerySeconds";
 
+        // VALSER-102: All in vein / Mist Goat. Same elapsed-time-sample
+        // shape as Stink Fish/Baker's High above, against the Mountain
+        // and Mistlands biomes respectively -- Heightmap.Biome.Mountain/
+        // Mistlands confirmed as real public enum members via IL, same
+        // Player.GetCurrentBiome() read SwampTracking already uses.
+        public const string TimeInMountainSecondsKey = "Custom:TimeInMountainSeconds"; // All in vein
+        public const string TimeInMistlandsSecondsKey = "Custom:TimeInMistlandsSeconds"; // Mist Goat
+
         // VALSER-85 (2026-09-23): Sticky fingers.
         public const string ResinHandledKey = "Custom:ResinHandled";
 
@@ -609,6 +617,15 @@ namespace OdinEye.Client.Counters
         // sanity cap against a suspended game/slept computer.
         public static float BakerySecondsToAdd(bool isNearOven, float elapsedSeconds, float maxPlausibleGapSeconds) =>
             isNearOven && elapsedSeconds > 0f && elapsedSeconds <= maxPlausibleGapSeconds ? elapsedSeconds : 0f;
+
+        // All in vein: same shape as BoatSecondsToAdd/SwampSecondsToAdd/
+        // BakerySecondsToAdd, against the Mountain biome.
+        public static float MountainSecondsToAdd(bool isInMountain, float elapsedSeconds, float maxPlausibleGapSeconds) =>
+            isInMountain && elapsedSeconds > 0f && elapsedSeconds <= maxPlausibleGapSeconds ? elapsedSeconds : 0f;
+
+        // Mist Goat: same shape again, against the Mistlands biome.
+        public static float MistlandsSecondsToAdd(bool isInMistlands, float elapsedSeconds, float maxPlausibleGapSeconds) =>
+            isInMistlands && elapsedSeconds > 0f && elapsedSeconds <= maxPlausibleGapSeconds ? elapsedSeconds : 0f;
 
         // Palsy (VALSER-90): real distance moved since the LAST check,
         // credited only if the player was overburdened at sample time --
